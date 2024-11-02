@@ -10,8 +10,8 @@ const routes: Routes = [
     component: ChatboxLayoutComponent, // This is the common layout
     children: [
       // { path: 'main', component: MainChatboxComponent }, // Select Emotion page
-      { path: '', redirectTo: 'main', pathMatch: 'full' }, // Default route
-      { path: 'main/:id', component: MainChatboxComponent },
+      { path: '', redirectTo: 'user/', pathMatch: 'full' }, // Default route
+      { path: 'user/:id', component: MainChatboxComponent },
     ],
   },
 ];
