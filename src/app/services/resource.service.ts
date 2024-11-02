@@ -29,13 +29,18 @@ export class ResourceService {
 
   getPhoneNumbers = async (userId: string): Promise<PhoneNumber[]> => {
     try {
-      let res: { pingerPhones: { phoneNumber: string; _id: string }[] } =
-        (await firstValueFrom(
-          this.http.get(`${this.apiUrl}/api/user/${userId}`)
-        )) as any;
+      let res: {
+        pingerPhones: { phoneNumber: string; _id: string; name: string }[];
+      } = (await firstValueFrom(
+        this.http.get(`${this.apiUrl}/api/user/${userId}`)
+      )) as any;
 
       let phoneNumbers = res.pingerPhones.map((item) => {
-        return { id: item._id, phoneNumber: item.phoneNumber };
+        return {
+          id: item._id,
+          phoneNumber: item.phoneNumber,
+          name: Utils.formatPhoneNumberName(item.name),
+        };
       });
 
       return phoneNumbers;
