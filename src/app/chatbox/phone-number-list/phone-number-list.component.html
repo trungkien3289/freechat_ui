@@ -1,49 +1,17 @@
-<!-- [nzLoading]="isLoading" -->
-<!-- <nz-list nzItemLayout="horizontal" class="h-100 d-flex flex-column">
-  <nz-list-header>
-    <div class="d-flex flex-column">
-      <h4 class="title text-center">Phone Numbers</h4>
-      <nz-input-group
-        [nzSuffix]="suffixIconSearch"
-        nzSize="large"
-        class="rounded-3"
-      >
-        <input
-          type="number"
-          nz-input
-          placeholder="Search"
-          [formControl]="searchControl"
-        />
-      </nz-input-group>
-      <ng-template #suffixIconSearch>
-        <span nz-icon nzType="search"></span>
-      </ng-template>
-    </div>
-  </nz-list-header>
-  @for (phoneNumber of filteredPhones$ | async; track phoneNumber) {
-  <nz-list-item
-    (click)="selectPhoneNumber(phoneNumber)"
-    class="hover-list-item cursor-pointer px-2 flex-grow-1"
-    [class.selected-item]="selectedItem?.id == phoneNumber.id"
-  >
-    <div class="d-flex flex-row align-items-center fs-lg p-1">
-      <i class="fa fa-phone me-2 primary-color"></i>
-      <span> {{ phoneNumber.phoneNumber | phoneNumber }}</span>
-    </div>
-  </nz-list-item>
-  } @if (phoneNumbers.length === 0) {
-  <nz-list-empty />
-  }
-</nz-list> -->
-
 <div class="h-100 d-flex flex-column">
-  <div class="d-flex flex-column py-2">
+  <div class="d-flex flex-column">
     <div class="d-flex flex-column">
-      <h4 class="title-text text-center mb-4">Phone Numbers</h4>
+      <div
+        class="d-flex align-items-center justify-content-center"
+        style="height: 45px"
+      >
+        <span class="title-text text-center">Phone Numbers</span>
+      </div>
+
       <nz-input-group
         [nzSuffix]="suffixIconSearch"
         nzSize="large"
-        class="rounded-3"
+        class="rounded-3 mt-2"
       >
         <input
           type="number"
