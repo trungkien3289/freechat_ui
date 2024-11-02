@@ -124,12 +124,13 @@ export class GroupConversationBoxComponent {
 
   onToNumbersChange = (toPhoneNumbers: string[]) => {
     console.log(toPhoneNumbers);
+    debugger;
     this.contactGroup.to = toPhoneNumbers.map((phoneNumber) => {
       const numericString = phoneNumber.replace(/\D/g, '');
-      return Utils.convertPhoneNumber({
-        TN: numericString,
-        name: numericString,
-      });
+      return {
+        TN: Utils.formatPhoneNumberTN(numericString),
+        name: Utils.formatPhoneNumberName(numericString),
+      };
     });
 
     // save to local storage
