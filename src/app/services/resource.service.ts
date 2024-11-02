@@ -170,13 +170,13 @@ export class ResourceService {
         return {
           id: group.id,
           name: t
-            .map((recipient) => Utils.formatPhoneNumber(recipient.TN))
+            .map((recipient) => Utils.convertPhoneNumber(recipient).name)
             .join(', '),
           currentPhoneNumber: currentPhone,
           type: group.type,
           direction: group.direction,
-          from: group.from,
-          to: group.to,
+          from: Utils.convertPhoneNumber(group.from),
+          to: group.to.map((t: any) => Utils.convertPhoneNumber(t)),
           messages: group.messages,
           timeCreated: group.timeCreated,
           isOutgoing: group.direction == 'out',
@@ -187,19 +187,5 @@ export class ResourceService {
         } as ContactMessageGroup;
       })
       .sort((a, b) => a.conversationType.localeCompare(b.conversationType));
-
-    // return Object.values(grouped).map((group: any) => ({
-    //   id: group.id,
-    //   currentPhoneNumber: currentPhone,
-    //   type: group.type,
-    //   direction: group.direction,
-    //   from: group.from,
-    //   to: group.to,
-    //   messages: group.messages,
-    //   timeCreated: group.timeCreated,
-    //   isOutgoing: group.direction == 'out',
-    //   conversationType:
-    //     group.to.length > 1 ? ConversationType.GROUP : ConversationType.SINGLE,
-    // })) as ContactMessageGroup[];
   };
 }

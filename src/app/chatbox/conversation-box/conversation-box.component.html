@@ -13,7 +13,7 @@
   <div class="message flex-grow-1 p-2" id="conversation">
     @if(!!messageViewItems && messageViewItems.length > 0){ @for (messageItem of
     messageViewItems; track messageItem) {
-    <div class="row message-body py-2">
+    <!-- <div class="row message-body py-2">
       <div
         class="col-sm-12"
         [ngClass]="{
@@ -33,7 +33,11 @@
           </span>
         </div>
       </div>
-    </div>
+    </div> -->
+
+    <ng-container
+      *ngTemplateOutlet="messageTemplate; context: { messageItem: messageItem }"
+    ></ng-container>
     } }@else {
     <div class="h-100 w-100 d-flex align-items-center justify-content-center">
       <nz-empty [nzNotFoundContent]="null"></nz-empty>
@@ -76,3 +80,32 @@
 }@else {
 <nz-list-empty />
 }
+
+<ng-template #messageTemplate let-messageItem="messageItem">
+  @switch (messageItem.itemType) { @case ('message') {
+  <div class="row message-body py-2">
+    <div
+      class="col-sm-12"
+      [ngClass]="{
+        'message-main-receiver': !messageItem.isOutgoing,
+        'message-main-sender': messageItem.isOutgoing
+      }"
+    >
+      <div
+        [ngClass]="{
+          receiver: !messageItem.isOutgoing,
+          sender: messageItem.isOutgoing
+        }"
+      >
+        <div class="message-text">{{ messageItem.text }}</div>
+        <span class="message-time pull-right">
+          {{ messageItem.formattedTime }}
+        </span>
+      </div>
+    </div>
+  </div>
+  } @case ('date_group_separate_line') {
+  <nz-divider nzPlain nzText="{{ messageItem.formattedTime }}"></nz-divider>
+
+  }@default { } }
+</ng-template>

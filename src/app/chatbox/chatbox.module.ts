@@ -19,6 +19,7 @@ import { GroupConversationBoxComponent } from './group-conversation-box/group-co
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { FormsModule } from '@angular/forms';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
 
 @NgModule({
   declarations: [
@@ -44,6 +45,7 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
     NzSelectModule,
     FormsModule,
     NzEmptyModule,
+    NzDividerModule,
   ],
 })
 export class ChatboxModule {}

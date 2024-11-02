@@ -3,12 +3,13 @@ import {
   ContactMessage,
   ContactMessageGroup,
   ContactMessageViewItem,
+  ConversationItemType,
 } from '../../models/contact-message.model';
 import { ChatService } from '../../services/chat.service';
 import { NotificationService } from '../../services/notification.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ca } from 'date-fns/locale';
-import { filter, first, last } from 'lodash';
+import { first, last } from 'lodash';
+import { Utils } from '../../utilities/utils';
 
 @Component({
   selector: 'app-conversation-box',
@@ -22,12 +23,14 @@ export class ConversationBoxComponent implements OnDestroy {
     if (!!contactGroup) {
       this.resetChatBox();
       this.contactGroup = contactGroup;
-      this.messageViewItems = contactGroup.messages.map((item) => {
-        return {
-          ...item,
-          formattedTime: this.formatTime(item.timeCreated),
-        } as ContactMessageViewItem;
-      });
+      this.messageViewItems = this.mapToMessageViewItems(contactGroup.messages);
+
+      // contactGroup.messages.map((item) => {
+      //   return {
+      //     ...item,
+      //     formattedTime: Utils.formatTime(item.timeCreated),
+      //   } as ContactMessageViewItem;
+      // });
 
       this.startFetchMessageInterval(
         this.contactGroup.currentPhoneNumber.id,
@@ -63,11 +66,6 @@ export class ConversationBoxComponent implements OnDestroy {
     this.resetChatBox();
   }
 
-  formatTime = (dateTime: string) => {
-    const date = new Date(dateTime);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // e.g., "09:24 AM"
-  };
-
   startFetchMessageInterval = (
     fromPhoneNumberId: string,
     fromPhoneNumber: string,
@@ -82,12 +80,14 @@ export class ConversationBoxComponent implements OnDestroy {
           toPhoneNumber
         );
 
-        this.messageViewItems = messages.map((item) => {
-          return {
-            ...item,
-            formattedTime: this.formatTime(item.timeCreated),
-          } as ContactMessageViewItem;
-        });
+        this.messageViewItems = this.mapToMessageViewItems(messages);
+
+        // messages.map((item) => {
+        //   return {
+        //     ...item,
+        //     formattedTime: Utils.formatTime(item.timeCreated),
+        //   } as ContactMessageViewItem;
+        // });
       } catch (error: any) {
         this.reTryError--;
         console.error(error);
@@ -113,12 +113,14 @@ export class ConversationBoxComponent implements OnDestroy {
         toPhoneNumber
       );
 
-      this.messageViewItems = messages.map((item) => {
-        return {
-          ...item,
-          formattedTime: this.formatTime(item.timeCreated),
-        } as ContactMessageViewItem;
-      });
+      this.messageViewItems = this.mapToMessageViewItems(messages);
+
+      // messages.map((item) => {
+      //   return {
+      //     ...item,
+      //     formattedTime: Utils.formatTime(item.timeCreated),
+      //   } as ContactMessageViewItem;
+      // });
     } catch (error: any) {}
   };
 
@@ -167,4 +169,54 @@ export class ConversationBoxComponent implements OnDestroy {
       }
     }
   }
+
+  mapToMessageViewItems = (
+    messages: ContactMessage[]
+  ): ContactMessageViewItem[] => {
+    let orderedMessages = messages
+      .map((item) => {
+        return {
+          ...item,
+          itemType: ConversationItemType.MESSAGE,
+          formattedTime: Utils.formatTime(item.timeCreated),
+        } as ContactMessageViewItem;
+      })
+      .sort((a, b) => {
+        return (
+          new Date(a.timeCreated).getTime() - new Date(b.timeCreated).getDate()
+        );
+      });
+
+    orderedMessages = this.addGroupByDateSeparator([...orderedMessages]);
+
+    return orderedMessages;
+  };
+
+  addGroupByDateSeparator = (sortedMessages: ContactMessageViewItem[]) => {
+    const result: ContactMessageViewItem[] = [];
+    let previousDate: string | null = null;
+
+    sortedMessages.forEach((item) => {
+      // Convert the date to YYYY-MM-DD format for easier comparison
+      const currentDate = new Date(item.timeCreated)
+        .toISOString()
+        .split('T')[0];
+
+      // If there is a date change, add a separator item
+      if (previousDate !== currentDate) {
+        result.push({
+          itemType: ConversationItemType.DATE_GROUP_SEPARATE_LINE,
+          formattedTime: currentDate,
+        } as ContactMessageViewItem);
+      }
+
+      // Add the current item to the result list
+      result.push(item);
+
+      // Update previousDate to the current item’s date
+      previousDate = currentDate;
+    });
+
+    return result;
+  };
 }

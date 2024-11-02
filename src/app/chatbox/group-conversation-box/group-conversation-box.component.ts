@@ -11,6 +11,7 @@ import {
 import { LocalStorageService } from '../../services/local-storage.service';
 import { v4 as uuidv4 } from 'uuid';
 import { NEW_GROUP_CONVERSATION_ID } from '../../utilities/chatbox.const';
+import { Utils } from '../../utilities/utils';
 
 @Component({
   selector: 'app-group-conversation-box',
@@ -125,7 +126,10 @@ export class GroupConversationBoxComponent {
     console.log(toPhoneNumbers);
     this.contactGroup.to = toPhoneNumbers.map((phoneNumber) => {
       const numericString = phoneNumber.replace(/\D/g, '');
-      return { TN: numericString, name: numericString };
+      return Utils.convertPhoneNumber({
+        TN: numericString,
+        name: numericString,
+      });
     });
 
     // save to local storage

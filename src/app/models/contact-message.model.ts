@@ -39,4 +39,15 @@ export enum SendStatus {
 export type ContactMessageViewItem = ContactMessage & {
   statusIcon: string;
   formattedTime: string;
+  itemType: ConversationItemType;
+};
+
+export enum ConversationItemType {
+  MESSAGE = 'message',
+  DATE_GROUP_SEPARATE_LINE = 'date_group_separate_line',
+}
+
+export type MessageGroupByDateItem = {
+  date: string;
+  messages: ContactMessageViewItem[];
 };

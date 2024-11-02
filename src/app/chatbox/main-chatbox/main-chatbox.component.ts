@@ -1,3 +1,4 @@
+import { Utils } from './../../utilities/utils';
 import { Component, OnInit } from '@angular/core';
 import { PhoneNumber } from '../../models/phone-number.model';
 import { ResourceService } from '../../services/resource.service';
@@ -108,11 +109,11 @@ export class MainChatboxComponent implements OnInit {
       isOutgoing: true,
       timeCreated: new Date().toISOString(),
       type: 'message',
-      from: {
+      from: Utils.convertPhoneNumber({
         TN: phoneNumber.phoneNumber,
         name: phoneNumber.phoneNumber,
         own: true,
-      },
+      }),
       to: [],
       messages: [],
     } as ContactMessageGroup;
