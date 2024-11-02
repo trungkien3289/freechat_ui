@@ -1,0 +1,106 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { JwtHelperService } from '@auth0/angular-jwt';
+import { EnvService } from './env.service';
+import {
+  PhoneComunication,
+  PhoneShortSummary,
+} from '../models/phone-comunication.model';
+import { firstValueFrom, Observable } from 'rxjs';
+import { PhoneNumber } from '../models/phone-number.model';
+import {
+  ContactMessage,
+  ContactMessageGroup,
+} from '../models/contact-message.model';
+import { ca } from 'date-fns/locale';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ChatService {
+  private apiUrl = ``;
+  constructor(
+    private http: HttpClient,
+    public jwtHelper: JwtHelperService,
+    private _EnvService: EnvService
+  ) {
+    this.apiUrl = _EnvService.apiUrl;
+  }
+
+  sendMessage = async (
+    fromPhoneNumberId: string,
+    fromPhoneNumber: string,
+    to: PhoneShortSummary[],
+    text: string
+  ): Promise<any> => {
+    try {
+      const res = await firstValueFrom(
+        this.http.post(
+          `${this.apiUrl}/api/user/phone/${fromPhoneNumberId}/message`,
+          {
+            text,
+            to,
+          }
+        )
+      );
+
+      return res;
+    } catch (ex) {
+      throw `Send message from ${fromPhoneNumber} error`;
+    }
+  };
+
+  fetchMessages = async (
+    fromPhoneNumberId: string,
+    fromPhoneNumber: string,
+    toPhoneNumber: string
+  ): Promise<ContactMessage[]> => {
+    try {
+      let requestBody = {
+        requests: [
+          {
+            queryParams: [
+              { createdSince: '2024-10-10 04:23:36.512952' },
+              { updatedSince: '2024-10-24 04:23:36.467539' },
+            ],
+            contentType: 'application/json',
+            useHTTPS: '1',
+            resource: '/2.0/communications/sync',
+            method: 'GET',
+          },
+        ],
+      };
+      let res: any = (await firstValueFrom(
+        this.http.post(
+          `${this.apiUrl}/api/user/phone/${fromPhoneNumberId}/request`,
+          requestBody
+        )
+      )) as any;
+
+      const communicationsRes = JSON.parse(res.result[0].body);
+      let communications = communicationsRes.result
+        .newCommunications as PhoneComunication[];
+
+      let messages = communications
+        .filter((item) => {
+          return [...item.to, item.from]
+            .filter((n) => !n.own)
+            .some((to) => to.TN === toPhoneNumber);
+        })
+        .map((message) => {
+          return {
+            direction: message.direction,
+            text: message.text,
+            id: message.id,
+            myStatus: message.myStatus,
+            timeCreated: message.timeCreated,
+            isOutgoing: message.direction == 'out',
+          } as ContactMessage;
+        });
+
+      return messages;
+    } catch (ex) {
+      throw `Fetch Messages from ${fromPhoneNumber} to ${toPhoneNumber} error`;
+    }
+  };
+}

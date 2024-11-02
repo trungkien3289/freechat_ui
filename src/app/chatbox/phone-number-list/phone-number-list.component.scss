@@ -1,0 +1,27 @@
+:host {
+  height: 100%;
+}
+
+.list-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.hover-list-item {
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  max-height: 50px;
+  min-height: 50px;
+  height: 50px;
+}
+
+.hover-list-item:hover {
+  transform: scale(1.05); /* Slightly scale the item */
+  background-color: #f0f5ff; /* Change background color on hover */
+}
+
+.selected-item {
+  background-color: #e6f7ff; /* Light blue background */
+  color: #1890ff; /* Primary text color */
+  font-weight: bold; /* Bold text */
+  border: 1px solid #91d5ff; /* Optional: border to highlight selection */
+}

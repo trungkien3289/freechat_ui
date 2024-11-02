@@ -1,0 +1,117 @@
+<!-- <nz-list nzItemLayout="horizontal" [nzLoading]="isLoading">
+  <nz-list-header>
+    <div class="d-flex flex-row justify-content-between">
+      <span class="title-text primary-color">Recent</span>
+      <span class="title-text">{{
+        phoneNumber?.phoneNumber | phoneNumber
+      }}</span>
+      <div>
+        <button
+          nz-button
+          nzType="primary"
+          [nzSize]="'large'"
+          nzShape="round"
+          (click)="newConversation()"
+        >
+          <i class="fa fa-comments-o me-1" aria-hidden="true"></i>
+          New Conversation
+        </button>
+      </div>
+    </div>
+  </nz-list-header>
+  @for (item of contactMessageGroups; track item) {
+  <nz-list-item
+    (click)="selectItem(item)"
+    class="hover-list-item cursor-pointer px-2"
+    [class.selected-item]="selectedContact?.id == item?.id"
+  >
+    <div
+      class="d-flex flex-row align-items-center fs-lg p-1 justify-content-between w-100"
+    >
+      <div class="d-flex flex-row align-items-center">
+        @if(item.conversationType == 'Group') {
+        <i class="fa fa-users me-3 primary-color fs-2" aria-hidden="true"></i>
+        }@else {
+        <i class="fa fa-user me-3 primary-color fs-2"></i>
+        }
+
+        <div class="d-flex flex-column">
+          <span class="fw-bold fs-6">
+            @if(item.conversationType == 'Group') {
+            {{ "Group Conversation" }}
+            }@else {
+            {{
+              (item?.isOutgoing ? _first(item?.to)?.TN : item.from.TN)
+                | phoneNumber
+            }}
+            }
+          </span>
+          <span class="fw-light"> {{ _last(item.messages)?.text }}</span>
+        </div>
+      </div>
+
+      <span>{{ _last(item.messages)?.timeCreated | dateStringFormat }}</span>
+    </div>
+  </nz-list-item>
+  } @if (contactMessageGroups.length === 0) {
+  <nz-list-empty />
+  }
+</nz-list> -->
+
+<div nzItemLayout="horizontal" class="h-100 d-flex flex-column">
+  <div class="d-flex flex-column p-2">
+    <div class="d-flex flex-row justify-content-between">
+      <span class="title-text primary-color">Recent</span>
+      <span class="title-text">{{
+        phoneNumber?.phoneNumber | phoneNumber
+      }}</span>
+    </div>
+    <!-- <nz-input-group [nzSuffix]="suffixIconSearch" nzSize="large">
+          <input
+            type="number"
+            nz-input
+            placeholder="Search text"
+            [formControl]="searchControl"
+          />
+        </nz-input-group>
+        <ng-template #suffixIconSearch>
+          <span nz-icon nzType="search"></span>
+        </ng-template> -->
+  </div>
+  <div class="d-flex flex-column flex-grow-1 mt-2 list-container px-2">
+    @for (item of contactMessageGroups; track item) {
+    <div
+      (click)="selectItem(item)"
+      class="d-flex flex-row hover-list-item cursor-pointer px-2"
+      [class.selected-item]="selectedContact?.id == item?.id"
+    >
+      <div
+        class="d-flex flex-row align-items-center p-1 justify-content-between w-100"
+      >
+        <div class="d-flex flex-row align-items-center">
+          @if(item.conversationType == 'Group') {
+          <i class="fa fa-users me-3 primary-color" aria-hidden="true"></i>
+          }@else {
+          <i class="fa fa-user me-3 primary-color"></i>
+          }
+
+          <div class="d-flex flex-column">
+            <span class="fw-bold fs-6 text-truncate">
+              {{ item.name }}
+            </span>
+            <span class="fw-light text-truncate">
+              {{ _last(item.messages)?.text }}</span
+            >
+          </div>
+        </div>
+
+        <span class="fst-italic text-truncate" style="font-size: 11px">{{
+          _last(item.messages)?.timeCreated | dateStringFormat
+        }}</span>
+      </div>
+    </div>
+    } @if (contactMessageGroups.length === 0) {
+    <nz-list-empty />
+    }
+  </div>
+</div>

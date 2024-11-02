@@ -1,0 +1,38 @@
+<div class="container-fluid vh-100 p-0">
+  <div class="row h-100 m-0">
+    <div class="col-md-2 bg-light border-end h-100 phone-list-panel">
+      <div style="min-width: 300px" class="h-100">
+        <app-phone-number-list
+          [userId]="userId"
+          (onSelectItem)="selectPhoneNumber($event)"
+        ></app-phone-number-list>
+      </div>
+    </div>
+
+    <div class="col-md-4 bg-white border-end h-100 contact-panel">
+      <div style="min-width: 300px" class="h-100">
+        <app-contact-list
+          [selectedContactId]="selectedContact?.id"
+          [phoneNumber]="selectedPhoneNumberItem"
+          [contactMessageGroups]="contactMessageGroups"
+          (onSelectItem)="selectContactItem($event)"
+        ></app-contact-list>
+      </div>
+    </div>
+
+    <div class="col-md-6 bg-light d-flex flex-column h-100" id="chatbox-column">
+      @if (selectedContact?.conversationType == 'Group') {
+      <app-group-conversation-box
+        style="height: 100%"
+        [contact]="selectedContact"
+        (sendMessageGroupSuccess)="sendMessageGroupConversationSuccess()"
+      ></app-group-conversation-box>
+      }@else {
+      <app-conversation-box
+        style="height: 100%"
+        [contact]="selectedContact"
+      ></app-conversation-box>
+      }
+    </div>
+  </div>
+</div>

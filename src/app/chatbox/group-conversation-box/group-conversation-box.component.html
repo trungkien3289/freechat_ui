@@ -1,0 +1,152 @@
+@if(!!contactGroup){
+<div class="conversation d-flex flex-column">
+  <div class="heading d-flex flex-column p-2">
+    <div class="d-flex flex-row align-items-center py-2 align-items-center">
+      <i class="fa fa-info-circle me-3 primary-color fs-5"></i>
+      <span class="fw-bold group-label">Group: </span>
+      <span class="fs-6 flex-grow-1">{{ contactGroup.name }}</span>
+      <button
+        *ngIf="isNewGroupConversation"
+        nz-button
+        nzType="text"
+        (click)="resetNewGroupConversation()"
+      >
+        <i class="fa fa-repeat me-1" aria-hidden="true"></i>
+        Reset
+      </button>
+    </div>
+    <div class="d-flex flex-row py-2 align-items-center">
+      <i class="fa fa-user-circle-o me-3 primary-color fs-5"></i>
+      <span class="fw-bold group-label">From: </span>
+      <span class="fs-6 flex-grow-1">{{
+        contactGroup.currentPhoneNumber.phoneNumber | phoneNumber
+      }}</span>
+    </div>
+
+    <div class="d-flex flex-row py-2 align-items-center">
+      <i class="fa fa-users me-3 primary-color fs-5"></i>
+      <span class="fw-bold group-label">To: </span>
+      @if(isNewGroupConversation){
+      <nz-select
+        class="w-100 multiple-select-phone-number"
+        [(ngModel)]="listOfTagOptions"
+        [nzBorderless]="false"
+        (ngModelChange)="onToNumbersChange($event)"
+        nzMode="tags"
+        [nzTokenSeparators]="[',']"
+        nzPlaceHolder="Input phone number"
+        [nzCustomTemplate]="defaultTemplate"
+        [disabled]="!isNewGroupConversation"
+      >
+        @for (option of listOfOption; track option.value) {
+        <nz-option
+          [nzLabel]="option.label"
+          [nzValue]="option.value"
+        ></nz-option>
+        }
+      </nz-select>
+      <ng-template #defaultTemplate let-selected>
+        {{ selected.nzLabel | phoneNumber }}
+      </ng-template>
+      }@else {
+      <span class="d-flex flex-row py-2 align-items-center fs-6">{{
+        contactGroup.name
+      }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="message flex-grow-1 p-2" id="conversation">
+    @if(!!messageViewItems && messageViewItems.length > 0){ @for (messageItem of
+    messageViewItems; track messageItem) {
+    <div class="row message-body py-2">
+      <div
+        class="col-sm-12"
+        [ngClass]="{
+          'message-main-receiver': !messageItem.isOutgoing,
+          'message-main-sender': messageItem.isOutgoing
+        }"
+      >
+        <div
+          [ngClass]="{
+            receiver: !messageItem.isOutgoing,
+            sender: messageItem.isOutgoing
+          }"
+        >
+          <div
+            class="message-text d-flex flex-row align-items-center justify-content-between"
+          >
+            <span class="mx-3 text-wrap">{{ messageItem.text }}</span>
+            <ng-container
+              *ngTemplateOutlet="
+                messageStatusTemplate;
+                context: { status: messageItem.sendStatus }
+              "
+            ></ng-container>
+          </div>
+          <span class="message-time pull-right">
+            {{ messageItem.formattedTime }}
+          </span>
+        </div>
+      </div>
+    </div>
+    } }@else {
+    <div class="h-100 w-100 d-flex align-items-center justify-content-center">
+      <nz-empty [nzNotFoundContent]="null"></nz-empty>
+    </div>
+
+    }
+  </div>
+
+  <form
+    class="reply d-flex flex-row align-items-center"
+    [formGroup]="myForm"
+    (ngSubmit)="sendMessageBtnClick()"
+  >
+    <!-- <div class="reply-emojis">
+      <i class="fa fa-smile-o fa-2x icon-button"></i>
+    </div> -->
+    <div class="reply-main flex-grow-1">
+      <textarea
+        nz-input
+        formControlName="textInput"
+        [nzAutosize]="{ maxRows: 6 }"
+        (keydown)="onKeydown($event)"
+      ></textarea>
+    </div>
+    <div class="reply-send">
+      <button
+        type="submit"
+        nz-button
+        nzType="primary"
+        [disabled]="myForm.invalid"
+        [nzSize]="'large'"
+        nzShape="round"
+        [class.primary-button]="myForm.valid"
+      >
+        <i class="fa fa-send" aria-hidden="true"></i>
+      </button>
+    </div>
+  </form>
+</div>
+
+}@else {
+<nz-list-empty />
+}
+
+<ng-template #messageStatusTemplate let-status="status">
+  @switch (status) { @case ('sending') {
+  <div class="spinner-border text-primary spinner-border-sm" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  } @case ('sent') {
+  <i class="fa fa-check-circle" style="color: #079b33" aria-hidden="true"></i>
+
+  } @case ('failed') {
+  <i
+    class="fa fa-exclamation-circle"
+    style="color: #f30c0c"
+    aria-hidden="true"
+  ></i>
+  } @default { } }
+</ng-template>

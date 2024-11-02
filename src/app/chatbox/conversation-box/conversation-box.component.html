@@ -1,0 +1,78 @@
+@if(!!contactGroup){
+<div class="conversation d-flex flex-column">
+  <div class="heading d-flex flex-row align-items-center p-3">
+    <i class="fa fa-user-circle-o me-3 primary-color fs-2"></i>
+    <span class="fs-5 fw-bold flex-grow-1">{{
+      (contactGroup.isOutgoing
+        ? _first(contactGroup?.to)?.TN
+        : contactGroup.from.TN
+      ) | phoneNumber
+    }}</span>
+  </div>
+
+  <div class="message flex-grow-1 p-2" id="conversation">
+    @if(!!messageViewItems && messageViewItems.length > 0){ @for (messageItem of
+    messageViewItems; track messageItem) {
+    <div class="row message-body py-2">
+      <div
+        class="col-sm-12"
+        [ngClass]="{
+          'message-main-receiver': !messageItem.isOutgoing,
+          'message-main-sender': messageItem.isOutgoing
+        }"
+      >
+        <div
+          [ngClass]="{
+            receiver: !messageItem.isOutgoing,
+            sender: messageItem.isOutgoing
+          }"
+        >
+          <div class="message-text">{{ messageItem.text }}</div>
+          <span class="message-time pull-right">
+            {{ messageItem.formattedTime }}
+          </span>
+        </div>
+      </div>
+    </div>
+    } }@else {
+    <div class="h-100 w-100 d-flex align-items-center justify-content-center">
+      <nz-empty [nzNotFoundContent]="null"></nz-empty>
+    </div>
+    }
+  </div>
+
+  <form
+    class="reply d-flex flex-row align-items-center"
+    [formGroup]="myForm"
+    (ngSubmit)="sendMessageBtnClick()"
+  >
+    <!-- <div class="reply-emojis">
+      <i class="fa fa-smile-o fa-2x icon-button"></i>
+    </div> -->
+    <div class="reply-main flex-grow-1">
+      <textarea
+        nz-input
+        formControlName="textInput"
+        [nzAutosize]="{ maxRows: 6 }"
+        (keydown)="onKeydown($event)"
+      ></textarea>
+    </div>
+    <div class="reply-send">
+      <button
+        type="submit"
+        nz-button
+        nzType="primary"
+        [disabled]="myForm.invalid"
+        [nzSize]="'large'"
+        nzShape="round"
+        [class.primary-button]="myForm.valid"
+      >
+        <i class="fa fa-send" aria-hidden="true"></i>
+      </button>
+    </div>
+  </form>
+</div>
+
+}@else {
+<nz-list-empty />
+}

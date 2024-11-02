@@ -1,0 +1,27 @@
+/* You can add global styles to this file, and also import other style files */
+// @import "../node_modules/ng-zorro-antd/ng-zorro-antd.less";
+input:focus {
+  border-color: #3498db !important; /* Change border color when focused */
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.5) !important; /* Optional: Add a glow effect */
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.fs-text {
+  font-size: 14px;
+}
+
+.fs-lg {
+  font-size: 16px;
+}
+
+.title-text {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.icon-btn:hover {
+  color: #3498db;
+}

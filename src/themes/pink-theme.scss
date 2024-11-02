@@ -1,0 +1,54 @@
+// light-theme.scss
+$background-color: #ffffff;
+$text-color: #000000;
+$primary-color: #f19d9d;
+$accent-color: #ff4081;
+
+body.pink-theme {
+  // background-color: $background-color;
+  // color: $text-color;
+
+  .main-bg-color {
+    // background-color: $background-color;
+    background: linear-gradient(180deg, $primary-color, #ffffff);
+  }
+
+  .primary-bg-color {
+    background-color: $primary-color;
+  }
+
+  .primary-text-color {
+    color: $text-color;
+  }
+
+  .primary-color {
+    color: $primary-color;
+  }
+
+  .primary-button {
+    background-color: $primary-color;
+    color: #fff;
+    border-color: $primary-color;
+  }
+
+  .secondary-button {
+    background-color: #fff;
+    border-color: $primary-color;
+    color: $primary-color;
+  }
+
+  .primary-active {
+    color: $accent-color;
+    border: 3px solid $accent-color;
+  }
+
+  .icon-button:hover {
+    // transform: rotate(20deg); /* Rotate on hover */
+    color: $primary-color !important;
+  }
+
+  .icon-button:active {
+    transform: scale(1.1);
+    color: $primary-color !important;
+  }
+}
