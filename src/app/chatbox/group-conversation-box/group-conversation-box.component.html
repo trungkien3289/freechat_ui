@@ -19,7 +19,7 @@
       <i class="fa fa-user-circle-o me-2 primary-color fs-5"></i>
       <span class="fw-bold group-label">From: </span>
       <span class="fs-6 flex-grow-1">{{
-        contactGroup.currentPhoneNumber.phoneNumber | phoneNumber
+        contactGroup.currentPhoneNumber.name
       }}</span>
     </div>
 
@@ -46,7 +46,7 @@
         }
       </nz-select>
       <ng-template #defaultTemplate let-selected>
-        {{ selected.nzLabel | phoneNumber }}
+        {{ selected.nzLabel | phoneNumberFormatNoCode }}
       </ng-template>
       }@else {
       <span class="d-flex flex-row py-2 align-items-center fs-6">{{

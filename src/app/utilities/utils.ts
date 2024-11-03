@@ -53,4 +53,8 @@ export class Utils {
       TN: Utils.formatPhoneNumberTN(phoneWithoutCountryCode),
     };
   };
+
+  static removeCountryCode = (phoneNumber: string) => {
+    return phoneNumber.substring(1);
+  };
 }

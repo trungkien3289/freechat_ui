@@ -39,7 +39,9 @@ export class ResourceService {
         return {
           id: item._id,
           phoneNumber: item.phoneNumber,
-          name: Utils.formatPhoneNumberName(item.name),
+          name: Utils.formatPhoneNumberName(
+            Utils.removeCountryCode(item.phoneNumber)
+          ),
         };
       });
 

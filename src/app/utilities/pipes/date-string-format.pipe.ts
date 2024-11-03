@@ -7,6 +7,6 @@ import { format } from 'date-fns';
 export class DateStringFormatPipe implements PipeTransform {
   transform(value: Date | string | number | undefined): string {
     if (!value) return '';
-    return format(new Date(value), 'dd, MMM, yyyy');
+    return format(new Date(value), 'MMM, dd, yyyy');
   }
 }

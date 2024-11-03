@@ -20,6 +20,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { FormsModule } from '@angular/forms';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { PhoneNumberFormatNoCodePipe } from '../utilities/pipes/phone-number-format-no-code.pipe';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
     ConversationBoxComponent,
     DateStringFormatPipe,
     GroupConversationBoxComponent,
+    PhoneNumberFormatNoCodePipe,
   ],
   imports: [
     CommonModule,

@@ -124,7 +124,6 @@ export class GroupConversationBoxComponent {
 
   onToNumbersChange = (toPhoneNumbers: string[]) => {
     console.log(toPhoneNumbers);
-    debugger;
     this.contactGroup.to = toPhoneNumbers.map((phoneNumber) => {
       const numericString = phoneNumber.replace(/\D/g, '');
       return {

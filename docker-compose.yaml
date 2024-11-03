@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  frontend:
+    image: trungkien3289/freechat_ui
+    stdin_open: true
+    tty: true
+    # depends_on:
+    #   - backend
+    ports:
+      - "3000:80"
+    environment:
+      - API_URL=http://3.93.71.25:5000
+    entrypoint: ["/bin/sh", "/usr/share/nginx/html/replace.env.sh"]
+    # networks:
+    #   - app-network
+  # backend:
+  #   image: trungkien3289/mood_be
+  #   ports:
+  #     - "5000:5000"
+  #   networks:
+  #     - app-network
+# networks:
+#   app-network:
+#     driver: bridge

@@ -43,7 +43,7 @@ RUN chmod +x /usr/share/nginx/html/replace.env.sh
 EXPOSE 80
 
 # Set the entrypoint to your script
-# ENTRYPOINT ["/usr/share/nginx/html/replace.env.sh"]
+ENTRYPOINT ["/usr/share/nginx/html/replace.env.sh"]
 
 # Start NGINX
 # CMD ["nginx", "-g", "daemon off;"]
