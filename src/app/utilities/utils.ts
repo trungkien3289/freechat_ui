@@ -61,4 +61,8 @@ export class Utils {
   static scrollToBottom(container: any): void {
     container.scrollTop = container.scrollHeight;
   }
+
+  static delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 }

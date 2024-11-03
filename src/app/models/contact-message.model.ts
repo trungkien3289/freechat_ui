@@ -4,7 +4,7 @@ import { PhoneNumber } from './phone-number.model';
 export type ContactMessageGroup = {
   name: string;
   currentPhoneNumber: PhoneNumber;
-  type: string; // message type 'message'|'file'|'image'
+  type: string;
   direction: 'in' | 'out';
   from: PhoneShortSummary;
   to: PhoneShortSummary[];

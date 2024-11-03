@@ -20,6 +20,7 @@ import { LocalStorageService } from '../../services/local-storage.service';
 import { v4 as uuidv4 } from 'uuid';
 import { NEW_GROUP_CONVERSATION_ID } from '../../utilities/chatbox.const';
 import { Utils } from '../../utilities/utils';
+import { debounce } from 'lodash';
 
 @Component({
   selector: 'app-group-conversation-box',
@@ -51,12 +52,6 @@ export class GroupConversationBoxComponent implements AfterViewChecked {
       });
 
       this.listOfTagOptions = contactGroup.to.map((item) => item.TN);
-
-      // this.startFetchMessageInterval(
-      //   this.contactGroup.fromPhoneNumberId,
-      //   this.contactGroup.from.TN,
-      //   this.contactGroup.to.TN
-      // );
     }
   }
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
@@ -90,7 +85,11 @@ export class GroupConversationBoxComponent implements AfterViewChecked {
     this.myForm.reset();
   };
 
-  sendMessageBtnClick = async () => {
+  sendMessageBtnClick = () => {
+    this.debouncedSubmit();
+  };
+
+  debouncedSubmit = debounce(async () => {
     if (!this.myForm.valid) return;
 
     this.isLoading = true;
@@ -98,33 +97,26 @@ export class GroupConversationBoxComponent implements AfterViewChecked {
       this.myForm.value.textInput
     );
 
+    this.myForm.reset();
+
     try {
       await this._ChatService.sendMessage(
         this.contactGroup.currentPhoneNumber.id,
         this.contactGroup.from.TN,
         this.contactGroup.to,
-        this.myForm.value.textInput
+        newMessage.text
       );
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
       this.sendMessageGroupSuccess.emit();
-      this.myForm.reset();
-
-      //force fetch messages
-      // this.fetchMessages(
-      //   this.contactGroup.fromPhoneNumberId,
-      //   this.contactGroup.from.TN,
-      //   this.contactGroup.to.TN
-      // );
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
     }
 
     this.isLoading = false;
-
     this.scrollToBottom();
-  };
+  }, 200);
 
   onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {

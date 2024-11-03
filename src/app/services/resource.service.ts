@@ -10,8 +10,8 @@ import {
   ContactMessage,
   ContactMessageGroup,
   ConversationType,
+  SendStatus,
 } from '../models/contact-message.model';
-import { first } from 'lodash';
 import { Utils } from '../utilities/utils';
 import _ from 'lodash';
 
@@ -130,6 +130,7 @@ export class ResourceService {
           timeCreated: message.timeCreated,
           direction: 'out',
           isOutgoing: true,
+          sendStatus: SendStatus.SENT,
         });
       }
     }
@@ -173,6 +174,7 @@ export class ResourceService {
           timeCreated: message.timeCreated,
           direction: 'in',
           isOutgoing: false,
+          sendStatus: SendStatus.SENT,
         });
       }
     }

@@ -13,12 +13,16 @@ import {
   ContactMessageGroup,
   ContactMessageViewItem,
   ConversationItemType,
+  SendStatus,
 } from '../../models/contact-message.model';
 import { ChatService } from '../../services/chat.service';
 import { NotificationService } from '../../services/notification.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first, last } from 'lodash';
 import { Utils } from '../../utilities/utils';
+import { v4 as uuidv4 } from 'uuid';
+import { GroupContactCacheService } from '../../services/group-contact-cache.service';
+import { debounce } from 'lodash';
 
 const INTERVAL_RELOAD_CHATBOX = 5000;
 @Component({
@@ -33,14 +37,14 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
     if (!!contactGroup) {
       this.resetChatBox();
       this.contactGroup = contactGroup;
-      this.messageViewItems = this.mapToMessageViewItems(contactGroup.messages);
+      let updatedMessages = [
+        ...contactGroup.messages,
+        ...this._GroupContactCacheService.getGroupUnsentMessage(
+          this.contactGroup.id
+        ),
+      ];
 
-      // contactGroup.messages.map((item) => {
-      //   return {
-      //     ...item,
-      //     formattedTime: Utils.formatTime(item.timeCreated),
-      //   } as ContactMessageViewItem;
-      // });
+      this.messageViewItems = this.mapToMessageViewItems(updatedMessages);
 
       this.startFetchMessageInterval(
         this.contactGroup.currentPhoneNumber.id,
@@ -61,13 +65,15 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
   isLoading: boolean = false;
   fetchMessageInterval: any;
   reTryError: number = 10;
-
   myForm: FormGroup;
+  isFirstLoad: boolean = true;
+  isSubmitting = false;
 
   constructor(
     private _ChatService: ChatService,
     private _NotificationService: NotificationService,
-    private _FormBuilder: FormBuilder
+    private _FormBuilder: FormBuilder,
+    private _GroupContactCacheService: GroupContactCacheService
   ) {
     this.myForm = this._FormBuilder.group({
       textInput: ['', Validators.required],
@@ -94,10 +100,20 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
           fromPhoneNumber,
           toPhoneNumber
         );
+        let notSendMessages =
+          this._GroupContactCacheService.getGroupUnsentMessage(
+            this.contactGroup.id
+          );
+        this.messageViewItems = this.mapToMessageViewItems([
+          ...messages,
+          ...notSendMessages,
+        ]);
 
-        this.messageViewItems = this.mapToMessageViewItems(messages);
         this.scrollToBottom();
-        this.sendMessageSuccess.emit();
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.sendMessageSuccess.emit();
+        }
       } catch (error: any) {
         this.reTryError--;
         console.error(error);
@@ -109,6 +125,10 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
 
       this.isLoading = false;
     }, INTERVAL_RELOAD_CHATBOX);
+  };
+
+  stopFetchMessageInterval = () => {
+    clearInterval(this.fetchMessageInterval);
   };
 
   fetchMessages = async (
@@ -123,15 +143,16 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
         toPhoneNumber
       );
 
-      this.messageViewItems = this.mapToMessageViewItems(messages);
-      this.scrollToBottom();
+      let notSendMessages =
+        this._GroupContactCacheService.getGroupUnsentMessage(
+          this.contactGroup.id
+        );
+      this.messageViewItems = this.mapToMessageViewItems([
+        ...messages,
+        ...notSendMessages,
+      ]);
 
-      // messages.map((item) => {
-      //   return {
-      //     ...item,
-      //     formattedTime: Utils.formatTime(item.timeCreated),
-      //   } as ContactMessageViewItem;
-      // });
+      this.scrollToBottom();
     } catch (error: any) {}
   };
 
@@ -143,17 +164,29 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
   };
 
   sendMessageBtnClick = () => {
+    this.debouncedSubmit();
+  };
+
+  debouncedSubmit = debounce(async () => {
     if (!this.myForm.valid) return;
+    this.stopFetchMessageInterval();
+    this.isLoading = true;
+    let newMessage: ContactMessage = this.addMessageToGroup(
+      this.myForm.value.textInput
+    );
+
+    this.myForm.reset();
+
     try {
-      this.isLoading = true;
-      this._ChatService.sendMessage(
+      await this._ChatService.sendMessage(
         this.contactGroup.currentPhoneNumber.id,
         this.contactGroup.from.TN,
         this.contactGroup.to,
-        this.myForm.value.textInput
+        newMessage.text
       );
 
-      this.myForm.reset();
+      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      this.sendMessageSuccess.emit();
 
       //force fetch messages
       this.fetchMessages(
@@ -163,13 +196,79 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
           ? this.contactGroup.to[0].TN
           : this.contactGroup.from.TN
       );
-
-      this.sendMessageSuccess.emit();
     } catch (error: any) {
       this._NotificationService.error(error);
+      this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
     }
 
     this.isLoading = false;
+    this.scrollToBottom();
+    this.startFetchMessageInterval(
+      this.contactGroup.currentPhoneNumber.id,
+      this.contactGroup.currentPhoneNumber.phoneNumber,
+      this._first(
+        [...this.contactGroup.to, this.contactGroup.from].filter((n) => !n.own)
+      )?.TN || ''
+    );
+  }, 200);
+
+  addMessageToGroup = (message: string): ContactMessage => {
+    let newMessage = {
+      id: uuidv4(),
+      myStatus: 'READ',
+      timeCreated: new Date().toISOString(),
+      direction: 'out',
+      isOutgoing: true,
+      text: message,
+      sendStatus: SendStatus.SENDING,
+    } as ContactMessage;
+
+    this.contactGroup.messages.push(newMessage);
+
+    this.messageViewItems.push({
+      ...newMessage,
+      itemType: ConversationItemType.MESSAGE,
+      formattedTime: Utils.formatTime(newMessage.timeCreated),
+    } as ContactMessageViewItem);
+
+    this._GroupContactCacheService.cacheGroupUnsentMessage(
+      this.contactGroup.id,
+      this.contactGroup.messages.filter(
+        (mess) => mess.sendStatus != SendStatus.SENT
+      )
+    );
+
+    return newMessage;
+  };
+
+  updateMessageStatus = (messageId: string, status: SendStatus) => {
+    let message = this.contactGroup.messages.find(
+      (item) => item.id === messageId
+    );
+    if (!!message) {
+      message.sendStatus = status;
+      // if (this.isNewGroupConversation) {
+      //   this._LocalStorageService.setItem(
+      //     `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
+      //     this.contactGroup
+      //   );
+      // }
+    }
+
+    let messageViewItem = this.messageViewItems.find(
+      (item) => item.id === messageId
+    );
+
+    if (!!messageViewItem) {
+      messageViewItem.sendStatus = status;
+    }
+
+    this._GroupContactCacheService.cacheGroupUnsentMessage(
+      this.contactGroup.id,
+      this.contactGroup.messages.filter(
+        (mess) => mess.sendStatus != SendStatus.SENT
+      )
+    );
   };
 
   onKeydown(event: KeyboardEvent): void {
@@ -189,6 +288,7 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
     let orderedMessages = messages.map((item) => {
       return {
         ...item,
+        sendStatus: item.sendStatus || SendStatus.SENT,
         itemType: ConversationItemType.MESSAGE,
         formattedTime: Utils.formatTime(item.timeCreated),
       } as ContactMessageViewItem;

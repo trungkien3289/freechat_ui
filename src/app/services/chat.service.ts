@@ -11,8 +11,11 @@ import { PhoneNumber } from '../models/phone-number.model';
 import {
   ContactMessage,
   ContactMessageGroup,
+  SendStatus,
 } from '../models/contact-message.model';
 import { ca } from 'date-fns/locale';
+import { Utils } from '../utilities/utils';
+import _ from 'lodash';
 
 @Injectable({
   providedIn: 'root',
@@ -34,6 +37,12 @@ export class ChatService {
     text: string
   ): Promise<any> => {
     try {
+      //TODO: for testing
+
+      // if (Math.random() > 0.5) {
+      //   Utils.delay(2000);
+      //   throw 'Send message error bt network';
+      // }
       const res = await firstValueFrom(
         this.http.post(
           `${this.apiUrl}/api/user/phone/${fromPhoneNumberId}/message`,
@@ -45,8 +54,12 @@ export class ChatService {
       );
 
       return res;
-    } catch (ex) {
-      throw `Send message from ${fromPhoneNumber} error`;
+    } catch (ex: any) {
+      if (!_.isEmpty(ex.error)) {
+        throw ex.error;
+      } else {
+        throw `Send message from ${fromPhoneNumber} error`;
+      }
     }
   };
 
@@ -95,6 +108,7 @@ export class ChatService {
             myStatus: message.myStatus,
             timeCreated: message.timeCreated,
             isOutgoing: message.direction == 'out',
+            sendStatus: SendStatus.SENT,
           } as ContactMessage;
         });
 
