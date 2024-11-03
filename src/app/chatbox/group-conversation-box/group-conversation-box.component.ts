@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { NotificationService } from '../../services/notification.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -18,7 +26,7 @@ import { Utils } from '../../utilities/utils';
   templateUrl: './group-conversation-box.component.html',
   styleUrl: './group-conversation-box.component.scss',
 })
-export class GroupConversationBoxComponent {
+export class GroupConversationBoxComponent implements AfterViewChecked {
   @Output() sendMessageGroupSuccess = new EventEmitter<void>();
   messageViewItems: ContactMessageViewItem[] = [];
   contactGroup!: ContactMessageGroup;
@@ -51,6 +59,7 @@ export class GroupConversationBoxComponent {
       // );
     }
   }
+  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
   listOfTagOptions: string[] = [];
   listOfOption: Array<{ label: string; value: string }> = [];
@@ -64,6 +73,9 @@ export class GroupConversationBoxComponent {
     this.myForm = this._FormBuilder.group({
       textInput: ['', Validators.required],
     });
+  }
+  ngAfterViewChecked(): void {
+    this.scrollToBottom();
   }
 
   formatTime = (dateTime: string) => {
@@ -110,6 +122,8 @@ export class GroupConversationBoxComponent {
     }
 
     this.isLoading = false;
+
+    this.scrollToBottom();
   };
 
   onKeydown(event: KeyboardEvent): void {
@@ -201,4 +215,10 @@ export class GroupConversationBoxComponent {
       );
     }
   };
+
+  private scrollToBottom(): void {
+    if (!this.scrollContainer) return;
+    const container = this.scrollContainer.nativeElement;
+    container.scrollTop = container.scrollHeight;
+  }
 }

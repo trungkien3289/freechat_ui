@@ -56,7 +56,7 @@
     </div>
   </div>
 
-  <div class="message flex-grow-1 p-2" id="conversation">
+  <div class="message flex-grow-1 p-2" id="conversation" #scrollContainer>
     @if(!!messageViewItems && messageViewItems.length > 0){ @for (messageItem of
     messageViewItems; track messageItem) {
     <div class="row message-body py-2">
