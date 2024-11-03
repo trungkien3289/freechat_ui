@@ -57,4 +57,8 @@ export class Utils {
   static removeCountryCode = (phoneNumber: string) => {
     return phoneNumber.substring(1);
   };
+
+  static scrollToBottom(container: any): void {
+    container.scrollTop = container.scrollHeight;
+  }
 }

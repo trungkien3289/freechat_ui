@@ -7,11 +7,13 @@ import { EnvService } from './env.service';
 import { PhoneNumber } from '../models/phone-number.model';
 import { PhoneComunication } from '../models/phone-comunication.model';
 import {
+  ContactMessage,
   ContactMessageGroup,
   ConversationType,
 } from '../models/contact-message.model';
 import { first } from 'lodash';
 import { Utils } from '../utilities/utils';
+import _ from 'lodash';
 
 @Injectable({
   providedIn: 'root',
@@ -54,36 +56,36 @@ export class ResourceService {
   getComunications = async (
     phoneNumber: PhoneNumber
   ): Promise<ContactMessageGroup[]> => {
-    try {
-      let requestBody = {
-        requests: [
-          {
-            queryParams: [
-              { createdSince: '2024-10-10 04:23:36.512952' },
-              { updatedSince: '2024-10-24 04:23:36.467539' },
-            ],
-            contentType: 'application/json',
-            useHTTPS: '1',
-            resource: '/2.0/communications/sync',
-            method: 'GET',
-          },
-        ],
-      };
-      let res: any = (await firstValueFrom(
-        this.http.post(
-          `${this.apiUrl}/api/user/phone/${phoneNumber.id}/request`,
-          requestBody
-        )
-      )) as any;
+    // try {
+    let requestBody = {
+      requests: [
+        {
+          queryParams: [
+            { createdSince: '2024-10-10 04:23:36.512952' },
+            { updatedSince: '2024-10-24 04:23:36.467539' },
+          ],
+          contentType: 'application/json',
+          useHTTPS: '1',
+          resource: '/2.0/communications/sync',
+          method: 'GET',
+        },
+      ],
+    };
+    let res: any = (await firstValueFrom(
+      this.http.post(
+        `${this.apiUrl}/api/user/phone/${phoneNumber.id}/request`,
+        requestBody
+      )
+    )) as any;
 
-      const communicationsRes = JSON.parse(res.result[0].body);
-      let communications = communicationsRes.result
-        .newCommunications as PhoneComunication[];
+    const communicationsRes = JSON.parse(res.result[0].body);
+    let communications = communicationsRes.result
+      .newCommunications as PhoneComunication[];
 
-      return this.groupCommunications(communications, phoneNumber);
-    } catch (ex) {
-      throw 'Get Phone Number info error';
-    }
+    return this.groupCommunications(communications, phoneNumber);
+    // } catch (ex) {
+    //   throw 'Get Phone Number info error';
+    // }
   };
 
   groupCommunications = (
@@ -103,6 +105,7 @@ export class ResourceService {
           .map((recipient) => recipient.TN)
           .sort()
           .join(','); // Create a unique key for 'to' numbers
+
         const key = `${from}|${to}`; // Create a unique key combining 'from' and 'to'
         if (!grouped[key]) {
           currentTime = message.timeCreated;
@@ -140,6 +143,13 @@ export class ResourceService {
           .map((recipient) => recipient.TN)
           .sort()
           .join(',');
+
+        let fromObject = [...message.to].filter(
+          (recipient) => recipient.own == true
+        );
+
+        let toObject = message.from;
+
         const key = `${from}|${to}`; // Create a unique key combining 'from' and 'to'
         if (!grouped[key]) {
           currentTime = message.timeCreated;
@@ -147,8 +157,8 @@ export class ResourceService {
             id: message.id,
             type: message.type,
             direction: message.direction,
-            from: message.from,
-            to: message.to,
+            from: _.first(fromObject),
+            to: [toObject],
             messages: [],
             timeCreated:
               currentTime > message.timeCreated
@@ -193,6 +203,17 @@ export class ResourceService {
               : ConversationType.SINGLE,
         } as ContactMessageGroup;
       })
-      .sort((a, b) => a.conversationType.localeCompare(b.conversationType));
+      .sort((a, b) => {
+        if (a?.messages.length == 0 || b?.messages.length == 0) return 0;
+        return (
+          new Date(
+            (_.last(b.messages) as ContactMessage).timeCreated.split('.')[0]
+          ).getTime() -
+          new Date(
+            (_.last(a.messages) as ContactMessage).timeCreated.split('.')[0]
+          ).getTime()
+        );
+      });
+    // .sort((a, b) => a.conversationType.localeCompare(b.conversationType));
   };
 }

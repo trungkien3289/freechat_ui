@@ -96,7 +96,6 @@ export class GroupConversationBoxComponent {
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
       this.sendMessageGroupSuccess.emit();
-
       this.myForm.reset();
 
       //force fetch messages

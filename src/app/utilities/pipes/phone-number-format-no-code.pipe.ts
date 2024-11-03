@@ -6,14 +6,15 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class PhoneNumberFormatNoCodePipe implements PipeTransform {
   transform(value: string | undefined): string {
     if (!value) return '';
-
-    let phoneWithoutCountryCode = value.substring(1);
-
     // Remove any non-digit characters
-    const cleanedValue = phoneWithoutCountryCode.replace(/\D+/g, '');
+    const cleanedValue = value.replace(/\D+/g, '');
+    let phoneWithoutCountryCode = cleanedValue;
+    if (phoneWithoutCountryCode.length > 10) {
+      phoneWithoutCountryCode = value.substring(1);
+    }
 
     // Format the phone number as (123) 456-7890
-    const formattedValue = cleanedValue.replace(
+    const formattedValue = phoneWithoutCountryCode.replace(
       /(\d{3})(\d{3})(\d{4})/,
       '($1) $2-$3'
     );

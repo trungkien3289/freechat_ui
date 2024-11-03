@@ -131,7 +131,7 @@ export class MainChatboxComponent implements OnInit {
     );
   };
 
-  sendMessageGroupConversationSuccess = () => {
+  sendMessageConversationSuccess = () => {
     if (this.selectedPhoneNumberItem != null) {
       this.reloadContactList(this.selectedPhoneNumberItem);
     }

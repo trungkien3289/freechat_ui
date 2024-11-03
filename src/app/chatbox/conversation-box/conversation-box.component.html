@@ -3,14 +3,11 @@
   <div class="heading d-flex flex-row align-items-center p-3">
     <i class="fa fa-user-circle-o me-3 primary-color fs-2"></i>
     <span class="fs-5 fw-bold flex-grow-1">{{
-      (contactGroup.isOutgoing
-        ? _first(contactGroup?.to)?.TN
-        : contactGroup.from.TN
-      ) | phoneNumberFormatNoCode
+      _first(contactGroup?.to)?.TN | phoneNumberFormatNoCode
     }}</span>
   </div>
 
-  <div class="message flex-grow-1 p-2" id="conversation">
+  <div class="message flex-grow-1 p-2" id="conversation" #scrollContainer>
     @if(!!messageViewItems && messageViewItems.length > 0){ @for (messageItem of
     messageViewItems; track messageItem) {
     <!-- <div class="row message-body py-2">

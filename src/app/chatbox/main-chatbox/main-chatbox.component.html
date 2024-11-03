@@ -25,12 +25,13 @@
       <app-group-conversation-box
         style="height: 100%"
         [contact]="selectedContact"
-        (sendMessageGroupSuccess)="sendMessageGroupConversationSuccess()"
+        (sendMessageGroupSuccess)="sendMessageConversationSuccess()"
       ></app-group-conversation-box>
       }@else {
       <app-conversation-box
         style="height: 100%"
         [contact]="selectedContact"
+        (sendMessageSuccess)="sendMessageConversationSuccess()"
       ></app-conversation-box>
       }
     </div>

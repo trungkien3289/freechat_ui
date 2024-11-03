@@ -1,4 +1,13 @@
-import { Component, Input, OnDestroy } from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {
   ContactMessage,
   ContactMessageGroup,
@@ -11,12 +20,13 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first, last } from 'lodash';
 import { Utils } from '../../utilities/utils';
 
+const INTERVAL_RELOAD_CHATBOX = 5000;
 @Component({
   selector: 'app-conversation-box',
   templateUrl: './conversation-box.component.html',
   styleUrl: './conversation-box.component.scss',
 })
-export class ConversationBoxComponent implements OnDestroy {
+export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
   _last = last;
   _first = first;
   @Input() set contact(contactGroup: ContactMessageGroup | undefined) {
@@ -43,6 +53,8 @@ export class ConversationBoxComponent implements OnDestroy {
       );
     }
   }
+  @Output() sendMessageSuccess = new EventEmitter<void>();
+  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
   messageViewItems: ContactMessageViewItem[] = [];
   contactGroup!: ContactMessageGroup;
@@ -60,6 +72,9 @@ export class ConversationBoxComponent implements OnDestroy {
     this.myForm = this._FormBuilder.group({
       textInput: ['', Validators.required],
     });
+  }
+  ngAfterViewChecked(): void {
+    this.scrollToBottom();
   }
 
   ngOnDestroy(): void {
@@ -81,13 +96,8 @@ export class ConversationBoxComponent implements OnDestroy {
         );
 
         this.messageViewItems = this.mapToMessageViewItems(messages);
-
-        // messages.map((item) => {
-        //   return {
-        //     ...item,
-        //     formattedTime: Utils.formatTime(item.timeCreated),
-        //   } as ContactMessageViewItem;
-        // });
+        this.scrollToBottom();
+        this.sendMessageSuccess.emit();
       } catch (error: any) {
         this.reTryError--;
         console.error(error);
@@ -98,7 +108,7 @@ export class ConversationBoxComponent implements OnDestroy {
       }
 
       this.isLoading = false;
-    }, 10000);
+    }, INTERVAL_RELOAD_CHATBOX);
   };
 
   fetchMessages = async (
@@ -114,6 +124,7 @@ export class ConversationBoxComponent implements OnDestroy {
       );
 
       this.messageViewItems = this.mapToMessageViewItems(messages);
+      this.scrollToBottom();
 
       // messages.map((item) => {
       //   return {
@@ -152,6 +163,8 @@ export class ConversationBoxComponent implements OnDestroy {
           ? this.contactGroup.to[0].TN
           : this.contactGroup.from.TN
       );
+
+      this.sendMessageSuccess.emit();
     } catch (error: any) {
       this._NotificationService.error(error);
     }
@@ -173,21 +186,21 @@ export class ConversationBoxComponent implements OnDestroy {
   mapToMessageViewItems = (
     messages: ContactMessage[]
   ): ContactMessageViewItem[] => {
-    let orderedMessages = messages
-      .map((item) => {
-        return {
-          ...item,
-          itemType: ConversationItemType.MESSAGE,
-          formattedTime: Utils.formatTime(item.timeCreated),
-        } as ContactMessageViewItem;
-      })
-      .sort((a, b) => {
-        return (
-          new Date(a.timeCreated).getTime() - new Date(b.timeCreated).getDate()
-        );
-      });
+    let orderedMessages = messages.map((item) => {
+      return {
+        ...item,
+        itemType: ConversationItemType.MESSAGE,
+        formattedTime: Utils.formatTime(item.timeCreated),
+      } as ContactMessageViewItem;
+    });
+    orderedMessages.sort((a, b) => {
+      return (
+        new Date(a.timeCreated.split('.')[0]).getTime() -
+        new Date(b.timeCreated.split('.')[0]).getTime()
+      );
+    });
 
-    orderedMessages = this.addGroupByDateSeparator([...orderedMessages]);
+    orderedMessages = this.addGroupByDateSeparator(orderedMessages);
 
     return orderedMessages;
   };
@@ -219,4 +232,10 @@ export class ConversationBoxComponent implements OnDestroy {
 
     return result;
   };
+
+  private scrollToBottom(): void {
+    if (!this.scrollContainer) return;
+    const container = this.scrollContainer.nativeElement;
+    container.scrollTop = container.scrollHeight;
+  }
 }
