@@ -21,6 +21,8 @@ import { FormsModule } from '@angular/forms';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { PhoneNumberFormatNoCodePipe } from '../utilities/pipes/phone-number-format-no-code.pipe';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 @NgModule({
   declarations: [
@@ -48,6 +50,8 @@ import { PhoneNumberFormatNoCodePipe } from '../utilities/pipes/phone-number-for
     FormsModule,
     NzEmptyModule,
     NzDividerModule,
+    NzPopconfirmModule,
+    NzToolTipModule,
   ],
 })
 export class ChatboxModule {}

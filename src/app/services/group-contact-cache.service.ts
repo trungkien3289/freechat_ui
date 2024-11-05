@@ -8,6 +8,8 @@ export class GroupContactCacheService {
   groupDic: {
     [key: string]: {
       unSentMessages: ContactMessage[];
+      lastSeen: Date;
+      group: any;
     };
   } = {};
 
@@ -16,10 +18,35 @@ export class GroupContactCacheService {
   cacheGroupUnsentMessage = (groupId: string, messages: ContactMessage[]) => {
     this.groupDic[groupId] = {
       unSentMessages: messages,
+      lastSeen: new Date(),
+      group: null,
     };
   };
 
   getGroupUnsentMessage = (groupId: string): ContactMessage[] => {
     return this.groupDic[groupId]?.unSentMessages || [];
+  };
+
+  getGroupLastSeen = (groupId: string): Date => {
+    return this.groupDic[groupId]?.lastSeen || new Date();
+  };
+
+  getAllGroupCache = () => {
+    return this.groupDic;
+  };
+
+  setLastSeen = (groupId: string, lastSeen: Date, group: any) => {
+    if (this.groupDic[groupId] == null) {
+      this.groupDic[groupId] = {
+        unSentMessages: [],
+        lastSeen: lastSeen,
+        group: group,
+      };
+    } else {
+      this.groupDic[groupId].lastSeen = lastSeen;
+      // this.groupDic[groupId].group = group;
+    }
+
+    console.log('setLastSeen', groupId, lastSeen, this.groupDic);
   };
 }

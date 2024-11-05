@@ -1,5 +1,5 @@
 import { Utils } from './../../utilities/utils';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { PhoneNumber } from '../../models/phone-number.model';
 import { ResourceService } from '../../services/resource.service';
 import { NotificationService } from '../../services/notification.service';
@@ -13,40 +13,112 @@ import {
   NEW_GROUP_CONVERSATION_NAME,
 } from '../../utilities/chatbox.const';
 import { ActivatedRoute } from '@angular/router';
+import { PhoneNumberListComponent } from '../phone-number-list/phone-number-list.component';
+import { GroupContactCacheService } from '../../services/group-contact-cache.service';
+import { from, mergeMap } from 'rxjs';
+
+const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 20000;
 
 @Component({
   selector: 'app-main-chatbox',
   templateUrl: './main-chatbox.component.html',
   styleUrl: './main-chatbox.component.scss',
 })
-export class MainChatboxComponent implements OnInit {
+export class MainChatboxComponent implements OnInit, OnDestroy {
   userId: string = '';
   isLoading: boolean = false;
   selectedPhoneNumberItem?: PhoneNumber;
   selectedContact?: ContactMessageGroup;
   contactMessageGroups: ContactMessageGroup[] = [];
+  newCommingMessageInterval: any;
 
   constructor(
     private _ActivatedRoute: ActivatedRoute,
     private _ResourceService: ResourceService,
     private _NotificationService: NotificationService,
-    private _LocalStorageService: LocalStorageService
-  ) {
-    // this.userId = this._ActivatedRoute.snapshot.paramMap.get('id');
-    // console.log('Received ID:', this.id);
+    private _LocalStorageService: LocalStorageService,
+    private _GroupContactCacheService: GroupContactCacheService
+  ) {}
+  ngOnDestroy(): void {
+    this.stopCheckNewMessageInterval();
   }
+
+  @ViewChild(PhoneNumberListComponent)
+  phoneNumberListComponent!: PhoneNumberListComponent;
+  phoneNumbers: PhoneNumber[] = [];
+  isFirstRoundInterval = true;
 
   ngOnInit(): void {
     this._ActivatedRoute.paramMap.subscribe((params) => {
       this.userId = params.get('id') || '';
       console.log('User ID:', this.userId);
     });
+
+    this.loadData();
   }
+
+  loadData = async () => {
+    await this.loadPhoneNumbers();
+    await this.initAllGroupContactCache(this.phoneNumbers);
+    this.startCheckNewCommingMessageInterval(this.phoneNumbers);
+  };
+
+  loadPhoneNumbers = async (): Promise<PhoneNumber[]> => {
+    this.isLoading = true;
+    try {
+      const items = await this._ResourceService.getPhoneNumbers(this.userId);
+      this.phoneNumbers = items;
+
+      // set the first item as selected
+      if (items.length > 0) {
+        this.selectPhoneNumber(items[0]);
+      }
+
+      return items;
+    } catch (error: any) {
+      // console.error(error);
+      this._NotificationService.error(error);
+    }
+
+    this.isLoading = false;
+    return [];
+  };
+
+  initAllGroupContactCache = async (phoneNumbers: PhoneNumber[]) => {
+    from(phoneNumbers)
+      .pipe(
+        mergeMap((phoneNumber) => this.fetchMessagesSilence(phoneNumber), 3) // Limit to 5 concurrent requests
+      )
+      .subscribe({
+        next: (contactMessageGroups) => {
+          contactMessageGroups.forEach((group) => {
+            this._GroupContactCacheService.setLastSeen(
+              group.id,
+              new Date(),
+              // new Date('2021-10-20'),
+              group
+            );
+          });
+        },
+        error: (err) => console.error('Request failed:', err),
+      });
+    // phoneNumbers.forEach(async (phoneNumber) => {
+    //   let contactMessageGroups = await this.fetchMessagesSilence(phoneNumber);
+    //   contactMessageGroups.forEach((group) => {
+    //     this._GroupContactCacheService.setLastSeen(
+    //       group.id,
+    //       new Date()
+    //       // new Date('2021-10-20')
+    //     );
+    //   });
+    // });
+  };
 
   selectPhoneNumber = async (phoneNumber: PhoneNumber) => {
     console.log('Phone number is selected', phoneNumber.phoneNumber);
     this.selectedPhoneNumberItem = phoneNumber;
-    this.reloadContactList(phoneNumber);
+    await this.reloadContactList(phoneNumber);
+    this.selectContactItem(this.contactMessageGroups[0]);
   };
 
   reloadContactList = async (phoneNumber: PhoneNumber) => {
@@ -74,16 +146,12 @@ export class MainChatboxComponent implements OnInit {
       const contactMessageGroups = await this._ResourceService.getComunications(
         phoneNumber
       );
+
       this.isLoading = false;
       return contactMessageGroups;
-
-      // set the first item as selected
-      // if (this.contactMessageGroups.length > 0) {
-      //   this.selectItem(this.contactMessageGroups[0]);
-      // }
     } catch (error: any) {
-      console.error(error);
-      this._NotificationService.error(error);
+      // console.error(error);
+      this._NotificationService.error(error.error);
       this.isLoading = false;
     }
 
@@ -134,6 +202,78 @@ export class MainChatboxComponent implements OnInit {
   sendMessageConversationSuccess = () => {
     if (this.selectedPhoneNumberItem != null) {
       this.reloadContactList(this.selectedPhoneNumberItem);
+    }
+  };
+
+  startCheckNewCommingMessageInterval = (phoneNumberList: PhoneNumber[]) => {
+    this.newCommingMessageInterval = setInterval(async () => {
+      phoneNumberList.forEach(async (phoneNumber) => {
+        let contactMessageGroups = await this.fetchMessagesSilence(phoneNumber);
+
+        if (this.phoneNumberListComponent) {
+          let newMessageCount = contactMessageGroups.reduce(
+            (countNewMessage, group) => {
+              return (
+                countNewMessage +
+                group.messages.filter(
+                  (message) => message.myStatus === 'UNREAD'
+                ).length
+              );
+            },
+            0
+          );
+          this.phoneNumberListComponent.updateNewMessageComming(
+            phoneNumber.id,
+            newMessageCount
+          );
+        }
+      });
+    }, CHECK_NEW_COMMING_MESSAGE_INTERVAL);
+  };
+
+  fetchMessagesSilence = async (
+    phoneNumber: PhoneNumber
+  ): Promise<ContactMessageGroup[]> => {
+    try {
+      const contactMessageGroups = await this._ResourceService.getComunications(
+        phoneNumber
+      );
+
+      return contactMessageGroups;
+    } catch (error: any) {
+      // console.error(error);
+      // handle 'Reauthorize and try again' error
+      if (error.error.trim('\n') == 'Reauthorize and try again') {
+        this.setPhoneNumberAsUnAuthorized(phoneNumber);
+      }
+    }
+
+    return [];
+  };
+
+  stopCheckNewMessageInterval = () => {
+    clearInterval(this.newCommingMessageInterval);
+  };
+
+  setPhoneNumberAsUnAuthorized = (phoneNumber: PhoneNumber) => {
+    phoneNumber.unAuthorized = true;
+    // call api to set phone number as unAuthorized
+    this._ResourceService.expirePhoneNumber(phoneNumber);
+  };
+
+  replacePhoneNumberSuccess = (data: {
+    oldPhoneId: string;
+    newPhoneNumber: PhoneNumber;
+  }) => {
+    const found = this.phoneNumbers.find((p) => p.id === data.oldPhoneId);
+    if (found) {
+      found.phoneNumber = data.newPhoneNumber.phoneNumber;
+      found.name = data.newPhoneNumber.name;
+      found.id = data.newPhoneNumber.id;
+      found.unAuthorized = false;
+      found.newMessageCount = 0;
+      //TODO need handle more action like reload list contact of new phone number
+      this.selectPhoneNumber(found);
     }
   };
 }

@@ -26,15 +26,44 @@
     </div>
   </div>
   <div class="d-flex flex-column flex-grow-1 mt-2 list-container px-2">
-    @for (phoneNumber of filteredPhones$ | async; track phoneNumber) {
+    @for (phoneNumber of filteredPhones$ | async; track phoneNumber.id) {
     <div
       class="d-flex flex-row hover-list-item cursor-pointer px-2 flex-grow-1"
       (click)="selectPhoneNumber(phoneNumber)"
-      [class.selected-item]="selectedItem?.id == phoneNumber.id"
+      [class.selected-item]="selectedPhoneNumberId == phoneNumber.id"
     >
-      <div class="d-flex flex-row align-items-center fs-lg px-1">
-        <i class="fa fa-phone me-2 primary-color"></i>
-        <span class="text-truncate"> {{ phoneNumber.name }}</span>
+      <div
+        class="d-flex flex-row align-items-center justify-content-between fs-lg px-1 w-100"
+      >
+        <div class="d-flex flex-row align-items-center flex-grow-1">
+          <i class="fa fa-phone me-2 primary-color"></i>
+          <span
+            class="text-truncate flex-grow-1"
+            [class.fw-bold]="phoneNumber.newMessageCount > 0"
+          >
+            {{ phoneNumber.name }}
+          </span>
+        </div>
+        @if(phoneNumber.newMessageCount > 0) {
+        <span class="badge bg-danger">{{ phoneNumber.newMessageCount }}</span>
+        } @if(phoneNumber.unAuthorized) {
+        <i
+          class="fa fa-exclamation-triangle text-warning"
+          aria-hidden="true"
+          nz-tooltip
+          nzTooltipTitle="Phone number is expired"
+        ></i>
+        <button
+          nz-popconfirm
+          nzPopconfirmTitle="Do you want to replace this phone number?"
+          (nzOnConfirm)="repacePhoneNumber(phoneNumber)"
+          nzPopconfirmPlacement="right"
+          nz-button
+          nzType="text"
+        >
+          Replace
+        </button>
+        }
       </div>
     </div>
     } @if (phoneNumbers.length === 0) {

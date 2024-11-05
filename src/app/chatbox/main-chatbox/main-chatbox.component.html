@@ -4,15 +4,22 @@
       <div style="min-width: 300px" class="h-100">
         <app-phone-number-list
           [userId]="userId"
+          [selectedPhoneNumberId]="selectedPhoneNumberItem?.id"
+          [phoneNumbers]="phoneNumbers"
           (onSelectItem)="selectPhoneNumber($event)"
+          (replacePhoneNumberSuccess)="replacePhoneNumberSuccess($event)"
         ></app-phone-number-list>
       </div>
     </div>
 
     <div class="col-md-3 bg-white border-end h-100 contact-panel">
-      <div style="min-width: 300px" class="h-100">
+      <div
+        style="min-width: 300px"
+        class="h-100"
+        *ngIf="selectedContact != null"
+      >
         <app-contact-list
-          [selectedContactId]="selectedContact?.id"
+          [selectedContactId]="selectedContact.id"
           [phoneNumber]="selectedPhoneNumberItem"
           [contactMessageGroups]="contactMessageGroups"
           (onSelectItem)="selectContactItem($event)"

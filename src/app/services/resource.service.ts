@@ -5,7 +5,10 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../environment';
 import { EnvService } from './env.service';
 import { PhoneNumber } from '../models/phone-number.model';
-import { PhoneComunication } from '../models/phone-comunication.model';
+import {
+  PhoneComunication,
+  PhoneComunicationType,
+} from '../models/phone-comunication.model';
 import {
   ContactMessage,
   ContactMessageGroup,
@@ -14,6 +17,7 @@ import {
 } from '../models/contact-message.model';
 import { Utils } from '../utilities/utils';
 import _ from 'lodash';
+import { GroupContactCacheService } from './group-contact-cache.service';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +28,8 @@ export class ResourceService {
   constructor(
     private http: HttpClient,
     public jwtHelper: JwtHelperService,
-    private _EnvService: EnvService
+    private _EnvService: EnvService,
+    private _GroupContactCacheService: GroupContactCacheService
   ) {
     this.apiUrl = _EnvService.apiUrl;
   }
@@ -44,6 +49,8 @@ export class ResourceService {
           name: Utils.formatPhoneNumberName(
             Utils.removeCountryCode(item.phoneNumber)
           ),
+          newMessageCount: 0,
+          unAuthorized: false,
         };
       });
 
@@ -82,6 +89,11 @@ export class ResourceService {
     let communications = communicationsRes.result
       .newCommunications as PhoneComunication[];
 
+    //TODO: Now just filter only messages
+    communications = communications.filter(
+      (item) => item.type == PhoneComunicationType.MESSAGE
+    );
+
     return this.groupCommunications(communications, phoneNumber);
     // } catch (ex) {
     //   throw 'Get Phone Number info error';
@@ -92,6 +104,7 @@ export class ResourceService {
     communications: PhoneComunication[],
     currentPhone: PhoneNumber
   ): ContactMessageGroup[] => {
+    const groupCacheDict = this._GroupContactCacheService.getAllGroupCache();
     const grouped: any = {};
     let currentTime;
 
@@ -127,7 +140,7 @@ export class ResourceService {
           text: message.text,
           id: message.id,
           myStatus: message.myStatus,
-          timeCreated: message.timeCreated,
+          timeCreated: Utils.convertDateStringToLocalTime(message.timeCreated),
           direction: 'out',
           isOutgoing: true,
           sendStatus: SendStatus.SENT,
@@ -171,7 +184,7 @@ export class ResourceService {
           text: message.text,
           id: message.id,
           myStatus: message.myStatus,
-          timeCreated: message.timeCreated,
+          timeCreated: Utils.convertDateStringToLocalTime(message.timeCreated),
           direction: 'in',
           isOutgoing: false,
           sendStatus: SendStatus.SENT,
@@ -186,6 +199,22 @@ export class ResourceService {
         const t = [...group.to, group.from].filter(
           (recipient) => !recipient.own
         );
+
+        // update message read status base on last seen of group
+        const lastSeen: Date = this._GroupContactCacheService.getGroupLastSeen(
+          group.id
+        );
+
+        group.messages = group.messages.map((mess: ContactMessage) => {
+          return {
+            ...mess,
+            myStatus:
+              lastSeen && new Date(mess.timeCreated) > lastSeen
+                ? 'UNREAD'
+                : 'READ',
+          };
+        });
+
         return {
           id: group.id,
           name: t
@@ -217,5 +246,37 @@ export class ResourceService {
         );
       });
     // .sort((a, b) => a.conversationType.localeCompare(b.conversationType));
+  };
+
+  replacePhoneNumber = async (
+    phoneNumber: PhoneNumber
+  ): Promise<PhoneNumber> => {
+    try {
+      let res: any = (await firstValueFrom(
+        this.http.post(`${this.apiUrl}/api/user/phone/replace`, {
+          phoneId: phoneNumber.id,
+        })
+      )) as any;
+
+      return res.newPhoneNumber;
+    } catch (ex) {
+      throw 'Replace phone number error';
+    }
+  };
+
+  expirePhoneNumber = async (
+    phoneNumber: PhoneNumber
+  ): Promise<PhoneNumber> => {
+    try {
+      let res: any = (await firstValueFrom(
+        this.http.post(`${this.apiUrl}/api/pinger/expire/${phoneNumber.id}`, {
+          isExpired: true,
+        })
+      )) as any;
+
+      return res.newPhoneNumber;
+    } catch (ex) {
+      throw 'Expire phone number error';
+    }
   };
 }

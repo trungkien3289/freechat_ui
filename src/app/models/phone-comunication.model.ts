@@ -1,5 +1,5 @@
 export type PhoneComunication = {
-  type: string;
+  type: PhoneComunicationType;
   direction: string;
   from: PhoneShortSummary;
   to: PhoneShortSummary[];
@@ -8,6 +8,11 @@ export type PhoneComunication = {
   myStatus: string;
   timeCreated: string;
 };
+
+export enum PhoneComunicationType {
+  CALL = 'call',
+  MESSAGE = 'message',
+}
 
 export type PhoneShortSummary = {
   TN: string;

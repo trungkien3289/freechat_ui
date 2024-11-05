@@ -37,6 +37,11 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
     if (!!contactGroup) {
       this.resetChatBox();
       this.contactGroup = contactGroup;
+      this._GroupContactCacheService.setLastSeen(
+        contactGroup.id,
+        new Date(),
+        contactGroup
+      );
       let updatedMessages = [
         ...contactGroup.messages,
         ...this._GroupContactCacheService.getGroupUnsentMessage(
@@ -53,7 +58,8 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
           [...this.contactGroup.to, this.contactGroup.from].filter(
             (n) => !n.own
           )
-        )?.TN || ''
+        )?.TN || '',
+        contactGroup.id
       );
     }
   }
@@ -90,15 +96,22 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
   startFetchMessageInterval = (
     fromPhoneNumberId: string,
     fromPhoneNumber: string,
-    toPhoneNumber: string
+    toPhoneNumber: string,
+    groupId: string
   ) => {
     this.fetchMessageInterval = setInterval(async () => {
+      this._GroupContactCacheService.setLastSeen(
+        this.contactGroup.id,
+        new Date(),
+        this.contactGroup
+      );
       try {
         this.isLoading = true;
         let messages = await this._ChatService.fetchMessages(
           fromPhoneNumberId,
           fromPhoneNumber,
-          toPhoneNumber
+          toPhoneNumber,
+          groupId
         );
         let notSendMessages =
           this._GroupContactCacheService.getGroupUnsentMessage(
@@ -112,7 +125,7 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
         this.scrollToBottom();
         if (this.isFirstLoad) {
           this.isFirstLoad = false;
-          this.sendMessageSuccess.emit();
+          // this.sendMessageSuccess.emit();
         }
       } catch (error: any) {
         this.reTryError--;
@@ -134,13 +147,15 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
   fetchMessages = async (
     fromPhoneNumberId: string,
     fromPhoneNumber: string,
-    toPhoneNumber: string
+    toPhoneNumber: string,
+    groupId: string
   ) => {
     try {
       let messages = await this._ChatService.fetchMessages(
         fromPhoneNumberId,
         fromPhoneNumber,
-        toPhoneNumber
+        toPhoneNumber,
+        groupId
       );
 
       let notSendMessages =
@@ -194,7 +209,8 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
         this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.isOutgoing
           ? this.contactGroup.to[0].TN
-          : this.contactGroup.from.TN
+          : this.contactGroup.from.TN,
+        this.contactGroup.id
       );
     } catch (error: any) {
       this._NotificationService.error(error);
@@ -208,7 +224,8 @@ export class ConversationBoxComponent implements OnDestroy, AfterViewChecked {
       this.contactGroup.currentPhoneNumber.phoneNumber,
       this._first(
         [...this.contactGroup.to, this.contactGroup.from].filter((n) => !n.own)
-      )?.TN || ''
+      )?.TN || '',
+      this.contactGroup.id
     );
   }, 200);
 

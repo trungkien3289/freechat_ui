@@ -4,6 +4,7 @@ import { JwtHelperService } from '@auth0/angular-jwt';
 import { EnvService } from './env.service';
 import {
   PhoneComunication,
+  PhoneComunicationType,
   PhoneShortSummary,
 } from '../models/phone-comunication.model';
 import { firstValueFrom, Observable } from 'rxjs';
@@ -16,6 +17,7 @@ import {
 import { ca } from 'date-fns/locale';
 import { Utils } from '../utilities/utils';
 import _ from 'lodash';
+import { GroupContactCacheService } from './group-contact-cache.service';
 
 @Injectable({
   providedIn: 'root',
@@ -25,7 +27,8 @@ export class ChatService {
   constructor(
     private http: HttpClient,
     public jwtHelper: JwtHelperService,
-    private _EnvService: EnvService
+    private _EnvService: EnvService,
+    private _GroupContactCacheService: GroupContactCacheService
   ) {
     this.apiUrl = _EnvService.apiUrl;
   }
@@ -66,7 +69,8 @@ export class ChatService {
   fetchMessages = async (
     fromPhoneNumberId: string,
     fromPhoneNumber: string,
-    toPhoneNumber: string
+    toPhoneNumber: string,
+    groupId: string
   ): Promise<ContactMessage[]> => {
     try {
       let requestBody = {
@@ -94,6 +98,14 @@ export class ChatService {
       let communications = communicationsRes.result
         .newCommunications as PhoneComunication[];
 
+      communications = communications.filter(
+        (item) => item.type === PhoneComunicationType.MESSAGE
+      );
+
+      // update message read status base on last seen of group
+      const lastSeen: Date =
+        this._GroupContactCacheService.getGroupLastSeen(groupId);
+
       let messages = communications
         .filter((item) => {
           return [...item.to, item.from]
@@ -101,12 +113,22 @@ export class ChatService {
             .some((to) => to.TN === toPhoneNumber);
         })
         .map((message) => {
+          let updateTimeCreatedMessage = Utils.convertDateStringToLocalTime(
+            message.timeCreated
+          );
           return {
             direction: message.direction,
             text: message.text,
             id: message.id,
-            myStatus: message.myStatus,
-            timeCreated: message.timeCreated,
+            // myStatus:
+            //   lastSeen && new Date(message.timeCreated) > lastSeen
+            //     ? 'UNREAD'
+            //     : 'READ',
+            myStatus:
+              lastSeen && new Date(updateTimeCreatedMessage) > lastSeen
+                ? 'UNREAD'
+                : 'READ',
+            timeCreated: updateTimeCreatedMessage,
             isOutgoing: message.direction == 'out',
             sendStatus: SendStatus.SENT,
           } as ContactMessage;

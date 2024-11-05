@@ -65,4 +65,12 @@ export class Utils {
   static delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+
+  // Convert date string utc to local time
+  static convertDateStringToLocalTime = (dateString: string): string => {
+    let localTimeOffset = new Date().getTimezoneOffset() * 60000;
+    return new Date(
+      new Date(dateString).getTime() - localTimeOffset
+    ).toString();
+  };
 }

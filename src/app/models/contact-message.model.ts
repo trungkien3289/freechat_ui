@@ -23,12 +23,17 @@ export enum ConversationType {
 export type ContactMessage = {
   text: string;
   id: string;
-  myStatus: string;
+  myStatus: ReadStatus;
   timeCreated: string;
   direction: string;
   isOutgoing: boolean;
   sendStatus: SendStatus;
 };
+
+export enum ReadStatus {
+  READ = 'READ',
+  UNREAD = 'UNREAD',
+}
 
 export enum SendStatus {
   SENDING = 'sending',

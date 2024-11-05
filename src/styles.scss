@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 // @import "../node_modules/ng-zorro-antd/ng-zorro-antd.less";
+@import "./assets/styles/custom-scroll.scss";
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
     "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji",
@@ -32,22 +33,4 @@ input:focus {
   color: #3498db;
 }
 
-/* width */
-::-webkit-scrollbar {
-  width: 5px;
-}
 
-/* Track */
-::-webkit-scrollbar-track {
-  background: #eee;
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: #9bbfcf62;
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: #8b8b8b;
-}
