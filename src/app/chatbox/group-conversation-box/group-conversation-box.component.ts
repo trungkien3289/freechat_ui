@@ -1,9 +1,11 @@
 import {
   AfterViewChecked,
+  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
   Input,
+  OnDestroy,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -14,21 +16,30 @@ import {
   ContactMessage,
   ContactMessageGroup,
   ContactMessageViewItem,
+  ConversationItemType,
   SendStatus,
 } from '../../models/contact-message.model';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { v4 as uuidv4 } from 'uuid';
 import { NEW_GROUP_CONVERSATION_ID } from '../../utilities/chatbox.const';
 import { Utils } from '../../utilities/utils';
-import { debounce } from 'lodash';
+import { debounce, get } from 'lodash';
+import { NzUploadFile, NzUploadXHRArgs } from 'ng-zorro-antd/upload';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { FileService } from '../../services/file.service';
+import { AudioRecordingService } from '../../services/audio-recording.service';
+
+const INTERVAL_RELOAD_CHATBOX = 10000;
+const MAX_RECORDING_SECONDS = 60;
 
 @Component({
   selector: 'app-group-conversation-box',
   templateUrl: './group-conversation-box.component.html',
   styleUrl: './group-conversation-box.component.scss',
 })
-export class GroupConversationBoxComponent implements AfterViewChecked {
-  @Output() sendMessageGroupSuccess = new EventEmitter<void>();
+export class GroupConversationBoxComponent
+  implements OnDestroy, AfterViewChecked, AfterViewInit
+{
   messageViewItems: ContactMessageViewItem[] = [];
   contactGroup!: ContactMessageGroup;
   isLoading: boolean = false;
@@ -36,6 +47,21 @@ export class GroupConversationBoxComponent implements AfterViewChecked {
   reTryError: number = 10;
   myForm: FormGroup;
   isNewGroupConversation: boolean = false;
+
+  // upload images
+  fileList: NzUploadFile[] = [];
+  previewImage: string | undefined = '';
+  previewVisible = false;
+
+  // audio recording
+  isRecording = false;
+  recordedTime: string = '';
+  recordingPercentage: number = 0;
+  blobUrl: SafeUrl | undefined;
+  teste: any;
+
+  @ViewChild('uploadComponent', { static: false }) uploadComponent!: any;
+  fileInput: HTMLInputElement | null = null;
 
   @Input() set contact(contactGroup: ContactMessageGroup | undefined) {
     if (!!contactGroup) {
@@ -55,6 +81,7 @@ export class GroupConversationBoxComponent implements AfterViewChecked {
     }
   }
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
+  @Output() sendMessageGroupSuccess = new EventEmitter<void>();
 
   listOfTagOptions: string[] = [];
   listOfOption: Array<{ label: string; value: string }> = [];
@@ -63,14 +90,43 @@ export class GroupConversationBoxComponent implements AfterViewChecked {
     private _ChatService: ChatService,
     private _NotificationService: NotificationService,
     private _FormBuilder: FormBuilder,
-    private _LocalStorageService: LocalStorageService
+    private _LocalStorageService: LocalStorageService,
+    private _FileService: FileService,
+    private _AudioRecordingService: AudioRecordingService,
+    private sanitizer: DomSanitizer
   ) {
     this.myForm = this._FormBuilder.group({
       textInput: ['', Validators.required],
     });
+
+    this._AudioRecordingService
+      .recordingFailed()
+      .subscribe(() => (this.isRecording = false));
+    this._AudioRecordingService.getRecordedTime().subscribe((data) => {
+      this.recordedTime = data.timeString;
+      this.recordingPercentage = Math.round(
+        (data.durationSeconds / MAX_RECORDING_SECONDS) * 100
+      );
+    });
+    this._AudioRecordingService.getRecordedBlob().subscribe((data) => {
+      this.teste = data;
+      this.blobUrl = this.sanitizer.bypassSecurityTrustUrl(
+        URL.createObjectURL(data.blob)
+      );
+    });
   }
+
+  ngAfterViewInit(): void {
+    // Access the native file input element within the nz-upload component
+    this.fileInput = this.uploadComponent?.uploadComp?.file?.nativeElement;
+  }
+
   ngAfterViewChecked(): void {
     this.scrollToBottom();
+  }
+
+  ngOnDestroy(): void {
+    this.resetChatBox();
   }
 
   formatTime = (dateTime: string) => {
@@ -83,18 +139,88 @@ export class GroupConversationBoxComponent implements AfterViewChecked {
     this.messageViewItems = [];
     this.reTryError = 10;
     this.myForm.reset();
+    this.fileList = [];
+    this.abortRecording();
   };
 
   sendMessageBtnClick = () => {
     this.debouncedSubmit();
   };
 
+  resetUploadImage = () => {
+    this.fileList = [];
+    this.previewImage = '';
+    this.previewVisible = false;
+  };
+
   debouncedSubmit = debounce(async () => {
-    if (!this.myForm.valid) return;
+    if (this.isRecording) return;
 
     this.isLoading = true;
+    // If have images upload
+    if (this.fileList.length > 0) {
+      let uploadFilesRequests = this.fileList.map((file) => {
+        return this.sendImageMessage(file.response);
+      });
+
+      this.fileList = [];
+
+      await Promise.allSettled(uploadFilesRequests);
+    }
+
+    if (this.myForm.valid) {
+      await this.sendTextMessage(this.myForm.value.textInput);
+    }
+
+    this.sendMessageGroupSuccess.emit();
+
+    this.isLoading = false;
+    this.scrollToBottom();
+  }, 200);
+
+  sendAudioMessageClick = async () => {
+    console.log('send audio message');
+    await this.stopRecording();
+    if (this.blobUrl) {
+      await this.sendAudioMessage(
+        this.blobUrl,
+        this.teste.blob,
+        this.teste.title
+      );
+    }
+
+    this.abortRecording();
+  };
+
+  //#region Send text | image | audio message
+  sendImageMessage = async (imageUrl: string) => {
     let newMessage: ContactMessage = this.addMessageToGroup(
-      this.myForm.value.textInput
+      '',
+      ConversationItemType.IMAGE,
+      { image: imageUrl }
+    );
+
+    try {
+      await this._ChatService.sendImage(
+        this.contactGroup.currentPhoneNumber.id,
+        this.contactGroup.from.TN,
+        this.contactGroup.to,
+        imageUrl
+      );
+
+      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+    } catch (error: any) {
+      this._NotificationService.error(error);
+      this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+    }
+
+    this.resetUploadImage();
+  };
+
+  sendTextMessage = async (message: string) => {
+    let newMessage: ContactMessage = this.addMessageToGroup(
+      message,
+      ConversationItemType.MESSAGE
     );
 
     this.myForm.reset();
@@ -108,22 +234,53 @@ export class GroupConversationBoxComponent implements AfterViewChecked {
       );
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
-      this.sendMessageGroupSuccess.emit();
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
     }
+  };
 
-    this.isLoading = false;
-    this.scrollToBottom();
-  }, 200);
+  sendAudioMessage = async (
+    audioUrl: SafeUrl,
+    audioBlob: Blob,
+    audioFileName: string
+  ) => {
+    let newMessage: ContactMessage = this.addMessageToGroup(
+      '',
+      ConversationItemType.AUDIO,
+      { audio: audioUrl as string }
+    );
+
+    try {
+      const audioFile = new File([audioBlob], audioFileName, {
+        type: audioBlob.type,
+      });
+      const uploadRes = await this._FileService.upload(
+        audioFile,
+        audioFileName,
+        ConversationItemType.AUDIO
+      );
+
+      await this._ChatService.sendAudio(
+        this.contactGroup.currentPhoneNumber.id,
+        this.contactGroup.from.TN,
+        this.contactGroup.to,
+        get(uploadRes, 'result.variants[0]', '')
+      );
+
+      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+    } catch (error: any) {
+      this._NotificationService.error(error);
+      this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+    }
+  };
+
+  //#endregion
 
   onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      if (this.myForm.valid) {
-        this.sendMessageBtnClick();
-      }
+      this.sendMessageBtnClick();
     }
   }
 
@@ -146,7 +303,11 @@ export class GroupConversationBoxComponent implements AfterViewChecked {
     }
   };
 
-  addMessageToGroup = (message: string): ContactMessage => {
+  addMessageToGroup = (
+    message: string,
+    itemType: ConversationItemType,
+    media?: { image?: string; audio?: string }
+  ): ContactMessage => {
     let newMessage = {
       id: uuidv4(),
       myStatus: 'READ',
@@ -155,6 +316,8 @@ export class GroupConversationBoxComponent implements AfterViewChecked {
       isOutgoing: true,
       text: message,
       sendStatus: SendStatus.SENDING,
+      itemType: itemType,
+      media: media,
     } as ContactMessage;
     this.contactGroup.messages.push(newMessage);
     if (this.isNewGroupConversation) {
@@ -213,4 +376,88 @@ export class GroupConversationBoxComponent implements AfterViewChecked {
     const container = this.scrollContainer.nativeElement;
     container.scrollTop = container.scrollHeight;
   }
+
+  //#region Upload image
+
+  handlePreview = async (file: NzUploadFile): Promise<void> => {
+    if (!file.url && !file['preview']) {
+      file['preview'] = await Utils.getBase64(file.originFileObj!);
+    }
+    this.previewImage = file.url || file['preview'];
+    this.previewVisible = true;
+  };
+
+  triggerUploadDialog() {
+    // Programmatically open the file upload dialog
+    if (this.fileInput) {
+      this.fileInput.click();
+    }
+  }
+
+  customRequestUploadImage = (item: NzUploadXHRArgs): any => {
+    this._FileService
+      .upload(
+        item.file as any,
+        item.file.filename as string,
+        ConversationItemType.IMAGE
+      )
+      .then(
+        (res) => {
+          let fileUrl = get(res, 'result.variants[0]', null);
+          if (fileUrl) {
+            item.onError!(null, item.file);
+          }
+
+          item.onSuccess!(fileUrl, item.file, null);
+        },
+        (error) => {
+          item.onError!(null, item.file);
+        }
+      );
+  };
+
+  //#endregion
+
+  //#region Audio recording
+  startRecording() {
+    if (!this.isRecording) {
+      this.isRecording = true;
+      this._AudioRecordingService.startRecording();
+    }
+  }
+
+  abortRecording() {
+    if (this.isRecording) {
+      this.isRecording = false;
+      this._AudioRecordingService.abortRecording();
+    }
+
+    this.clearRecordedData();
+  }
+
+  stopRecording = async () => {
+    if (this.isRecording) {
+      await this._AudioRecordingService.stopRecording();
+      this.isRecording = false;
+    }
+  };
+
+  clearRecordedData() {
+    this.blobUrl = '';
+    this.isRecording = false;
+    this.recordedTime = '';
+    this.recordingPercentage = 0;
+    this.blobUrl = undefined;
+    this.teste = null;
+  }
+
+  download(): void {
+    const url = window.URL.createObjectURL(this.teste.blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = this.teste.title;
+    link.click();
+  }
+
+  //#endregion
 }

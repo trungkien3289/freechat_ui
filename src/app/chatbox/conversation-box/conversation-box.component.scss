@@ -41,12 +41,14 @@
 
 .message-main-receiver {
   max-width: 60%;
+  width: auto;
 }
 
 .message-main-sender {
   padding: 3px 20px !important;
   margin-left: 40% !important;
   max-width: 60%;
+  width: auto;
 }
 
 .message-text {
@@ -68,7 +70,7 @@
 
 .receiver {
   width: auto !important;
-  padding: 4px 10px 7px !important;
+  padding: 7px 10px 7px !important;
   border-radius: 10px 10px 10px 0;
   background: #ffffff;
   font-size: 12px;
@@ -78,11 +80,10 @@
 }
 
 .sender {
-  float: right;
   width: auto !important;
   background: #dcf8c6;
   border-radius: 10px 10px 0 10px;
-  padding: 4px 10px 7px !important;
+  padding: 7px 10px 7px !important;
   font-size: 12px;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
   display: inline-block;
@@ -92,7 +93,7 @@
 /*Reply*/
 
 .reply {
-  height: 60px;
+  // height: 60px;
   width: 100%;
   background-color: #f5f1ee;
   padding: 10px 5px 10px 5px !important;
@@ -154,4 +155,20 @@
   border-radius: 50%;
   overflow: hidden;
   transition: transform 0.3s ease;
+}
+
+.border-round {
+  border-radius: 15px;
+}
+
+::ng-deep .ant-upload-list-picture-card {
+  display: inline-block !important;
+}
+
+.recording-panel {
+  background-color: #ccc;
+}
+
+.hide-element {
+  height: 0;
 }

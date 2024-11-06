@@ -7,6 +7,7 @@ export type PhoneComunication = {
   id: string;
   myStatus: string;
   timeCreated: string;
+  media?: { image?: string; audio?: string };
 };
 
 export enum PhoneComunicationType {

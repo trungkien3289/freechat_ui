@@ -12,12 +12,14 @@ import {
 import {
   ContactMessage,
   ContactMessageGroup,
+  ConversationItemType,
   ConversationType,
   SendStatus,
 } from '../models/contact-message.model';
 import { Utils } from '../utilities/utils';
 import _ from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
+import { ChatBoxUtils } from '../utilities/chatbox-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -144,6 +146,8 @@ export class ResourceService {
           direction: 'out',
           isOutgoing: true,
           sendStatus: SendStatus.SENT,
+          media: message.media,
+          itemType: ChatBoxUtils.getMessageItemType(message),
         });
       }
     }
@@ -188,6 +192,8 @@ export class ResourceService {
           direction: 'in',
           isOutgoing: false,
           sendStatus: SendStatus.SENT,
+          itemType: ChatBoxUtils.getMessageItemType(message),
+          media: message.media,
         });
       }
     }

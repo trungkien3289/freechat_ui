@@ -18,6 +18,7 @@ import { ca } from 'date-fns/locale';
 import { Utils } from '../utilities/utils';
 import _ from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
+import { ChatBoxUtils } from '../utilities/chatbox-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -62,6 +63,60 @@ export class ChatService {
         throw ex.error;
       } else {
         throw `Send message from ${fromPhoneNumber} error`;
+      }
+    }
+  };
+
+  sendImage = async (
+    fromPhoneNumberId: string,
+    fromPhoneNumber: string,
+    to: PhoneShortSummary[],
+    imageUrl: string
+  ) => {
+    try {
+      const res = await firstValueFrom(
+        this.http.post(
+          `${this.apiUrl}/api/user/phone/${fromPhoneNumberId}/message`,
+          {
+            media: { image: imageUrl },
+            to,
+          }
+        )
+      );
+
+      return res;
+    } catch (ex: any) {
+      if (!_.isEmpty(ex.error)) {
+        throw ex.error;
+      } else {
+        throw `Send image from ${fromPhoneNumber} error`;
+      }
+    }
+  };
+
+  sendAudio = async (
+    fromPhoneNumberId: string,
+    fromPhoneNumber: string,
+    to: PhoneShortSummary[],
+    audioUrl: string
+  ) => {
+    try {
+      const res = await firstValueFrom(
+        this.http.post(
+          `${this.apiUrl}/api/user/phone/${fromPhoneNumberId}/message`,
+          {
+            media: { audio: audioUrl },
+            to,
+          }
+        )
+      );
+
+      return res;
+    } catch (ex: any) {
+      if (!_.isEmpty(ex.error)) {
+        throw ex.error;
+      } else {
+        throw `Send image from ${fromPhoneNumber} error`;
       }
     }
   };
@@ -131,6 +186,8 @@ export class ChatService {
             timeCreated: updateTimeCreatedMessage,
             isOutgoing: message.direction == 'out',
             sendStatus: SendStatus.SENT,
+            media: message.media,
+            itemType: ChatBoxUtils.getMessageItemType(message),
           } as ContactMessage;
         });
 

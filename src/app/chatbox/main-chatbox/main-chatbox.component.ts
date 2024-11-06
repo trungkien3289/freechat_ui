@@ -17,7 +17,7 @@ import { PhoneNumberListComponent } from '../phone-number-list/phone-number-list
 import { GroupContactCacheService } from '../../services/group-contact-cache.service';
 import { from, mergeMap } from 'rxjs';
 
-const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 20000;
+const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 30000;
 
 @Component({
   selector: 'app-main-chatbox',
@@ -102,16 +102,6 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
         },
         error: (err) => console.error('Request failed:', err),
       });
-    // phoneNumbers.forEach(async (phoneNumber) => {
-    //   let contactMessageGroups = await this.fetchMessagesSilence(phoneNumber);
-    //   contactMessageGroups.forEach((group) => {
-    //     this._GroupContactCacheService.setLastSeen(
-    //       group.id,
-    //       new Date()
-    //       // new Date('2021-10-20')
-    //     );
-    //   });
-    // });
   };
 
   selectPhoneNumber = async (phoneNumber: PhoneNumber) => {

@@ -23,6 +23,11 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { PhoneNumberFormatNoCodePipe } from '../utilities/pipes/phone-number-format-no-code.pipe';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzUploadModule } from 'ng-zorro-antd/upload';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzImageModule } from 'ng-zorro-antd/image';
+import { NzProgressModule } from 'ng-zorro-antd/progress';
+import { AudioRecordingService } from '../services/audio-recording.service';
 
 @NgModule({
   declarations: [
@@ -52,6 +57,11 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
     NzDividerModule,
     NzPopconfirmModule,
     NzToolTipModule,
+    NzUploadModule,
+    NzModalModule,
+    NzImageModule,
+    NzProgressModule,
   ],
+  providers:[AudioRecordingService]
 })
 export class ChatboxModule {}

@@ -28,6 +28,8 @@ export type ContactMessage = {
   direction: string;
   isOutgoing: boolean;
   sendStatus: SendStatus;
+  itemType: ConversationItemType;
+  media?: { image?: string; audio?: string };
 };
 
 export enum ReadStatus {
@@ -50,6 +52,8 @@ export type ContactMessageViewItem = ContactMessage & {
 export enum ConversationItemType {
   MESSAGE = 'message',
   DATE_GROUP_SEPARATE_LINE = 'date_group_separate_line',
+  IMAGE = 'image',
+  AUDIO = 'audio',
 }
 
 export type MessageGroupByDateItem = {

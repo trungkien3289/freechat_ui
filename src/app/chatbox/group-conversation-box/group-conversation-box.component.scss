@@ -96,7 +96,7 @@
 /*Reply*/
 
 .reply {
-  height: 60px;
+  // height: 60px;
   width: 100%;
   background-color: #f5f1ee;
   padding: 10px 5px 10px 5px !important;
@@ -180,4 +180,20 @@
   nz-select-top-control {
     border-radius: 10px;
   }
+}
+
+.border-round {
+  border-radius: 15px;
+}
+
+::ng-deep .ant-upload-list-picture-card {
+  display: inline-block !important;
+}
+
+.recording-panel {
+  background-color: #ccc;
+}
+
+.hide-element {
+  height: 0;
 }
