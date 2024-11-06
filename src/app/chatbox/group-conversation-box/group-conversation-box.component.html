@@ -83,6 +83,7 @@
     >
       <nz-upload
         #uploadComponent
+        nzAccept=".jpg,.jpeg,.png,.gif"
         nzListType="picture-card"
         [(nzFileList)]="fileList"
         [nzShowButton]="fileList.length > 0 && fileList.length < 8"

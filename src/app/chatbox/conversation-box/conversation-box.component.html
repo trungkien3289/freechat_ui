@@ -32,6 +32,7 @@
     >
       <nz-upload
         #uploadComponent
+        nzAccept=".jpg,.jpeg,.png,.gif"
         (keydown.enter)="$event.preventDefault()"
         nzListType="picture-card"
         [(nzFileList)]="fileList"
