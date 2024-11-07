@@ -6,6 +6,18 @@
   overflow-x: auto;
 }
 
-.phone-list-panel {
+.main-chat-container {
   overflow-x: auto;
+}
+
+.phone-list-panel {
+  // max-width: 300px;
+  // min-width: 300px;
+  width: 300px;
+}
+
+.contact-panel {
+  // max-width: 400px;
+  // min-width: 400px;
+  width: 400px;
 }

@@ -62,6 +62,18 @@ export class ConversationBoxComponent
       ];
 
       this.messageViewItems = this.mapToMessageViewItems(updatedMessages);
+
+      this.stopFetchMessageInterval();
+      this.startFetchMessageInterval(
+        this.contactGroup.currentPhoneNumber.id,
+        this.contactGroup.currentPhoneNumber.phoneNumber,
+        this._first(
+          [...this.contactGroup.to, this.contactGroup.from].filter(
+            (n) => !n.own
+          )
+        )?.TN || '',
+        this.contactGroup.id
+      );
     }
   }
   @Output() sendMessageSuccess = new EventEmitter<void>();
@@ -163,6 +175,16 @@ export class ConversationBoxComponent
         ]);
 
         this.scrollToBottom();
+
+        if (this.contactGroup.messages.length != messages.length) {
+          // const newMessages = messages.filter(
+          //   (current) =>
+          //     !this.contactGroup.messages.some((old) => old.id === current.id)
+          // );
+          // this.contactGroup.messages.push(...newMessages);
+          this.sendMessageSuccess.emit();
+        }
+
         if (this.isFirstLoad) {
           this.isFirstLoad = false;
           // this.sendMessageSuccess.emit();
@@ -252,7 +274,6 @@ export class ConversationBoxComponent
 
     this.sendMessageSuccess.emit();
 
-    //force fetch messages
     this.fetchMessages(
       this.contactGroup.currentPhoneNumber.id,
       this.contactGroup.currentPhoneNumber.phoneNumber,

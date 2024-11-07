@@ -28,6 +28,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { AudioRecordingService } from '../services/audio-recording.service';
+import { NzBadgeModule } from 'ng-zorro-antd/badge';
 
 @NgModule({
   declarations: [
@@ -61,7 +62,8 @@ import { AudioRecordingService } from '../services/audio-recording.service';
     NzModalModule,
     NzImageModule,
     NzProgressModule,
+    NzBadgeModule,
   ],
-  providers:[AudioRecordingService]
+  providers: [AudioRecordingService],
 })
 export class ChatboxModule {}

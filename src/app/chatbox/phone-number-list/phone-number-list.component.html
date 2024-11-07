@@ -1,6 +1,6 @@
 <div class="h-100 d-flex flex-column">
   <div class="d-flex flex-column">
-    <div class="d-flex flex-column">
+    <div class="d-flex flex-column px-2">
       <div
         class="d-flex align-items-center justify-content-center"
         style="height: 45px"
@@ -36,7 +36,18 @@
         class="d-flex flex-row align-items-center justify-content-between fs-lg px-1 w-100"
       >
         <div class="d-flex flex-row align-items-center flex-grow-1">
-          <i class="fa fa-phone me-2 primary-color"></i>
+          <nz-badge
+            class="me-3"
+            nzSize="small"
+            [nzCount]="phoneNumber.newMessageCount"
+            [nzOverflowCount]="99"
+            [nzStyle]="{
+                backgroundColor: '#eb3535',
+                color: '#fff',
+              }"
+          >
+            <i class="fa fa-phone primary-color fs-4"></i>
+          </nz-badge>
           <span
             class="text-truncate flex-grow-1"
             [class.fw-bold]="phoneNumber.newMessageCount > 0"
@@ -44,9 +55,7 @@
             {{ phoneNumber.name }}
           </span>
         </div>
-        @if(phoneNumber.newMessageCount > 0) {
-        <span class="badge bg-danger">{{ phoneNumber.newMessageCount }}</span>
-        } @if(phoneNumber.unAuthorized) {
+        @if(phoneNumber.unAuthorized) {
         <i
           class="fa fa-exclamation-triangle text-warning"
           aria-hidden="true"

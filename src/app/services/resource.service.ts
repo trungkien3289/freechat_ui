@@ -125,12 +125,16 @@ export class ResourceService {
         if (!grouped[key]) {
           currentTime = message.timeCreated;
           grouped[key] = {
-            id: message.id,
+            id: key,
             type: message.type,
             direction: message.direction,
             from: message.from,
             to: message.to,
             messages: [],
+            conversationType:
+              message.to.length > 1
+                ? ConversationType.GROUP
+                : ConversationType.SINGLE,
             timeCreated:
               currentTime > message.timeCreated
                 ? currentTime
@@ -152,7 +156,8 @@ export class ResourceService {
       }
     }
     for (const message of communications) {
-      if (message.direction == 'in') {
+      // only get message from single number to current phone number
+      if (message.direction == 'in' && message.to.length == 1) {
         const from = currentPhone.phoneNumber;
         const t = [...message.to, message.from].filter(
           (recipient) => !recipient.own
@@ -172,11 +177,12 @@ export class ResourceService {
         if (!grouped[key]) {
           currentTime = message.timeCreated;
           grouped[key] = {
-            id: message.id,
+            id: key,
             type: message.type,
             direction: message.direction,
             from: _.first(fromObject),
             to: [toObject],
+            conversationType: ConversationType.SINGLE,
             messages: [],
             timeCreated:
               currentTime > message.timeCreated
@@ -211,15 +217,23 @@ export class ResourceService {
           group.id
         );
 
-        group.messages = group.messages.map((mess: ContactMessage) => {
-          return {
-            ...mess,
-            myStatus:
-              lastSeen && new Date(mess.timeCreated) > lastSeen
-                ? 'UNREAD'
-                : 'READ',
-          };
-        });
+        group.messages = group.messages
+          .map((mess: ContactMessage) => {
+            return {
+              ...mess,
+              myStatus:
+                lastSeen && new Date(mess.timeCreated) > lastSeen
+                  ? 'UNREAD'
+                  : 'READ',
+            } as ContactMessage;
+          })
+          .sort((a: ContactMessage, b: ContactMessage) => {
+            if (a?.timeCreated == null || b?.timeCreated == null) return 0;
+            return (
+              new Date(a.timeCreated).getTime() -
+              new Date(b.timeCreated).getTime()
+            );
+          });
 
         return {
           id: group.id,
@@ -234,10 +248,7 @@ export class ResourceService {
           messages: group.messages,
           timeCreated: group.timeCreated,
           isOutgoing: group.direction == 'out',
-          conversationType:
-            group.to.length > 1
-              ? ConversationType.GROUP
-              : ConversationType.SINGLE,
+          conversationType: group.conversationType,
         } as ContactMessageGroup;
       })
       .sort((a, b) => {

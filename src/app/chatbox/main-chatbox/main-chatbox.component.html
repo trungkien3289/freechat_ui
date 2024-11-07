@@ -1,7 +1,7 @@
-<div class="container-fluid vh-100 p-0">
-  <div class="row h-100 m-0">
-    <div class="col-md-3 bg-light border-end h-100 phone-list-panel">
-      <div style="min-width: 300px" class="h-100">
+<div class="vh-100 p-0">
+  <div class="d-flex flex-row h-100 m-0 main-chat-container">
+    <div class="bg-light border-end h-100 phone-list-panel">
+      <div class="h-100">
         <app-phone-number-list
           [userId]="userId"
           [selectedPhoneNumberId]="selectedPhoneNumberItem?.id"
@@ -12,12 +12,8 @@
       </div>
     </div>
 
-    <div class="col-md-3 bg-white border-end h-100 contact-panel">
-      <div
-        style="min-width: 300px"
-        class="h-100"
-        *ngIf="selectedContact != null"
-      >
+    <div class="bg-white border-end h-100 contact-panel">
+      <div class="h-100" *ngIf="selectedContact != null">
         <app-contact-list
           [selectedContactId]="selectedContact.id"
           [phoneNumber]="selectedPhoneNumberItem"
@@ -27,7 +23,10 @@
       </div>
     </div>
 
-    <div class="col-md-6 bg-light d-flex flex-column h-100" id="chatbox-column">
+    <div
+      class="flex-grow-1 bg-light d-flex flex-column h-100 chatbox-panel"
+      id="chatbox-column"
+    >
       @if (selectedContact?.conversationType == 'Group') {
       <app-group-conversation-box
         style="height: 100%"

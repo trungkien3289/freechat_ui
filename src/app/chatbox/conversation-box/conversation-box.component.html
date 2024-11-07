@@ -60,6 +60,15 @@
         class="me-1"
         nzType="primary"
         nzShape="circle"
+        (click)="sendMessageBtnClick()"
+      >
+        <i class="fa fa-send" aria-hidden="true"></i>
+      </button>
+      <button
+        nz-button
+        class="me-1"
+        nzType="primary"
+        nzShape="circle"
         (click)="triggerUploadDialog()"
       >
         <i class="fa fa-picture-o" aria-hidden="true"></i>
@@ -143,7 +152,7 @@
           <ng-container
             *ngTemplateOutlet="
               messageStatusTemplate;
-              context: { status: messageItem.sendStatus }
+              context: { messageItem: messageItem }
             "
           ></ng-container>
         </div>
@@ -176,7 +185,7 @@
         <img
           nz-image
           width="200px"
-          height="200px"
+          height="auto"
           nzSrc="{{ messageItem?.media?.image }}"
           alt=""
           class="me-1"
@@ -188,7 +197,7 @@
         <ng-container
           *ngTemplateOutlet="
             messageStatusTemplate;
-            context: { status: messageItem.sendStatus }
+            context: { messageItem: messageItem }
           "
         ></ng-container>
       </div>
@@ -221,7 +230,7 @@
         <ng-container
           *ngTemplateOutlet="
             messageStatusTemplate;
-            context: { status: messageItem.sendStatus }
+            context: { messageItem: messageItem }
           "
         ></ng-container>
       </div>
@@ -232,14 +241,18 @@
   </div>
   }@default { } }
 </ng-template>
-
-<ng-template #messageStatusTemplate let-status="status">
-  @switch (status) { @case ('sending') {
+<ng-template #messageStatusTemplate let-messageItem="messageItem">
+  @switch (messageItem.sendStatus) { @case ('sending') {
   <div class="spinner-border text-primary spinner-border-sm" role="status">
     <span class="visually-hidden">Loading...</span>
   </div>
   } @case ('sent') {
-  <i class="fa fa-check-circle" style="color: #079b33" aria-hidden="true"></i>
+  <i
+    *ngIf="messageItem.isOutgoing"
+    class="fa fa-check-circle"
+    style="color: #079b33"
+    aria-hidden="true"
+  ></i>
 
   } @case ('failed') {
   <i

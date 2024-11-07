@@ -4,6 +4,7 @@ import { PhoneNumber } from '../../models/phone-number.model';
 import { ResourceService } from '../../services/resource.service';
 import { NotificationService } from '../../services/notification.service';
 import {
+  ContactMessage,
   ContactMessageGroup,
   ConversationType,
 } from '../../models/contact-message.model';
@@ -16,6 +17,7 @@ import { ActivatedRoute } from '@angular/router';
 import { PhoneNumberListComponent } from '../phone-number-list/phone-number-list.component';
 import { GroupContactCacheService } from '../../services/group-contact-cache.service';
 import { from, mergeMap } from 'rxjs';
+import { ContactListComponent } from '../contact-list/contact-list.component';
 
 const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 30000;
 
@@ -45,6 +47,9 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
   @ViewChild(PhoneNumberListComponent)
   phoneNumberListComponent!: PhoneNumberListComponent;
+  @ViewChild(ContactListComponent)
+  contactListComponent!: ContactListComponent;
+
   phoneNumbers: PhoneNumber[] = [];
   isFirstRoundInterval = true;
 
@@ -109,6 +114,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     this.selectedPhoneNumberItem = phoneNumber;
     await this.reloadContactList(phoneNumber);
     this.selectContactItem(this.contactMessageGroups[0]);
+    this.checkNewMessageComming(phoneNumber);
   };
 
   reloadContactList = async (phoneNumber: PhoneNumber) => {
@@ -174,6 +180,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       }),
       to: [],
       messages: [],
+      newMessageCount: 0,
     } as ContactMessageGroup;
     this._LocalStorageService.setItem(
       `GroupConversation_${phoneNumber.phoneNumber}`,
@@ -198,27 +205,54 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   startCheckNewCommingMessageInterval = (phoneNumberList: PhoneNumber[]) => {
     this.newCommingMessageInterval = setInterval(async () => {
       phoneNumberList.forEach(async (phoneNumber) => {
-        let contactMessageGroups = await this.fetchMessagesSilence(phoneNumber);
-
-        if (this.phoneNumberListComponent) {
-          let newMessageCount = contactMessageGroups.reduce(
-            (countNewMessage, group) => {
-              return (
-                countNewMessage +
-                group.messages.filter(
-                  (message) => message.myStatus === 'UNREAD'
-                ).length
-              );
-            },
-            0
-          );
-          this.phoneNumberListComponent.updateNewMessageComming(
-            phoneNumber.id,
-            newMessageCount
-          );
-        }
+        this.checkNewMessageComming(phoneNumber);
       });
     }, CHECK_NEW_COMMING_MESSAGE_INTERVAL);
+  };
+
+  checkNewMessageComming = async (phoneNumber: PhoneNumber) => {
+    let contactMessageGroups = await this.fetchMessagesSilence(phoneNumber);
+
+    // update new message comming in phone number list
+    if (this.phoneNumberListComponent) {
+      let newMessageCount = contactMessageGroups.reduce(
+        (countNewMessage, group) => {
+          return (
+            countNewMessage +
+            group.messages.filter((message) => message.myStatus === 'UNREAD')
+              .length
+          );
+        },
+        0
+      );
+      this.phoneNumberListComponent.updateNewMessageComming(
+        phoneNumber.id,
+        newMessageCount
+      );
+    }
+
+    // update new message comming in contact list
+    if (this.contactListComponent) {
+      let updateDic: {
+        [key: string]: {
+          newMessageCount: number;
+          newMessages: ContactMessage[];
+        };
+      } = {};
+      contactMessageGroups.forEach((group) => {
+        let newMessages = group.messages.filter(
+          (message) => message.myStatus === 'UNREAD'
+        );
+        updateDic[group.id] = {
+          newMessageCount: newMessages.length,
+          newMessages,
+        };
+        // updateDic[group.id] = group.messages.filter(
+        //   (message) => message.myStatus === 'UNREAD'
+        // ).length;
+      });
+      this.contactListComponent.updateNewMessageComming(updateDic);
+    }
   };
 
   fetchMessagesSilence = async (

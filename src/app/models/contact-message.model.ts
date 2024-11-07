@@ -13,6 +13,7 @@ export type ContactMessageGroup = {
   timeCreated: string;
   isOutgoing: boolean;
   conversationType: ConversationType;
+  newMessageCount: number;
 };
 
 export enum ConversationType {

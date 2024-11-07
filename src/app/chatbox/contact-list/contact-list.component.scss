@@ -30,3 +30,17 @@
   font-size: 16px;
   font-weight: 500;
 }
+
+.contact-icon-wrapper {
+  height: 60px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-right: 20px;
+  font-size: 20px;
+}
+
+.recent-message {
+  max-width: 270px;
+  display: inline-block;
+}

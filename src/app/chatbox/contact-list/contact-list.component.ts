@@ -6,7 +6,10 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { PhoneNumber } from '../../models/phone-number.model';
-import { ContactMessageGroup } from '../../models/contact-message.model';
+import {
+  ContactMessage,
+  ContactMessageGroup,
+} from '../../models/contact-message.model';
 import { first, last } from 'lodash';
 
 @Component({
@@ -52,5 +55,21 @@ export class ContactListComponent {
 
   newConversation = () => {
     this.onNewGroupConversation.emit();
+  };
+
+  public updateNewMessageComming = (updateDic: {
+    [key: string]: { newMessageCount: number; newMessages: ContactMessage[] };
+  }) => {
+    Object.keys(updateDic).forEach((groupId) => {
+      const group = this.contactMessageGroups.find((g) => g.id === groupId);
+      if (!group) return;
+      group.newMessageCount = updateDic[groupId].newMessageCount || 0;
+      if (
+        updateDic[groupId].newMessages &&
+        updateDic[groupId].newMessages.length > 0
+      ) {
+        group.messages = group.messages.concat(updateDic[groupId].newMessages);
+      }
+    });
   };
 }
