@@ -46,7 +46,7 @@ export class ConversationBoxComponent
   _first = first;
 
   @Input() set contact(contactGroup: ContactMessageGroup | undefined) {
-    if (!!contactGroup) {
+    if (!!contactGroup && contactGroup.id !== this.contactGroup?.id) {
       this.resetChatBox();
       this.contactGroup = contactGroup;
       this._GroupContactCacheService.setLastSeen(
