@@ -372,7 +372,7 @@ export class ConversationBoxComponent
       const audioFile = new File([audioBlob], audioFileName, {
         type: audioBlob.type,
       });
-      const uploadRes = await this._FileService.upload(
+      const fileUrl = await this._FileService.upload(
         audioFile,
         audioFileName,
         ConversationItemType.AUDIO
@@ -382,7 +382,7 @@ export class ConversationBoxComponent
         this.contactGroup.currentPhoneNumber.id,
         this.contactGroup.from.TN,
         this.contactGroup.to,
-        _.get(uploadRes, 'result.variants[0]', '')
+        fileUrl
       );
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
@@ -549,8 +549,7 @@ export class ConversationBoxComponent
         ConversationItemType.IMAGE
       )
       .then(
-        (res) => {
-          let fileUrl = get(res, 'result.variants[0]', null);
+        (fileUrl) => {
           if (fileUrl) {
             item.onError!(null, item.file);
           }

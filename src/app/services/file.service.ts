@@ -25,22 +25,20 @@ export class FileService {
     file: File,
     fileName: string,
     itemType: ConversationItemType
-  ): Promise<any> => {
+  ): Promise<string> => {
     try {
-      // Create the form data for the file upload
       const formData = new FormData();
-      // formData.append('file', (item as any).file as Blob);
       formData.append('file', file as any, fileName); // Append file to form data
-      formData.append(
-        'type',
-        itemType == ConversationItemType.AUDIO ? 'stream' : 'images/v1'
-      ); // Append file to form data
+      // formData.append(
+      //   'type',
+      //   itemType == ConversationItemType.AUDIO ? 'stream' : 'images/v1'
+      // );
 
-      const res = await firstValueFrom(
+      const res: any = await firstValueFrom(
         this.http.post(`${this.apiUrl}/api/pinger/attachments/upload`, formData)
       );
 
-      return res;
+      return res?.url || '';
     } catch (ex: any) {
       throw 'Error uploading file';
     }
