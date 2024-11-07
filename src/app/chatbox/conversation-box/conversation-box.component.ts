@@ -19,20 +19,18 @@ import {
 import { ChatService } from '../../services/chat.service';
 import { NotificationService } from '../../services/notification.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { first, get, last } from 'lodash';
+import { first, last } from 'lodash';
 import { Utils } from '../../utilities/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { GroupContactCacheService } from '../../services/group-contact-cache.service';
 import { debounce } from 'lodash';
 import { NzUploadFile, NzUploadXHRArgs } from 'ng-zorro-antd/upload';
-import { HttpClient, HttpEventType, HttpHeaders } from '@angular/common/http';
-import { Subscription } from 'rxjs';
 import { FileService } from '../../services/file.service';
 import { AudioRecordingService } from '../../services/audio-recording.service';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import _ from 'lodash';
 
-const INTERVAL_RELOAD_CHATBOX = 5000;
+const INTERVAL_RELOAD_CHATBOX = 3000;
 const MAX_RECORDING_SECONDS = 60;
 @Component({
   selector: 'app-conversation-box',

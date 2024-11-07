@@ -19,7 +19,7 @@ import { GroupContactCacheService } from '../../services/group-contact-cache.ser
 import { from, mergeMap } from 'rxjs';
 import { ContactListComponent } from '../contact-list/contact-list.component';
 
-const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 30000;
+const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 20000;
 
 @Component({
   selector: 'app-main-chatbox',
