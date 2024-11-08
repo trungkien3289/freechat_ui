@@ -52,6 +52,7 @@
         class="border-round flex-grow-1 me-1"
         nz-input
         formControlName="textInput"
+        placeholder="Type a message"
         [nzAutosize]="{ maxRows: 6 }"
         (keydown)="onKeydown($event)"
       ></textarea>
@@ -163,7 +164,11 @@
     </div>
   </div>
   } @case ('date_group_separate_line') {
-  <nz-divider nzPlain nzText="{{ messageItem.formattedTime }}"></nz-divider>
+  <nz-divider
+    nzPlain
+    nzText="{{ messageItem.formattedTime }}"
+    style="color: #4d4949; font-size: 12px;"
+  ></nz-divider>
   } @case ('image') {
   <div
     class="d-flex w-100 py-2"

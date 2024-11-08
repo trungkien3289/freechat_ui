@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { PhoneShortSummary } from '../models/phone-comunication.model';
+import moment from 'moment';
 export class Utils {
   static formatPhoneNumber = (value: string | undefined): string => {
     if (!value) return '';
@@ -81,4 +82,15 @@ export class Utils {
       reader.onload = () => resolve(reader.result);
       reader.onerror = (error) => reject(error);
     });
+
+  static convertDateStringToUtcTime = (dateString: string): string => {
+    let date = new Date(dateString);
+    let utcDate = date.getTime() + date.getTimezoneOffset() * 60000;
+    return Utils.formatDateWithServerTimeFormat(new Date(utcDate));
+  };
+
+  static formatDateWithServerTimeFormat(date: Date) {
+    const dateString = moment(date).format('YYYY-MM-DD HH:mm:ss.SSS');
+    return dateString;
+  }
 }

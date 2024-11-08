@@ -62,8 +62,6 @@ export class PhoneNumberListComponent implements OnInit {
   // }
 
   ngOnInit(): void {
-    // this.loadPhoneNumbers();
-
     this.filteredPhones$ = this.searchControl.valueChanges.pipe(
       startWith(''),
       debounceTime(300),
@@ -79,47 +77,11 @@ export class PhoneNumberListComponent implements OnInit {
     );
   };
 
-  // loadPhoneNumbers = async () => {
-  //   this.isLoading = true;
-  //   try {
-  //     const items = await this._ResourceService.getPhoneNumbers(this.userId);
-  //     this.phoneNumbers = items;
-
-  //     // set the first item as selected
-  //     if (items.length > 0) {
-  //       this.selectPhoneNumber(items[0]);
-  //     }
-  //   } catch (error: any) {
-  //     console.error(error);
-  //     this._NotificationService.error(error);
-  //   }
-
-  //   this.isLoading = false;
-  // };
-
   selectPhoneNumber = (phoneNumberItem: PhoneNumber) => {
     if (!phoneNumberItem.unAuthorized) {
-      // this.selectedItem = phoneNumberItem;
       this.onSelectItem.emit(phoneNumberItem);
     }
   };
-
-  // repacePhoneNumber = (phoneNumber: PhoneNumber): Promise<boolean> => {
-  //   try {
-  //     const newPhoneNumber = await this._ResourceService.replacePhoneNumber(
-  //       phoneNumber
-  //     );
-
-  //     this.replacePhoneNumberSuccess.emit({
-  //       oldPhoneId: phoneNumber.id,
-  //       newPhoneNumber,
-  //     });
-
-  //     return true;
-  //   } catch (ex) {}
-
-  //   return false;
-  // };
 
   repacePhoneNumber = async (phoneNumber: PhoneNumber) => {
     try {

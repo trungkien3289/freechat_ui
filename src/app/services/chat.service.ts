@@ -196,4 +196,77 @@ export class ChatService {
       throw `Fetch Messages from ${fromPhoneNumber} to ${toPhoneNumber} error`;
     }
   };
+
+  fetchNewMessages = async (
+    fromPhoneNumberId: string,
+    fromPhoneNumber: string,
+    toPhoneNumber: string,
+    groupId: string,
+    fromTime: string
+  ): Promise<ContactMessage[]> => {
+    try {
+      let requestBody = {
+        requests: [
+          {
+            queryParams: [
+              { createdSince: '2024-10-10 04:23:36.512952' },
+              { updatedSince: Utils.convertDateStringToUtcTime(fromTime) },
+            ],
+            contentType: 'application/json',
+            useHTTPS: '1',
+            resource: '/2.0/communications/sync',
+            method: 'GET',
+          },
+        ],
+      };
+      let res: any = (await firstValueFrom(
+        this.http.post(
+          `${this.apiUrl}/api/user/phone/${fromPhoneNumberId}/request`,
+          requestBody
+        )
+      )) as any;
+
+      const communicationsRes = JSON.parse(res.result[0].body);
+      let communications = communicationsRes.result
+        .newCommunications as PhoneComunication[];
+
+      communications = communications.filter(
+        (item) => item.type === PhoneComunicationType.MESSAGE
+      );
+
+      // update message read status base on last seen of group
+      const lastSeen: Date =
+        this._GroupContactCacheService.getGroupLastSeen(groupId);
+
+      let messages = communications
+        .filter((item) => {
+          return [...item.to, item.from]
+            .filter((n) => !n.own)
+            .some((to) => to.TN === toPhoneNumber);
+        })
+        .map((message) => {
+          let updateTimeCreatedMessage = Utils.convertDateStringToLocalTime(
+            message.timeCreated
+          );
+          return {
+            direction: message.direction,
+            text: message.text,
+            id: message.id,
+            myStatus:
+              lastSeen && new Date(updateTimeCreatedMessage) > lastSeen
+                ? 'UNREAD'
+                : 'READ',
+            timeCreated: updateTimeCreatedMessage,
+            isOutgoing: message.direction == 'out',
+            sendStatus: SendStatus.SENT,
+            media: message.media,
+            itemType: ChatBoxUtils.getMessageItemType(message),
+          } as ContactMessage;
+        });
+
+      return messages;
+    } catch (ex) {
+      throw `Fetch Messages from ${fromPhoneNumber} to ${toPhoneNumber} error`;
+    }
+  };
 }

@@ -6,6 +6,7 @@ import {
   EventEmitter,
   Input,
   OnDestroy,
+  OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -19,7 +20,7 @@ import {
 import { ChatService } from '../../services/chat.service';
 import { NotificationService } from '../../services/notification.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { first, last } from 'lodash';
+import { first, last, set } from 'lodash';
 import { Utils } from '../../utilities/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { GroupContactCacheService } from '../../services/group-contact-cache.service';
@@ -29,8 +30,9 @@ import { FileService } from '../../services/file.service';
 import { AudioRecordingService } from '../../services/audio-recording.service';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import _ from 'lodash';
+import moment from 'moment';
 
-const INTERVAL_RELOAD_CHATBOX = 3000;
+const INTERVAL_RELOAD_CHATBOX = 5000;
 const MAX_RECORDING_SECONDS = 60;
 @Component({
   selector: 'app-conversation-box',
@@ -38,7 +40,7 @@ const MAX_RECORDING_SECONDS = 60;
   styleUrl: './conversation-box.component.scss',
 })
 export class ConversationBoxComponent
-  implements OnDestroy, AfterViewChecked, AfterViewInit
+  implements OnDestroy, AfterViewChecked, AfterViewInit, OnInit
 {
   _last = last;
   _first = first;
@@ -60,6 +62,7 @@ export class ConversationBoxComponent
       ];
 
       this.messageViewItems = this.mapToMessageViewItems(updatedMessages);
+      this.scrollToBottom();
 
       this.stopFetchMessageInterval();
       this.startFetchMessageInterval(
@@ -75,6 +78,7 @@ export class ConversationBoxComponent
     }
   }
   @Output() sendMessageSuccess = new EventEmitter<void>();
+  @Output() markPhoneAsDown = new EventEmitter<string>();
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
   messageViewItems: ContactMessageViewItem[] = [];
@@ -130,6 +134,7 @@ export class ConversationBoxComponent
       );
     });
   }
+  ngOnInit(): void {}
   ngAfterViewInit(): void {
     // Access the native file input element within the nz-upload component
     this.fileInput = this.uploadComponent?.uploadComp?.file?.nativeElement;
@@ -152,37 +157,21 @@ export class ConversationBoxComponent
     this.fetchMessageInterval = setInterval(async () => {
       try {
         this.isLoading = true;
-        let messages = await this._ChatService.fetchMessages(
+        const messages = await this.fetchAllMessages(
           fromPhoneNumberId,
           fromPhoneNumber,
           toPhoneNumber,
           groupId
         );
-        let notSendMessages =
-          this._GroupContactCacheService.getGroupUnsentMessage(
-            this.contactGroup.id
-          );
-        this.messageViewItems = this.mapToMessageViewItems([
-          ...messages,
-          ...notSendMessages,
-        ]);
-
-        console.log('List Mess View', this.messageViewItems);
 
         // this.scrollToBottom();
 
         if (this.contactGroup.messages.length != messages.length) {
-          // const newMessages = messages.filter(
-          //   (current) =>
-          //     !this.contactGroup.messages.some((old) => old.id === current.id)
-          // );
-          // this.contactGroup.messages.push(...newMessages);
           this.sendMessageSuccess.emit();
         }
 
         if (this.isFirstLoad) {
           this.isFirstLoad = false;
-          // this.sendMessageSuccess.emit();
         }
 
         this._GroupContactCacheService.setLastSeen(
@@ -207,31 +196,59 @@ export class ConversationBoxComponent
     clearInterval(this.fetchMessageInterval);
   };
 
-  fetchMessages = async (
+  fetchNewMessages = async (
+    fromPhoneNumberId: string,
+    fromPhoneNumber: string,
+    toPhoneNumber: string,
+    groupId: string,
+    oldMessages: ContactMessage[]
+  ): Promise<ContactMessage[]> => {
+    try {
+      let messages = await this._ChatService.fetchNewMessages(
+        fromPhoneNumberId,
+        fromPhoneNumber,
+        toPhoneNumber,
+        groupId,
+        _.last(oldMessages)?.timeCreated || '2024-10-24 18:35:52.180564'
+      );
+
+      return messages;
+    } catch (error: any) {}
+
+    return [];
+  };
+
+  fetchAllMessages = async (
     fromPhoneNumberId: string,
     fromPhoneNumber: string,
     toPhoneNumber: string,
     groupId: string
-  ) => {
+  ): Promise<ContactMessage[]> => {
     try {
-      let messages = await this._ChatService.fetchMessages(
+      let allMessages = await this._ChatService.fetchMessages(
         fromPhoneNumberId,
         fromPhoneNumber,
         toPhoneNumber,
         groupId
       );
 
-      let notSendMessages =
-        this._GroupContactCacheService.getGroupUnsentMessage(
-          this.contactGroup.id
-        );
-      this.messageViewItems = this.mapToMessageViewItems([
-        ...messages,
-        ...notSendMessages,
-      ]);
+      if (allMessages.length > 0) {
+        //has new message - send message success
+        let notSendMessages =
+          this._GroupContactCacheService.getGroupUnsentMessage(
+            this.contactGroup.id
+          );
 
-      this.scrollToBottom();
+        this.messageViewItems = this.mapToMessageViewItems([
+          ...allMessages,
+          ...notSendMessages,
+        ]);
+      }
+
+      return allMessages;
     } catch (error: any) {}
+
+    return [];
   };
 
   resetChatBox = () => {
@@ -257,32 +274,36 @@ export class ConversationBoxComponent
     if (this.isRecording) return;
     this.stopFetchMessageInterval();
     this.isLoading = true;
+    try {
+      // If have images upload
+      if (this.fileList.length > 0) {
+        let uploadFilesRequests = this.fileList.map((file) => {
+          return this.sendImageMessage(file.response);
+        });
 
-    // If have images upload
-    if (this.fileList.length > 0) {
-      let uploadFilesRequests = this.fileList.map((file) => {
-        return this.sendImageMessage(file.response);
-      });
+        this.fileList = [];
+        await Promise.allSettled(uploadFilesRequests);
+      }
 
-      this.fileList = [];
+      if (this.myForm.valid) {
+        let newTextMessage = await this.sendTextMessage(
+          this.myForm.value.textInput
+        );
+      }
 
-      await Promise.allSettled(uploadFilesRequests);
+      this.sendMessageSuccess.emit();
+
+      let allMessages = await this.fetchAllMessages(
+        this.contactGroup.currentPhoneNumber.id,
+        this.contactGroup.currentPhoneNumber.phoneNumber,
+        this.contactGroup.isOutgoing
+          ? this.contactGroup.to[0].TN
+          : this.contactGroup.from.TN,
+        this.contactGroup.id
+      );
+    } catch (error) {
+      this._NotificationService.error('Send messages failed');
     }
-
-    if (this.myForm.valid) {
-      await this.sendTextMessage(this.myForm.value.textInput);
-    }
-
-    this.sendMessageSuccess.emit();
-
-    this.fetchMessages(
-      this.contactGroup.currentPhoneNumber.id,
-      this.contactGroup.currentPhoneNumber.phoneNumber,
-      this.contactGroup.isOutgoing
-        ? this.contactGroup.to[0].TN
-        : this.contactGroup.from.TN,
-      this.contactGroup.id
-    );
 
     this.isLoading = false;
     this.scrollToBottom();
@@ -295,6 +316,26 @@ export class ConversationBoxComponent
       this.contactGroup.id
     );
   }, 200);
+
+  verifyHasNewMessage = async (): Promise<boolean> => {
+    let commingMessages = await this.fetchNewMessages(
+      this.contactGroup.currentPhoneNumber.id,
+      this.contactGroup.currentPhoneNumber.phoneNumber,
+      this.contactGroup.isOutgoing
+        ? this.contactGroup.to[0].TN
+        : this.contactGroup.from.TN,
+      this.contactGroup.id,
+      this.contactGroup.messages
+    );
+
+    if (commingMessages.length > 0) {
+      //has new message - send message success
+      return true;
+    } else {
+      // has no new message - send message failed
+      return false;
+    }
+  };
 
   sendAudioMessageClick = async () => {
     console.log('send audio message');
@@ -311,12 +352,14 @@ export class ConversationBoxComponent
   };
 
   //#region Send text | image | audio message
-  sendImageMessage = async (imageUrl: string) => {
+  sendImageMessage = async (imageUrl: string): Promise<ContactMessage> => {
     let newMessage: ContactMessage = this.addMessageToGroup(
       '',
       ConversationItemType.IMAGE,
       { image: imageUrl }
     );
+
+    this.scrollToBottom();
 
     try {
       await this._ChatService.sendImage(
@@ -326,20 +369,31 @@ export class ConversationBoxComponent
         imageUrl
       );
 
-      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      let hasNewMessage = await this.verifyHasNewMessage();
+      if (hasNewMessage) {
+        this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      } else {
+        this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+        // Should notify phone number error
+        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      }
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
     }
 
     this.resetUploadImage();
+
+    return newMessage;
   };
 
-  sendTextMessage = async (message: string) => {
+  sendTextMessage = async (message: string): Promise<ContactMessage> => {
     let newMessage: ContactMessage = this.addMessageToGroup(
       message,
       ConversationItemType.MESSAGE
     );
+
+    this.scrollToBottom();
 
     this.myForm.reset();
 
@@ -351,23 +405,34 @@ export class ConversationBoxComponent
         newMessage.text
       );
 
-      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      let hasNewMessage = await this.verifyHasNewMessage();
+      if (hasNewMessage) {
+        this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      } else {
+        this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+        // Should notify phone number error
+        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      }
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
     }
+
+    return newMessage;
   };
 
   sendAudioMessage = async (
     audioUrl: SafeUrl,
     audioBlob: Blob,
     audioFileName: string
-  ) => {
+  ): Promise<ContactMessage> => {
     let newMessage: ContactMessage = this.addMessageToGroup(
       '',
       ConversationItemType.AUDIO,
       { audio: audioUrl as string }
     );
+
+    this.scrollToBottom();
 
     try {
       const audioFile = new File([audioBlob], audioFileName, {
@@ -386,11 +451,20 @@ export class ConversationBoxComponent
         fileUrl
       );
 
-      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      let hasNewMessage = await this.verifyHasNewMessage();
+      if (hasNewMessage) {
+        this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      } else {
+        this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+        // Should notify phone number error
+        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      }
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
     }
+
+    return newMessage;
   };
 
   //#endregion
@@ -506,7 +580,7 @@ export class ConversationBoxComponent
         result.push({
           id: `separator_${uuidv4()}`,
           itemType: ConversationItemType.DATE_GROUP_SEPARATE_LINE,
-          formattedTime: currentDate,
+          formattedTime: moment(currentDate).format('MMM, DD, YYYY'),
         } as ContactMessageViewItem);
       }
 
@@ -522,8 +596,11 @@ export class ConversationBoxComponent
 
   scrollToBottom(): void {
     if (!this.scrollContainer) return;
-    const container = this.scrollContainer.nativeElement;
-    container.scrollTop = container.scrollHeight;
+
+    setTimeout(() => {
+      const container = this.scrollContainer.nativeElement;
+      container.scrollTop = container.scrollHeight;
+    }, 200);
   }
 
   //#region Upload image

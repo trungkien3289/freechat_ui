@@ -29,6 +29,7 @@
     @for (phoneNumber of filteredPhones$ | async; track phoneNumber.id) {
     <div
       class="d-flex flex-row hover-list-item cursor-pointer px-2 flex-grow-1"
+      [class.unauthorized-item-bg]="phoneNumber.unAuthorized"
       (click)="selectPhoneNumber(phoneNumber)"
       [class.selected-item]="selectedPhoneNumberId == phoneNumber.id"
     >
@@ -36,6 +37,15 @@
         class="d-flex flex-row align-items-center justify-content-between fs-lg px-1 w-100"
       >
         <div class="d-flex flex-row align-items-center flex-grow-1">
+          @if(phoneNumber.unAuthorized) {
+          <i
+            class="fa fa-exclamation-triangle text-warning fs-5 me-3"
+            aria-hidden="true"
+            nz-tooltip
+            nzTooltipTitle="Phone number is expired"
+          ></i>
+
+          }@else {
           <nz-badge
             class="me-3"
             nzSize="small"
@@ -48,6 +58,8 @@
           >
             <i class="fa fa-phone primary-color fs-4"></i>
           </nz-badge>
+          }
+
           <span
             class="text-truncate flex-grow-1"
             [class.fw-bold]="phoneNumber.newMessageCount > 0"
@@ -56,12 +68,6 @@
           </span>
         </div>
         @if(phoneNumber.unAuthorized) {
-        <i
-          class="fa fa-exclamation-triangle text-warning"
-          aria-hidden="true"
-          nz-tooltip
-          nzTooltipTitle="Phone number is expired"
-        ></i>
         <button
           nz-popconfirm
           nzPopconfirmTitle="Do you want to replace this phone number?"
@@ -69,8 +75,14 @@
           nzPopconfirmPlacement="right"
           nz-button
           nzType="text"
+          nzShape="circle"
+          nzSize="small"
         >
-          Replace
+          <i
+            class="fa fa-refresh"
+            aria-hidden="true"
+            style="color: #777777"
+          ></i>
         </button>
         }
       </div>

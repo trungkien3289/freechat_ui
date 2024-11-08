@@ -38,6 +38,7 @@
         style="height: 100%"
         [contact]="selectedContact"
         (sendMessageSuccess)="sendMessageConversationSuccess()"
+        (markPhoneAsDown)="markPhoneAsDownHandler($event)"
       ></app-conversation-box>
       }
     </div>

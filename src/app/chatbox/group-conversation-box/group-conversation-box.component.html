@@ -1,6 +1,6 @@
 @if(!!contactGroup){
 <div class="conversation d-flex flex-column">
-  <div class="heading d-flex flex-column p-2">
+  <div class="heading d-flex flex-column px-2">
     <div class="d-flex flex-row align-items-center py-2 align-items-center">
       <i class="fa fa-info-circle me-2 primary-color fs-5"></i>
       <span class="fw-bold group-label">Group: </span>
@@ -100,6 +100,7 @@
       @if(!isRecording){
       <textarea
         class="border-round flex-grow-1 me-1"
+        placeholder="Type a message"
         nz-input
         formControlName="textInput"
         [nzAutosize]="{ maxRows: 6 }"

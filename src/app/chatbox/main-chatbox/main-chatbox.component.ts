@@ -300,4 +300,11 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       this.selectPhoneNumber(found);
     }
   };
+
+  markPhoneAsDownHandler = (phoneNumberId: string) => {
+    let found = this.phoneNumbers.find((p) => p.id === phoneNumberId);
+    if (found) {
+      found.unAuthorized = true;
+    }
+  };
 }
