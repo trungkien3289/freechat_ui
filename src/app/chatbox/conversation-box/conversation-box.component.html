@@ -9,7 +9,7 @@
 
   <div class="message flex-grow-1 p-2" id="conversation" #scrollContainer>
     @if(!!messageViewItems && messageViewItems.length > 0){ @for (messageItem of
-    messageViewItems; track messageItem) {
+    messageViewItems; track messageItem.id) {
     <ng-container
       *ngTemplateOutlet="messageTemplate; context: { messageItem: messageItem }"
     ></ng-container>

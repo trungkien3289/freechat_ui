@@ -136,7 +136,7 @@ export class ConversationBoxComponent
   }
 
   ngAfterViewChecked(): void {
-    this.scrollToBottom();
+    // this.scrollToBottom();
   }
 
   ngOnDestroy(): void {
@@ -150,11 +150,6 @@ export class ConversationBoxComponent
     groupId: string
   ) => {
     this.fetchMessageInterval = setInterval(async () => {
-      this._GroupContactCacheService.setLastSeen(
-        this.contactGroup.id,
-        new Date(),
-        this.contactGroup
-      );
       try {
         this.isLoading = true;
         let messages = await this._ChatService.fetchMessages(
@@ -172,7 +167,9 @@ export class ConversationBoxComponent
           ...notSendMessages,
         ]);
 
-        this.scrollToBottom();
+        console.log('List Mess View', this.messageViewItems);
+
+        // this.scrollToBottom();
 
         if (this.contactGroup.messages.length != messages.length) {
           // const newMessages = messages.filter(
@@ -187,6 +184,12 @@ export class ConversationBoxComponent
           this.isFirstLoad = false;
           // this.sendMessageSuccess.emit();
         }
+
+        this._GroupContactCacheService.setLastSeen(
+          this.contactGroup.id,
+          new Date(),
+          this.contactGroup
+        );
       } catch (error: any) {
         this.reTryError--;
         console.error(error);
@@ -501,6 +504,7 @@ export class ConversationBoxComponent
       // If there is a date change, add a separator item
       if (previousDate !== currentDate) {
         result.push({
+          id: `separator_${uuidv4()}`,
           itemType: ConversationItemType.DATE_GROUP_SEPARATE_LINE,
           formattedTime: currentDate,
         } as ContactMessageViewItem);
