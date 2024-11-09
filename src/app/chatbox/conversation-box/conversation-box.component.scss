@@ -237,15 +237,3 @@
       0px 0px 0px 10px rgba(255, 255, 255, 0);
   }
 }
-
-@font-face {
-  font-family: "EmojiFont";
-  src: local("Segoe UI Emoji"), local("Apple Color Emoji"),
-    local("Noto Color Emoji");
-  unicode-range: U+1F600-1F64F, U+1F300-1F5FF, U+1F680-1F6FF, U+2600-26FF; /* Common emoji ranges */
-}
-
-.emoji-text {
-  font-size: 2em; /* Normal text size */
-  font-family: "YourRegularFont", "EmojiFont"; /* Fallback to EmojiFont for emoji */
-}
