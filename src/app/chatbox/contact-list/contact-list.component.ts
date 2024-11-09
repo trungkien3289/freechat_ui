@@ -48,7 +48,6 @@ export class ContactListComponent {
   }
 
   selectItem = (item: ContactMessageGroup) => {
-    console.log('contact group selected', item);
     this.selectedContact = item;
     this.onSelectItem.emit(item);
   };

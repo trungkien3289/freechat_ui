@@ -18,6 +18,7 @@ import { PhoneNumberListComponent } from '../phone-number-list/phone-number-list
 import { GroupContactCacheService } from '../../services/group-contact-cache.service';
 import { from, mergeMap } from 'rxjs';
 import { ContactListComponent } from '../contact-list/contact-list.component';
+import _ from 'lodash';
 
 const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 20000;
 
@@ -267,8 +268,11 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     } catch (error: any) {
       // console.error(error);
       // handle 'Reauthorize and try again' error
-      if (error.error.trim('\n') == 'Reauthorize and try again') {
-        this.setPhoneNumberAsUnAuthorized(phoneNumber);
+      if (
+        _.isString(error.error) &&
+        error.error.trim('\n') == 'Reauthorize and try again'
+      ) {
+        this.setPhoneNumberAsExpired(phoneNumber);
       }
     }
 
@@ -279,8 +283,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     clearInterval(this.newCommingMessageInterval);
   };
 
-  setPhoneNumberAsUnAuthorized = (phoneNumber: PhoneNumber) => {
-    phoneNumber.unAuthorized = true;
+  setPhoneNumberAsExpired = (phoneNumber: PhoneNumber) => {
+    phoneNumber.expired = true;
     // call api to set phone number as unAuthorized
     this._ResourceService.expirePhoneNumber(phoneNumber);
   };
@@ -294,7 +298,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       found.phoneNumber = data.newPhoneNumber.phoneNumber;
       found.name = data.newPhoneNumber.name;
       found.id = data.newPhoneNumber.id;
-      found.unAuthorized = false;
+      found.expired = false;
       found.newMessageCount = 0;
       //TODO need handle more action like reload list contact of new phone number
       this.selectPhoneNumber(found);
@@ -304,7 +308,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   markPhoneAsDownHandler = (phoneNumberId: string) => {
     let found = this.phoneNumbers.find((p) => p.id === phoneNumberId);
     if (found) {
-      found.unAuthorized = true;
+      found.expired = true;
     }
   };
 }

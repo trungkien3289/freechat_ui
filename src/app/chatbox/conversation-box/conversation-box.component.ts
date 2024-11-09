@@ -2,6 +2,7 @@ import {
   AfterViewChecked,
   AfterViewInit,
   Component,
+  computed,
   ElementRef,
   EventEmitter,
   Input,
@@ -26,11 +27,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { GroupContactCacheService } from '../../services/group-contact-cache.service';
 import { debounce } from 'lodash';
 import { NzUploadFile, NzUploadXHRArgs } from 'ng-zorro-antd/upload';
+import { NzButtonType } from 'ng-zorro-antd/button';
 import { FileService } from '../../services/file.service';
 import { AudioRecordingService } from '../../services/audio-recording.service';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import _ from 'lodash';
 import moment from 'moment';
+import { DELAY_FOR_CHECK_NEW_COMMING_MESSAGE } from '../chat-settings.const';
 
 const INTERVAL_RELOAD_CHATBOX = 5000;
 const MAX_RECORDING_SECONDS = 60;
@@ -102,6 +105,9 @@ export class ConversationBoxComponent
   blobUrl: SafeUrl | undefined;
   teste: any;
 
+  // emoji popup
+  isEmojiPickerVisible: boolean = false;
+
   @ViewChild('uploadComponent', { static: false }) uploadComponent!: any;
   fileInput: HTMLInputElement | null = null;
 
@@ -164,7 +170,9 @@ export class ConversationBoxComponent
           groupId
         );
 
-        // this.scrollToBottom();
+        if (this.isScrollAtBottom()) {
+          this.scrollToBottom();
+        }
 
         if (this.contactGroup.messages.length != messages.length) {
           this.sendMessageSuccess.emit();
@@ -201,7 +209,7 @@ export class ConversationBoxComponent
     fromPhoneNumber: string,
     toPhoneNumber: string,
     groupId: string,
-    oldMessages: ContactMessage[]
+    lastMessage?: ContactMessage
   ): Promise<ContactMessage[]> => {
     try {
       let messages = await this._ChatService.fetchNewMessages(
@@ -209,7 +217,7 @@ export class ConversationBoxComponent
         fromPhoneNumber,
         toPhoneNumber,
         groupId,
-        _.last(oldMessages)?.timeCreated || '2024-10-24 18:35:52.180564'
+        lastMessage?.timeCreated || '2024-10-24 18:35:52.180564'
       );
 
       return messages;
@@ -266,6 +274,15 @@ export class ConversationBoxComponent
     this.previewVisible = false;
   };
 
+  addEmoji = (event: any) => {
+    if (event.emoji.native) {
+      let updatedValue = `${this.myForm.value?.textInput || ''}${
+        event.emoji.native
+      }`;
+      this.myForm.patchValue({ textInput: updatedValue });
+    }
+  };
+
   sendMessageBtnClick = () => {
     this.debouncedSubmit();
   };
@@ -274,6 +291,7 @@ export class ConversationBoxComponent
     if (this.isRecording) return;
     this.stopFetchMessageInterval();
     this.isLoading = true;
+
     try {
       // If have images upload
       if (this.fileList.length > 0) {
@@ -318,6 +336,13 @@ export class ConversationBoxComponent
   }, 200);
 
   verifyHasNewMessage = async (): Promise<boolean> => {
+    let lastMessage = _.findLast(
+      this.contactGroup.messages,
+      (mes: ContactMessage) => {
+        return mes.sendStatus == SendStatus.SENT && mes.isOutgoing;
+      }
+    ) as ContactMessage | undefined;
+    await Utils.delay(DELAY_FOR_CHECK_NEW_COMMING_MESSAGE);
     let commingMessages = await this.fetchNewMessages(
       this.contactGroup.currentPhoneNumber.id,
       this.contactGroup.currentPhoneNumber.phoneNumber,
@@ -325,7 +350,7 @@ export class ConversationBoxComponent
         ? this.contactGroup.to[0].TN
         : this.contactGroup.from.TN,
       this.contactGroup.id,
-      this.contactGroup.messages
+      lastMessage
     );
 
     if (commingMessages.length > 0) {
@@ -537,6 +562,7 @@ export class ConversationBoxComponent
     if (event.key === 'Enter' && !event.shiftKey) {
       // Prevents default Enter behavior
       event.preventDefault();
+      this.isEmojiPickerVisible = false;
       // Submit the form if it's valid
       this.sendMessageBtnClick();
     }
@@ -602,6 +628,21 @@ export class ConversationBoxComponent
       container.scrollTop = container.scrollHeight;
     }, 200);
   }
+
+  isScrollAtBottom = (): boolean => {
+    const container = this.scrollContainer.nativeElement;
+    let isAtBottom =
+      container.scrollHeight - container.scrollTop - 100 <
+      container.clientHeight;
+    return isAtBottom;
+  };
+
+  // isScrollAtBottom = computed(() => {
+  //   const container = this.scrollContainer.nativeElement;
+  //   let isAtBottom =
+  //     container.scrollHeight - container.scrollTop === container.clientHeight;
+  //   return isAtBottom;
+  // });
 
   //#region Upload image
 

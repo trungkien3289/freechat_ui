@@ -29,7 +29,7 @@
     @for (phoneNumber of filteredPhones$ | async; track phoneNumber.id) {
     <div
       class="d-flex flex-row hover-list-item cursor-pointer px-2 flex-grow-1"
-      [class.unauthorized-item-bg]="phoneNumber.unAuthorized"
+      [class.unauthorized-item-bg]="phoneNumber.expired"
       (click)="selectPhoneNumber(phoneNumber)"
       [class.selected-item]="selectedPhoneNumberId == phoneNumber.id"
     >
@@ -37,7 +37,7 @@
         class="d-flex flex-row align-items-center justify-content-between fs-lg px-1 w-100"
       >
         <div class="d-flex flex-row align-items-center flex-grow-1">
-          @if(phoneNumber.unAuthorized) {
+          @if(phoneNumber.expired) {
           <i
             class="fa fa-exclamation-triangle text-warning fs-5 me-3"
             aria-hidden="true"
@@ -67,7 +67,7 @@
             {{ phoneNumber.name }}
           </span>
         </div>
-        @if(phoneNumber.unAuthorized) {
+        @if(phoneNumber.expired) {
         <button
           nz-popconfirm
           nzPopconfirmTitle="Do you want to replace this phone number?"

@@ -3,5 +3,5 @@ export type PhoneNumber = {
   phoneNumber: string;
   name: string;
   newMessageCount: number;
-  unAuthorized: boolean;
+  expired: boolean;
 };

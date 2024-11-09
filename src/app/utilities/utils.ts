@@ -90,7 +90,7 @@ export class Utils {
   };
 
   static formatDateWithServerTimeFormat(date: Date) {
-    const dateString = moment(date).format('YYYY-MM-DD HH:mm:ss.SSS');
+    const dateString = moment(date).format('YYYY-MM-DD HH:mm:ss.SSSSSS');
     return dateString;
   }
 }

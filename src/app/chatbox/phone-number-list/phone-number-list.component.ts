@@ -78,7 +78,7 @@ export class PhoneNumberListComponent implements OnInit {
   };
 
   selectPhoneNumber = (phoneNumberItem: PhoneNumber) => {
-    if (!phoneNumberItem.unAuthorized) {
+    if (!phoneNumberItem.expired) {
       this.onSelectItem.emit(phoneNumberItem);
     }
   };

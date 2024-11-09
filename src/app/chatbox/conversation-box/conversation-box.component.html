@@ -3,11 +3,19 @@
   <div class="heading d-flex flex-row align-items-center p-3">
     <i class="fa fa-user-circle-o me-3 primary-color fs-2"></i>
     <span class="fs-5 fw-bold flex-grow-1">{{
-      _first(contactGroup?.to)?.TN | phoneNumberFormatNoCode
+      contactGroup.to[0].TN | phoneNumberFormatNoCode
     }}</span>
   </div>
 
-  <div class="message flex-grow-1 p-2" id="conversation" #scrollContainer>
+  <div class="message flex-grow-1 p-2 pe-5" id="conversation" #scrollContainer>
+    <button
+      nz-button
+      nzType="primary"
+      class="btn-scroll-down"
+      (click)="scrollToBottom()"
+    >
+      <span nz-icon nzType="down"></span>
+    </button>
     @if(!!messageViewItems && messageViewItems.length > 0){ @for (messageItem of
     messageViewItems; track messageItem.id) {
     <ng-container
@@ -46,25 +54,51 @@
         </div>
       </nz-upload>
     </div>
-    <div class="reply-main d-flex flex-row w-100">
+    <div class="reply-main d-flex flex-row w-100 align-items-center">
       @if(!isRecording){
-      <textarea
-        class="border-round flex-grow-1 me-1"
-        nz-input
-        formControlName="textInput"
-        placeholder="Type a message"
-        [nzAutosize]="{ maxRows: 6 }"
-        (keydown)="onKeydown($event)"
-      ></textarea>
-      <button
-        nz-button
-        class="me-1"
-        nzType="primary"
-        nzShape="circle"
-        (click)="sendMessageBtnClick()"
+      <div
+        class="d-flex flex-row flex-grow-1 align-items-center border-round me-1 bg-white p-1 position-relative"
       >
-        <i class="fa fa-send" aria-hidden="true"></i>
-      </button>
+        <emoji-mart
+          [style]="{ position: 'absolute', bottom: '50px', left: '0px' }"
+          emoji="picker"
+          *ngIf="isEmojiPickerVisible"
+          class="emoji-mart"
+          (emojiSelect)="addEmoji($event)"
+          title="Choose your emoji"
+        ></emoji-mart>
+        <div class="emoji-picker-container">
+          <button
+            nz-button
+            class="me-1"
+            nzType="text"
+            nzShape="circle"
+            (click)="isEmojiPickerVisible = !isEmojiPickerVisible"
+          >
+            <i class="fa fa-smile-o fs-4 emoji-icon" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <textarea
+          class="no-border flex-grow-1 text-muted"
+          nz-input
+          formControlName="textInput"
+          placeholder="Type a message"
+          [nzAutosize]="{ maxRows: 6 }"
+          (keydown)="onKeydown($event)"
+        ></textarea>
+
+        <button
+          nz-button
+          class="me-1"
+          nzType="text"
+          nzShape="circle"
+          (click)="sendMessageBtnClick()"
+        >
+          <i class="fa fa-send text-primary" aria-hidden="true"></i>
+        </button>
+      </div>
+
       <button
         nz-button
         class="me-1"
@@ -74,6 +108,7 @@
       >
         <i class="fa fa-picture-o" aria-hidden="true"></i>
       </button>
+
       <!-- <button
         nz-button
         nzType="primary"
@@ -167,7 +202,7 @@
   <nz-divider
     nzPlain
     nzText="{{ messageItem.formattedTime }}"
-    style="color: #4d4949; font-size: 12px;"
+    style="color: #4d4949; font-size: 12px"
   ></nz-divider>
   } @case ('image') {
   <div

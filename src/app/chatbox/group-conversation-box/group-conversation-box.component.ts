@@ -60,6 +60,9 @@ export class GroupConversationBoxComponent
   blobUrl: SafeUrl | undefined;
   teste: any;
 
+  // emoji popup
+  isEmojiPickerVisible: boolean = false;
+
   @ViewChild('uploadComponent', { static: false }) uploadComponent!: any;
   fileInput: HTMLInputElement | null = null;
 
@@ -151,6 +154,15 @@ export class GroupConversationBoxComponent
     this.fileList = [];
     this.previewImage = '';
     this.previewVisible = false;
+  };
+
+  addEmoji = (event: any) => {
+    if (event.emoji.native) {
+      let updatedValue = `${this.myForm.value?.textInput || ''}${
+        event.emoji.native
+      }`;
+      this.myForm.patchValue({ textInput: updatedValue });
+    }
   };
 
   debouncedSubmit = debounce(async () => {
@@ -280,6 +292,7 @@ export class GroupConversationBoxComponent
   onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
+      this.isEmojiPickerVisible = false;
       this.sendMessageBtnClick();
     }
   }
@@ -371,7 +384,7 @@ export class GroupConversationBoxComponent
     }
   };
 
-  private scrollToBottom(): void {
+  scrollToBottom(): void {
     if (!this.scrollContainer) return;
     const container = this.scrollContainer.nativeElement;
     container.scrollTop = container.scrollHeight;

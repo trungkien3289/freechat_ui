@@ -178,7 +178,8 @@
 
 ::ng-deep nz-select.multiple-select-phone-number {
   nz-select-top-control {
-    border-radius: 10px;
+    border-radius: 10px !important;
+    padding: 5px !important;
   }
 }
 
@@ -196,4 +197,69 @@
 
 .hide-element {
   height: 0;
+}
+
+.emoji-picker-container {
+  position: relative;
+  height: 30px;
+  // overflow: hidden;
+  button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+  }
+
+  .emoji-icon {
+    color: #979797;
+  }
+
+  .picker {
+    z-index: 3;
+    position: absolute;
+    transform: scale(0.8);
+    transform-origin: top left;
+  }
+}
+
+.btn-scroll-down {
+  position: absolute;
+  bottom: 70px;
+  right: 5px;
+  margin: 10px;
+  background-color: #3498db;
+  color: white;
+  border-radius: 50%;
+  padding: 10px;
+  cursor: pointer;
+
+  animation: borderPulse 1000ms infinite ease-out,
+    colorShift 10000ms infinite ease-in;
+}
+
+/* Declate color shifting animation */
+@keyframes colorShift {
+  0%,
+  100% {
+    background: #3498db;
+  }
+  33% {
+    background: #3498db;
+  }
+  66% {
+    background: #3498db;
+  }
+}
+
+/* Declare border pulse animation */
+@keyframes borderPulse {
+  0% {
+    box-shadow: inset 0px 0px 0px 5px rgba(255, 255, 255, 0.4),
+      0px 0px 0px 0px rgba(255, 255, 255, 1);
+  }
+  100% {
+    box-shadow: inset 0px 0px 0px 3px rgba(117, 117, 255, 0.2),
+      0px 0px 0px 10px rgba(255, 255, 255, 0);
+  }
 }

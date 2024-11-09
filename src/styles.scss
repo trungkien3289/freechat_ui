@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 // @import "../node_modules/ng-zorro-antd/ng-zorro-antd.less";
+@import "@ctrl/ngx-emoji-mart/picker";
 @import "./assets/styles/custom-scroll.scss";
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
@@ -33,4 +34,7 @@ input:focus {
   color: #3498db;
 }
 
-
+.btn-active {
+  background-color: #3498db !important;
+  color: #fff !important;
+}

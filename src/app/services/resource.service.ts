@@ -39,7 +39,12 @@ export class ResourceService {
   getPhoneNumbers = async (userId: string): Promise<PhoneNumber[]> => {
     try {
       let res: {
-        pingerPhones: { phoneNumber: string; _id: string; name: string }[];
+        pingerPhones: {
+          phoneNumber: string;
+          _id: string;
+          name: string;
+          isExpired: boolean;
+        }[];
       } = (await firstValueFrom(
         this.http.get(`${this.apiUrl}/api/user/${userId}`)
       )) as any;
@@ -52,7 +57,7 @@ export class ResourceService {
             Utils.removeCountryCode(item.phoneNumber)
           ),
           newMessageCount: 0,
-          unAuthorized: false,
+          expired: item.isExpired,
         };
       });
 
@@ -262,7 +267,6 @@ export class ResourceService {
           ).getTime()
         );
       });
-    // .sort((a, b) => a.conversationType.localeCompare(b.conversationType));
   };
 
   replacePhoneNumber = async (
