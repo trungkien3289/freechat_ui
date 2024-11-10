@@ -50,6 +50,9 @@ export class ConversationBoxComponent
 
   @Input() set contact(contactGroup: ContactMessageGroup | undefined) {
     if (!!contactGroup && contactGroup.id !== this.contactGroup?.id) {
+      if (this.contactGroup != null) {
+        this._GroupContactCacheService.clearUnsentMessage(this.contactGroup.id);
+      }
       this.resetChatBox();
       this.contactGroup = contactGroup;
       this._GroupContactCacheService.setLastSeen(
@@ -151,6 +154,10 @@ export class ConversationBoxComponent
   }
 
   ngOnDestroy(): void {
+    if (this.contactGroup != null) {
+      this._GroupContactCacheService.clearUnsentMessage(this.contactGroup.id);
+    }
+
     this.resetChatBox();
     this.stopFetchMessageInterval();
   }
@@ -260,7 +267,6 @@ export class ConversationBoxComponent
   };
 
   resetChatBox = () => {
-    clearInterval(this.fetchMessageInterval);
     this.messageViewItems = [];
     this.reTryError = 10;
     this.myForm.reset();

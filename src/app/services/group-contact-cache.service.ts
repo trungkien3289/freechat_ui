@@ -23,6 +23,12 @@ export class GroupContactCacheService {
     };
   };
 
+  clearUnsentMessage = (groupId: string) => {
+    if (this.groupDic[groupId]) {
+      this.groupDic[groupId].unSentMessages = [];
+    }
+  };
+
   getGroupUnsentMessage = (groupId: string): ContactMessage[] => {
     return this.groupDic[groupId]?.unSentMessages || [];
   };
