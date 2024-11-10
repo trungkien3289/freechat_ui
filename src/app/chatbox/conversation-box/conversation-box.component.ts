@@ -152,6 +152,7 @@ export class ConversationBoxComponent
 
   ngOnDestroy(): void {
     this.resetChatBox();
+    this.stopFetchMessageInterval();
   }
 
   startFetchMessageInterval = (
@@ -170,11 +171,10 @@ export class ConversationBoxComponent
           groupId
         );
 
-        if (this.isScrollAtBottom()) {
-          this.scrollToBottom();
-        }
-
         if (this.contactGroup.messages.length != messages.length) {
+          if (this.isScrollAtBottom()) {
+            this.scrollToBottom();
+          }
           this.sendMessageSuccess.emit();
         }
 
@@ -289,7 +289,7 @@ export class ConversationBoxComponent
 
   debouncedSubmit = debounce(async () => {
     if (this.isRecording) return;
-    this.stopFetchMessageInterval();
+    // this.stopFetchMessageInterval();
     this.isLoading = true;
 
     try {
@@ -325,14 +325,14 @@ export class ConversationBoxComponent
 
     this.isLoading = false;
     this.scrollToBottom();
-    this.startFetchMessageInterval(
-      this.contactGroup.currentPhoneNumber.id,
-      this.contactGroup.currentPhoneNumber.phoneNumber,
-      this._first(
-        [...this.contactGroup.to, this.contactGroup.from].filter((n) => !n.own)
-      )?.TN || '',
-      this.contactGroup.id
-    );
+    // this.startFetchMessageInterval(
+    //   this.contactGroup.currentPhoneNumber.id,
+    //   this.contactGroup.currentPhoneNumber.phoneNumber,
+    //   this._first(
+    //     [...this.contactGroup.to, this.contactGroup.from].filter((n) => !n.own)
+    //   )?.TN || '',
+    //   this.contactGroup.id
+    // );
   }, 200);
 
   verifyHasNewMessage = async (): Promise<boolean> => {
