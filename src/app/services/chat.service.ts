@@ -7,14 +7,8 @@ import {
   PhoneComunicationType,
   PhoneShortSummary,
 } from '../models/phone-comunication.model';
-import { firstValueFrom, Observable } from 'rxjs';
-import { PhoneNumber } from '../models/phone-number.model';
-import {
-  ContactMessage,
-  ContactMessageGroup,
-  SendStatus,
-} from '../models/contact-message.model';
-import { ca } from 'date-fns/locale';
+import { firstValueFrom } from 'rxjs';
+import { ContactMessage, SendStatus } from '../models/contact-message.model';
 import { Utils } from '../utilities/utils';
 import _ from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
@@ -49,7 +43,7 @@ export class ChatService {
       // }
       const res = await firstValueFrom(
         this.http.post(
-          `${this.apiUrl}/api/user/phone/${fromPhoneNumberId}/message`,
+          `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/message`,
           {
             text,
             to,
@@ -76,7 +70,7 @@ export class ChatService {
     try {
       const res = await firstValueFrom(
         this.http.post(
-          `${this.apiUrl}/api/user/phone/${fromPhoneNumberId}/message`,
+          `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/message`,
           {
             media: { image: imageUrl },
             to,
@@ -103,7 +97,7 @@ export class ChatService {
     try {
       const res = await firstValueFrom(
         this.http.post(
-          `${this.apiUrl}/api/user/phone/${fromPhoneNumberId}/message`,
+          `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/message`,
           {
             media: { audio: audioUrl },
             to,
@@ -144,7 +138,7 @@ export class ChatService {
       };
       let res: any = (await firstValueFrom(
         this.http.post(
-          `${this.apiUrl}/api/user/phone/${fromPhoneNumberId}/request`,
+          `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/request`,
           requestBody
         )
       )) as any;
@@ -221,7 +215,7 @@ export class ChatService {
       };
       let res: any = (await firstValueFrom(
         this.http.post(
-          `${this.apiUrl}/api/user/phone/${fromPhoneNumberId}/request`,
+          `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/request`,
           requestBody
         )
       )) as any;

@@ -33,7 +33,7 @@ export class LoginComponent {
           this.userService.login(this.loginForm.value)
         );
         localStorage.setItem('token', response.token);
-        this.router.navigate(['/emotion']);
+        this.router.navigate(['/chatbox']);
       } catch (error: any) {
         this.errorMessages = 'Sign in failed. Please try again.';
       }

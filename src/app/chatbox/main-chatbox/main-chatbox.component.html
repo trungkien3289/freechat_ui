@@ -1,45 +1,28 @@
-<div class="vh-100 p-0">
+<div class="h-100 p-0">
   <div class="d-flex flex-row h-100 m-0 main-chat-container">
     <div class="bg-light border-end h-100 phone-list-panel">
       <div class="h-100">
-        <app-phone-number-list
-          [userId]="userId"
-          [selectedPhoneNumberId]="selectedPhoneNumberItem?.id"
-          [phoneNumbers]="phoneNumbers"
-          (onSelectItem)="selectPhoneNumber($event)"
-          (replacePhoneNumberSuccess)="replacePhoneNumberSuccess($event)"
-        ></app-phone-number-list>
+        <app-phone-number-list [userId]="userId" [selectedPhoneNumberId]="selectedPhoneNumberItem?.id"
+          [phoneNumbers]="phoneNumbers" (onSelectItem)="selectPhoneNumber($event)"
+          (replacePhoneNumberSuccess)="replacePhoneNumberSuccess($event)"></app-phone-number-list>
       </div>
     </div>
 
     <div class="bg-white border-end h-100 contact-panel">
       <div class="h-100" *ngIf="selectedContact != null">
-        <app-contact-list
-          [selectedContactId]="selectedContact.id"
-          [phoneNumber]="selectedPhoneNumberItem"
-          [contactMessageGroups]="contactMessageGroups"
-          (onSelectItem)="selectContactItem($event)"
-        ></app-contact-list>
+        <app-contact-list [selectedContactId]="selectedContact.id" [phoneNumber]="selectedPhoneNumberItem"
+          [contactMessageGroups]="contactMessageGroups" (onSelectItem)="selectContactItem($event)"></app-contact-list>
       </div>
     </div>
 
-    <div
-      class="flex-grow-1 bg-light d-flex flex-column h-100 chatbox-panel"
-      id="chatbox-column"
-    >
+    <div class="flex-grow-1 bg-light d-flex flex-column h-100 chatbox-panel" id="chatbox-column">
       @if (selectedContact?.conversationType == 'Group') {
-      <app-group-conversation-box
-        style="height: 100%"
-        [contact]="selectedContact"
-        (sendMessageGroupSuccess)="sendMessageConversationSuccess()"
-      ></app-group-conversation-box>
+      <app-group-conversation-box style="height: 100%" [contact]="selectedContact"
+        (sendMessageGroupSuccess)="sendMessageConversationSuccess()"></app-group-conversation-box>
       }@else {
-      <app-conversation-box
-        style="height: 100%"
-        [contact]="selectedContact"
+      <app-conversation-box style="height: 100%" [contact]="selectedContact"
         (sendMessageSuccess)="sendMessageConversationSuccess()"
-        (markPhoneAsDown)="markPhoneAsDownHandler($event)"
-      ></app-conversation-box>
+        (markPhoneAsDown)="markPhoneAsDownHandler($event)"></app-conversation-box>
       }
     </div>
   </div>

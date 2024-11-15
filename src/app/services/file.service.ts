@@ -28,14 +28,9 @@ export class FileService {
   ): Promise<string> => {
     try {
       const formData = new FormData();
-      formData.append('file', file as any, fileName); // Append file to form data
-      // formData.append(
-      //   'type',
-      //   itemType == ConversationItemType.AUDIO ? 'stream' : 'images/v1'
-      // );
-
+      formData.append('file', file as any, fileName);
       const res: any = await firstValueFrom(
-        this.http.post(`${this.apiUrl}/api/pinger/attachments/upload`, formData)
+        this.http.post(`${this.apiUrl}/api/chat/attachments/upload`, formData)
       );
 
       return res?.url || '';

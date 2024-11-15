@@ -3,15 +3,17 @@ import { RouterModule, Routes } from '@angular/router';
 import { ChatboxLayoutComponent } from './chatbox-layout/chatbox-layout.component';
 import { MainChatboxComponent } from './main-chatbox/main-chatbox.component';
 import { NzListModule } from 'ng-zorro-antd/list';
+import { AuthGuard } from '../gaurds/auth.guard';
 
 const routes: Routes = [
   {
     path: '',
     component: ChatboxLayoutComponent, // This is the common layout
+    canActivate: [AuthGuard],
     children: [
       // { path: 'main', component: MainChatboxComponent }, // Select Emotion page
-      { path: '', redirectTo: 'user/', pathMatch: 'full' }, // Default route
-      { path: 'user/:id', component: MainChatboxComponent },
+      { path: '', pathMatch: 'full', component: MainChatboxComponent }, // Default route
+      // { path: 'user/:id', component: MainChatboxComponent },
     ],
   },
 ];

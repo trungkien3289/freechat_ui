@@ -38,18 +38,17 @@ export class ResourceService {
 
   getPhoneNumbers = async (userId: string): Promise<PhoneNumber[]> => {
     try {
-      let res: {
-        pingerPhones: {
-          phoneNumber: string;
-          _id: string;
-          name: string;
-          isExpired: boolean;
-        }[];
-      } = (await firstValueFrom(
-        this.http.get(`${this.apiUrl}/api/user/${userId}`)
+      let pingerPhones: {
+        phoneNumber: string;
+        _id: string;
+        name: string;
+        isExpired: boolean;
+        isError: boolean;
+      }[] = (await firstValueFrom(
+        this.http.get(`${this.apiUrl}/api/chat/user/phones`)
       )) as any;
 
-      let phoneNumbers = res.pingerPhones.map((item) => {
+      let phoneNumbers = pingerPhones.map((item) => {
         return {
           id: item._id,
           phoneNumber: item.phoneNumber,
@@ -58,6 +57,8 @@ export class ResourceService {
           ),
           newMessageCount: 0,
           expired: item.isExpired,
+          isError: item.isError,
+          failCount: 0,
         };
       });
 
@@ -70,7 +71,6 @@ export class ResourceService {
   getComunications = async (
     phoneNumber: PhoneNumber
   ): Promise<ContactMessageGroup[]> => {
-    // try {
     let requestBody = {
       requests: [
         {
@@ -87,7 +87,7 @@ export class ResourceService {
     };
     let res: any = (await firstValueFrom(
       this.http.post(
-        `${this.apiUrl}/api/user/phone/${phoneNumber.id}/request`,
+        `${this.apiUrl}/api/chat/phone/${phoneNumber.id}/request`,
         requestBody
       )
     )) as any;
@@ -102,9 +102,6 @@ export class ResourceService {
     );
 
     return this.groupCommunications(communications, phoneNumber);
-    // } catch (ex) {
-    //   throw 'Get Phone Number info error';
-    // }
   };
 
   groupCommunications = (
@@ -274,7 +271,7 @@ export class ResourceService {
   ): Promise<PhoneNumber> => {
     try {
       let res: any = (await firstValueFrom(
-        this.http.post(`${this.apiUrl}/api/user/phone/replace`, {
+        this.http.post(`${this.apiUrl}/api/chat/phone/replace`, {
           phoneId: phoneNumber.id,
         })
       )) as any;
@@ -285,19 +282,21 @@ export class ResourceService {
     }
   };
 
-  expirePhoneNumber = async (
-    phoneNumber: PhoneNumber
+  markPhoneNumberAsError = async (
+    phoneNumber: PhoneNumber,
+    errorDescription: string
   ): Promise<PhoneNumber> => {
     try {
       let res: any = (await firstValueFrom(
-        this.http.post(`${this.apiUrl}/api/pinger/expire/${phoneNumber.id}`, {
-          isExpired: true,
+        this.http.post(`${this.apiUrl}/api/chat/phone/mark-as-error`, {
+          phoneId: phoneNumber.id,
+          errorDescription: errorDescription,
         })
       )) as any;
 
       return res.newPhoneNumber;
     } catch (ex) {
-      throw 'Expire phone number error';
+      throw 'Mark phone number as error failed.';
     }
   };
 }

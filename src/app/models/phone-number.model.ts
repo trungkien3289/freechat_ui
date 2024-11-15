@@ -4,4 +4,6 @@ export type PhoneNumber = {
   name: string;
   newMessageCount: number;
   expired: boolean;
+  isError: boolean;
+  failCount: number;
 };

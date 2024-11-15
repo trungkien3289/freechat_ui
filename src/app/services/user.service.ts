@@ -6,6 +6,7 @@ import { environment } from '../environment';
 import { EnvService } from './env.service';
 
 interface DecodedToken {
+  id: string;
   userName: string;
   exp: number;
   iat: number;
@@ -30,7 +31,7 @@ export class UserService {
   }
 
   login(user: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/login`, user);
+    return this.http.post(`${this.apiUrl}/auth/login-jwt`, user);
   }
 
   submitEmotion(emotion: string, description: string): Observable<any> {
@@ -68,5 +69,10 @@ export class UserService {
   getUsername(): string | null {
     const decodedToken = this.getDecodedToken();
     return decodedToken ? decodedToken.userName : null;
+  }
+
+  getUserId(): string {
+    const decodedToken = this.getDecodedToken();
+    return decodedToken ? decodedToken.id : '';
   }
 }

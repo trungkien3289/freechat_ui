@@ -19,8 +19,10 @@ import { GroupContactCacheService } from '../../services/group-contact-cache.ser
 import { from, mergeMap } from 'rxjs';
 import { ContactListComponent } from '../contact-list/contact-list.component';
 import _ from 'lodash';
+import { UserService } from '../../services/user.service';
 
 const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 20000;
+const LIMIT_SEND_MESSAGE_FAIL = 3;
 
 @Component({
   selector: 'app-main-chatbox',
@@ -40,7 +42,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     private _ResourceService: ResourceService,
     private _NotificationService: NotificationService,
     private _LocalStorageService: LocalStorageService,
-    private _GroupContactCacheService: GroupContactCacheService
+    private _GroupContactCacheService: GroupContactCacheService,
+    private _UserService: UserService
   ) {}
   ngOnDestroy(): void {
     this.stopCheckNewMessageInterval();
@@ -56,7 +59,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._ActivatedRoute.paramMap.subscribe((params) => {
-      this.userId = params.get('id') || '';
+      this.userId = this._UserService.getUserId();
       console.log('User ID:', this.userId);
     });
 
@@ -76,13 +79,15 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       this.phoneNumbers = items;
 
       // set the first item as selected
-      if (items.length > 0) {
-        this.selectPhoneNumber(items[0]);
+      if (items.length > 0 && items.some((p) => !p.expired && !p.isError)) {
+        let availablePhoneNumbers = items.filter(
+          (p) => !p.expired && !p.isError
+        );
+        this.selectPhoneNumber(availablePhoneNumbers[0]);
       }
 
       return items;
     } catch (error: any) {
-      // console.error(error);
       this._NotificationService.error(error);
     }
 
@@ -111,11 +116,13 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   };
 
   selectPhoneNumber = async (phoneNumber: PhoneNumber) => {
-    console.log('Phone number is selected', phoneNumber.phoneNumber);
-    this.selectedPhoneNumberItem = phoneNumber;
-    await this.reloadContactList(phoneNumber);
-    this.selectContactItem(this.contactMessageGroups[0]);
-    this.checkNewMessageComming(phoneNumber);
+    if (!phoneNumber.isError && !phoneNumber.expired) {
+      console.log('Phone number is selected', phoneNumber.phoneNumber);
+      this.selectedPhoneNumberItem = phoneNumber;
+      await this.reloadContactList(phoneNumber);
+      this.selectContactItem(this.contactMessageGroups[0]);
+      this.checkNewMessageComming(phoneNumber);
+    }
   };
 
   reloadContactList = async (phoneNumber: PhoneNumber) => {
@@ -266,13 +273,12 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
       return contactMessageGroups;
     } catch (error: any) {
-      // console.error(error);
       // handle 'Reauthorize and try again' error
       if (
         _.isString(error.error) &&
         error.error.trim('\n') == 'Reauthorize and try again'
       ) {
-        this.setPhoneNumberAsExpired(phoneNumber);
+        this.markPhoneAsError(phoneNumber, 'Reauthorize and try again');
       }
     }
 
@@ -283,10 +289,13 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     clearInterval(this.newCommingMessageInterval);
   };
 
-  setPhoneNumberAsExpired = (phoneNumber: PhoneNumber) => {
-    phoneNumber.expired = true;
-    // call api to set phone number as unAuthorized
-    this._ResourceService.expirePhoneNumber(phoneNumber);
+  markPhoneAsError = (phoneNumber: PhoneNumber, errorDescription: string) => {
+    let found = this.phoneNumbers.find((p) => p.id === phoneNumber.id);
+    if (found) {
+      found.isError = true;
+      // call api to set phone number as unAuthorized
+      this._ResourceService.markPhoneNumberAsError(found, errorDescription);
+    }
   };
 
   replacePhoneNumberSuccess = (data: {
@@ -308,7 +317,15 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   markPhoneAsDownHandler = (phoneNumberId: string) => {
     let found = this.phoneNumbers.find((p) => p.id === phoneNumberId);
     if (found) {
-      found.expired = true;
+      found.failCount++;
+      if (found.failCount > LIMIT_SEND_MESSAGE_FAIL) {
+        found.isError = true;
+        // call api to set phone number as unAuthorized
+        this._ResourceService.markPhoneNumberAsError(
+          found,
+          'Exceed limit send message fail'
+        );
+      }
     }
   };
 }

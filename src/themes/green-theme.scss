@@ -1,8 +1,10 @@
 // dark-theme.scss
 $background-color: #121212;
 $text-color: #ffffff;
-$primary-color: #40a578;
-$accent-color: #006769;
+$primary-color: #7371fc;
+$accent-color: #cdc1ff;
+$third-color: #9449fb;
+$menu-color: #4846c9;
 
 body.green-theme {
   .main-bg-color {
@@ -10,8 +12,21 @@ body.green-theme {
     background: linear-gradient(180deg, $primary-color, #ffffff);
   }
 
+  .menu-bg-color {
+    background-color: $menu-color;
+  }
+
   .primary-bg-color {
     background-color: $primary-color;
+  }
+
+  .accent-bg-color {
+    background-color: $accent-color;
+  }
+
+  .message-sender-color {
+    background-color: $third-color;
+    color: #fff;
   }
 
   .primary-text-color {

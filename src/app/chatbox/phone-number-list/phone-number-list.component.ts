@@ -44,23 +44,6 @@ export class PhoneNumberListComponent implements OnInit {
     private _NotificationService: NotificationService
   ) {}
 
-  // ngOnChanges(changes: SimpleChanges) {
-  //   if (
-  //     changes['phoneNumbers'] &&
-  //     changes['phoneNumbers'].currentValue !==
-  //       changes['phoneNumbers'].previousValue
-  //   ) {
-  //     let foundContact = this.phoneNumbers.find(
-  //       (c) => c.id === this.selectedPhoneNumberId
-  //     );
-  //     if (this.selectedPhoneNumberId == null || foundContact == null) {
-  //       this.selectPhoneNumber(this.phoneNumbers[0]);
-  //     } else {
-  //       this.selectPhoneNumber(foundContact);
-  //     }
-  //   }
-  // }
-
   ngOnInit(): void {
     this.filteredPhones$ = this.searchControl.valueChanges.pipe(
       startWith(''),

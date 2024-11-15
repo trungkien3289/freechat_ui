@@ -5,12 +5,7 @@
       <i class="fa fa-info-circle me-2 primary-color fs-5"></i>
       <span class="fw-bold group-label">Group: </span>
       <span class="fs-6 flex-grow-1">{{ contactGroup.name }}</span>
-      <button
-        *ngIf="isNewGroupConversation"
-        nz-button
-        nzType="text"
-        (click)="resetNewGroupConversation()"
-      >
+      <button *ngIf="isNewGroupConversation" nz-button nzType="text" (click)="resetNewGroupConversation()">
         <i class="fa fa-repeat me-2" aria-hidden="true"></i>
         Reset
       </button>
@@ -20,31 +15,19 @@
       <span class="fw-bold group-label">From: </span>
       <span class="fs-6 flex-grow-1">{{
         contactGroup.currentPhoneNumber.name
-      }}</span>
+        }}</span>
     </div>
 
     <div class="d-flex flex-row py-2 align-items-center">
       <i class="fa fa-users me-1 primary-color fs-5"></i>
       <span class="fw-bold group-label">To: </span>
       @if(isNewGroupConversation){
-      <nz-select
-        class="w-100 multiple-select-phone-number border-round"
-        [(ngModel)]="listOfTagOptions"
-        [nzBorderless]="false"
-        [nzDropdownStyle]="{ display: 'none' }"
-        (ngModelChange)="onToNumbersChange($event)"
-        [nzOpen]="false"
-        nzMode="tags"
-        [nzTokenSeparators]="[',']"
-        nzPlaceHolder="Input phone number"
-        [nzCustomTemplate]="defaultTemplate"
-        [disabled]="!isNewGroupConversation"
-      >
+      <nz-select class="w-100 multiple-select-phone-number border-round" [(ngModel)]="listOfTagOptions"
+        [nzBorderless]="false" [nzDropdownStyle]="{ display: 'none' }" (ngModelChange)="onToNumbersChange($event)"
+        [nzOpen]="false" nzMode="tags" [nzTokenSeparators]="[',']" nzPlaceHolder="Input phone number"
+        [nzCustomTemplate]="defaultTemplate" [disabled]="!isNewGroupConversation">
         @for (option of listOfOption; track option.value) {
-        <nz-option
-          [nzLabel]="option.label"
-          [nzValue]="option.value"
-        ></nz-option>
+        <nz-option [nzLabel]="option.label" [nzValue]="option.value"></nz-option>
         }
       </nz-select>
       <ng-template #defaultTemplate let-selected>
@@ -53,25 +36,18 @@
       }@else {
       <span class="d-flex flex-row py-2 align-items-center fs-6">{{
         contactGroup.name
-      }}</span>
+        }}</span>
       }
     </div>
   </div>
 
   <div class="message flex-grow-1 p-2 pe-5" id="conversation" #scrollContainer>
-    <button
-      nz-button
-      nzType="primary"
-      class="btn-scroll-down"
-      (click)="scrollToBottom()"
-    >
+    <button nz-button nzType="primary" class="btn-scroll-down" (click)="scrollToBottom()">
       <span nz-icon nzType="down"></span>
     </button>
     @if(!!messageViewItems && messageViewItems.length > 0){ @for (messageItem of
     messageViewItems; track messageItem) {
-    <ng-container
-      *ngTemplateOutlet="messageTemplate; context: { messageItem: messageItem }"
-    ></ng-container>
+    <ng-container *ngTemplateOutlet="messageTemplate; context: { messageItem: messageItem }"></ng-container>
     } }@else {
     <div class="h-100 w-100 d-flex align-items-center justify-content-center">
       <nz-empty [nzNotFoundContent]="null"></nz-empty>
@@ -80,26 +56,13 @@
     }
   </div>
 
-  <form
-    class="reply d-flex flex-column align-items-center"
-    [formGroup]="myForm"
-    (ngSubmit)="sendMessageBtnClick()"
-  >
-    <div
-      class="d-flex flex-row w-100 overflow-hidden"
-      [ngClass]="{
+  <form class="reply d-flex flex-column align-items-center" [formGroup]="myForm" (ngSubmit)="sendMessageBtnClick()">
+    <div class="d-flex flex-row w-100 overflow-hidden" [ngClass]="{
         'hide-element': fileList.length == 0
-      }"
-    >
-      <nz-upload
-        #uploadComponent
-        nzAccept=".jpg,.jpeg,.png,.gif"
-        nzListType="picture-card"
-        [(nzFileList)]="fileList"
-        [nzShowButton]="fileList.length > 0 && fileList.length < 8"
-        [nzPreview]="handlePreview"
-        [nzCustomRequest]="customRequestUploadImage"
-      >
+      }">
+      <nz-upload #uploadComponent nzAccept=".jpg,.jpeg,.png,.gif" nzListType="picture-card" [(nzFileList)]="fileList"
+        [nzShowButton]="fileList.length > 0 && fileList.length < 8" [nzPreview]="handlePreview"
+        [nzCustomRequest]="customRequestUploadImage">
         <div>
           <span nz-icon nzType="plus"></span>
           <div style="margin-top: 8px">Upload</div>
@@ -108,55 +71,25 @@
     </div>
     <div class="reply-main d-flex flex-row w-100 align-items-center">
       @if(!isRecording){
-      <div
-        class="d-flex flex-row flex-grow-1 align-items-center border-round me-1 bg-white p-1 position-relative"
-      >
-        <emoji-mart
-          [style]="{ position: 'absolute', bottom: '50px', left: '0px' }"
-          emoji="picker"
-          *ngIf="isEmojiPickerVisible"
-          class="emoji-mart"
-          (emojiSelect)="addEmoji($event)"
-          title="Choose your emoji"
-        ></emoji-mart>
+      <div class="d-flex flex-row flex-grow-1 align-items-center border-round me-1 bg-white p-1 position-relative">
+        <emoji-mart [style]="{ position: 'absolute', bottom: '50px', left: '0px' }" emoji="picker"
+          *ngIf="isEmojiPickerVisible" class="emoji-mart" (emojiSelect)="addEmoji($event)"
+          title="Choose your emoji"></emoji-mart>
         <div class="emoji-picker-container">
-          <button
-            nz-button
-            class="me-1"
-            nzType="text"
-            nzShape="circle"
-            (click)="isEmojiPickerVisible = !isEmojiPickerVisible"
-          >
+          <button nz-button class="me-1" nzType="text" nzShape="circle"
+            (click)="isEmojiPickerVisible = !isEmojiPickerVisible">
             <i class="fa fa-smile-o fs-4 emoji-icon" aria-hidden="true"></i>
           </button>
         </div>
 
-        <textarea
-          class="no-border flex-grow-1 text-muted"
-          nz-input
-          formControlName="textInput"
-          placeholder="Type a message"
-          [nzAutosize]="{ maxRows: 6 }"
-          (keydown)="onKeydown($event)"
-        ></textarea>
+        <textarea class="no-border flex-grow-1 text-muted" nz-input formControlName="textInput"
+          placeholder="Type a message" [nzAutosize]="{ maxRows: 6 }" (keydown)="onKeydown($event)"></textarea>
 
-        <button
-          nz-button
-          class="me-1"
-          nzType="text"
-          nzShape="circle"
-          (click)="sendMessageBtnClick()"
-        >
+        <button nz-button class="me-1" nzType="text" nzShape="circle" (click)="sendMessageBtnClick()">
           <i class="fa fa-send text-primary" aria-hidden="true"></i>
         </button>
       </div>
-      <button
-        nz-button
-        class="me-1"
-        nzType="primary"
-        nzShape="circle"
-        (click)="triggerUploadDialog()"
-      >
+      <button nz-button class="me-1" nzType="primary" nzShape="circle" (click)="triggerUploadDialog()">
         <i class="fa fa-picture-o" aria-hidden="true"></i>
       </button>
       <!-- <button
@@ -169,34 +102,16 @@
       </button> -->
       }@else {
       <div class="d-flex flex-row align-items-center w-100">
-        <div
-          class="d-flex flex-row align-items-center rounded-pill recording-panel flex-grow-1 me-1 px-1"
-        >
-          <button
-            nz-button
-            class="me-1"
-            nzType="text"
-            nzShape="circle"
-            (click)="abortRecording()"
-          >
+        <div class="d-flex flex-row align-items-center rounded-pill recording-panel flex-grow-1 me-1 px-1">
+          <button nz-button class="me-1" nzType="text" nzShape="circle" (click)="abortRecording()">
             <i class="fa fa-times" aria-hidden="true"></i>
           </button>
-          <nz-progress
-            class="flex-grow-1 me-1"
-            nzStrokeLinecap="round"
-            [nzShowInfo]="false"
-            nzPercent="{{ recordingPercentage }}"
-          ></nz-progress>
+          <nz-progress class="flex-grow-1 me-1" nzStrokeLinecap="round" [nzShowInfo]="false"
+            nzPercent="{{ recordingPercentage }}"></nz-progress>
           <span>{{ recordedTime }}</span>
         </div>
 
-        <button
-          nz-button
-          nzType="primary"
-          [nzSize]="'default'"
-          nzShape="round"
-          (click)="sendAudioMessageClick()"
-        >
+        <button nz-button nzType="primary" [nzSize]="'default'" nzShape="round" (click)="sendAudioMessageClick()">
           <i class="fa fa-send" style="font-size: 12px" aria-hidden="true"></i>
         </button>
       </div>
@@ -211,35 +126,25 @@
 
 <ng-template #messageTemplate let-messageItem="messageItem">
   @switch (messageItem.itemType) { @case ('message') {
-  <div
-    class="d-flex py-2"
-    [ngClass]="{
+  <div class="d-flex py-2" [ngClass]="{
     'flex-row': !messageItem.isOutgoing,
     'flex-row-reverse': messageItem.isOutgoing,
-  }"
-  >
-    <div
-      [ngClass]="{
+  }">
+    <div [ngClass]="{
         'message-main-receiver': !messageItem.isOutgoing,
         'message-main-sender': messageItem.isOutgoing,
-      }"
-    >
-      <div
-        [ngClass]="{
+      }">
+      <div [ngClass]="{
           receiver: !messageItem.isOutgoing,
-          sender: messageItem.isOutgoing
-        }"
-      >
-        <div
-          class="message-text d-flex flex-row align-items-center justify-content-between"
-        >
+          sender: messageItem.isOutgoing,
+          'message-sender-color': messageItem.isOutgoing
+        }">
+        <div class="message-text d-flex flex-row align-items-center justify-content-between">
           <span class="mx-3 text-wrap">{{ messageItem.text }}</span>
-          <ng-container
-            *ngTemplateOutlet="
+          <ng-container *ngTemplateOutlet="
               messageStatusTemplate;
               context: { status: messageItem.sendStatus }
-            "
-          ></ng-container>
+            "></ng-container>
         </div>
         <span class="message-time pull-right">
           {{ messageItem.formattedTime }}
@@ -250,41 +155,25 @@
   } @case ('date_group_separate_line') {
   <nz-divider nzPlain nzText="{{ messageItem.formattedTime }}"></nz-divider>
   } @case ('image') {
-  <div
-    class="d-flex w-100 py-2"
-    [ngClass]="{
+  <div class="d-flex w-100 py-2" [ngClass]="{
     'flex-row': !messageItem.isOutgoing,
     'flex-row-reverse': messageItem.isOutgoing,
-  }"
-  >
-    <div
-      class="d-flex flex-column"
-      [ngClass]="{
+  }">
+    <div class="d-flex flex-column" [ngClass]="{
         'message-main-receiver': !messageItem.isOutgoing,
         'message-main-sender': messageItem.isOutgoing,
         receiver: !messageItem.isOutgoing,
         sender: messageItem.isOutgoing
-      }"
-    >
+      }">
       <div class="d-flex flex-row">
-        <img
-          nz-image
-          width="200px"
-          height="auto"
-          nzSrc="{{ messageItem?.media?.image }}"
-          alt=""
-          class="me-1"
-          [ngClass]="{
+        <img nz-image width="200px" height="auto" nzSrc="{{ messageItem?.media?.image }}" alt="" class="me-1" [ngClass]="{
           'align-self-start': !messageItem.isOutgoing,
           'align-self-end': messageItem.isOutgoing,
-        }"
-        />
-        <ng-container
-          *ngTemplateOutlet="
+        }" />
+        <ng-container *ngTemplateOutlet="
             messageStatusTemplate;
             context: { status: messageItem.sendStatus }
-          "
-        ></ng-container>
+          "></ng-container>
       </div>
       <span class="message-time pull-right">
         {{ messageItem.formattedTime }}
@@ -292,32 +181,24 @@
     </div>
   </div>
   } @case ('audio') {
-  <div
-    class="d-flex py-2"
-    [ngClass]="{
+  <div class="d-flex py-2" [ngClass]="{
     'flex-row': !messageItem.isOutgoing,
     'flex-row-reverse': messageItem.isOutgoing,
-  }"
-  >
-    <div
-      class="d-flex flex-column"
-      [ngClass]="{
+  }">
+    <div class="d-flex flex-column" [ngClass]="{
         'message-main-receiver': !messageItem.isOutgoing,
         'message-main-sender': messageItem.isOutgoing,
         receiver: !messageItem.isOutgoing,
         sender: messageItem.isOutgoing
-      }"
-    >
+      }">
       <div class="d-flex flex-row">
         <audio *ngIf="messageItem?.media?.audio" controls>
           <source [src]="messageItem.media.audio" type="audio/webm" />
         </audio>
-        <ng-container
-          *ngTemplateOutlet="
+        <ng-container *ngTemplateOutlet="
             messageStatusTemplate;
             context: { status: messageItem.sendStatus }
-          "
-        ></ng-container>
+          "></ng-container>
       </div>
       <span class="message-time pull-right">
         {{ messageItem.formattedTime }}
@@ -333,23 +214,15 @@
     <span class="visually-hidden">Loading...</span>
   </div>
   } @case ('sent') {
-  <i class="fa fa-check-circle" style="color: #079b33" aria-hidden="true"></i>
+  <i class="fa fa-check-circle" style="color: #a3f1b7" aria-hidden="true"></i>
 
   } @case ('failed') {
-  <i
-    class="fa fa-exclamation-circle"
-    style="color: #f30c0c"
-    aria-hidden="true"
-  ></i>
+  <i class="fa fa-exclamation-circle" style="color: #f30c0c" aria-hidden="true"></i>
   } @default { } }
 </ng-template>
 
-<nz-modal
-  [nzVisible]="previewVisible"
-  [nzContent]="modalContent"
-  [nzFooter]="null"
-  (nzOnCancel)="previewVisible = false"
->
+<nz-modal [nzVisible]="previewVisible" [nzContent]="modalContent" [nzFooter]="null"
+  (nzOnCancel)="previewVisible = false">
   <ng-template #modalContent>
     <img [src]="previewImage" [ngStyle]="{ width: '100%' }" />
   </ng-template>
