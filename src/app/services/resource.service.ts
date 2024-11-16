@@ -276,9 +276,23 @@ export class ResourceService {
         })
       )) as any;
 
-      return res.newPhoneNumber;
-    } catch (ex) {
-      throw 'Replace phone number error';
+      return {
+        id: res.newPhoneNumber._id,
+        phoneNumber: res.newPhoneNumber.phoneNumber,
+        name: Utils.formatPhoneNumberName(
+          Utils.removeCountryCode(res.newPhoneNumber.phoneNumber)
+        ),
+        newMessageCount: 0,
+        expired: res.newPhoneNumber.isExpired,
+        isError: res.newPhoneNumber.isError,
+        failCount: 0,
+      };
+    } catch (ex: any) {
+      if (ex.error && ex.error.message) {
+        throw ex.error.message;
+      } else {
+        throw 'Replace phone number error';
+      }
     }
   };
 
@@ -294,7 +308,7 @@ export class ResourceService {
         })
       )) as any;
 
-      return res.newPhoneNumber;
+      return res;
     } catch (ex) {
       throw 'Mark phone number as error failed.';
     }

@@ -17,6 +17,7 @@ import {
 } from 'rxjs';
 import { ResourceService } from '../../services/resource.service';
 import { NotificationService } from '../../services/notification.service';
+import _ from 'lodash';
 
 @Component({
   selector: 'app-phone-number-list',
@@ -76,7 +77,11 @@ export class PhoneNumberListComponent implements OnInit {
         newPhoneNumber,
       });
     } catch (ex) {
-      this._NotificationService.error('Error replace phone number');
+      if (_.isString(ex)) {
+        this._NotificationService.error(ex);
+      } else {
+        this._NotificationService.error('Error replace phone number');
+      }
     }
   };
 

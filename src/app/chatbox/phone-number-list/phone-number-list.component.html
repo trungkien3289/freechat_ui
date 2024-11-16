@@ -15,13 +15,14 @@
   </div>
   <div class="d-flex flex-column flex-grow-1 mt-2 list-container px-2">
     @for (phoneNumber of filteredPhones$ | async; track phoneNumber.id) {
-    <div class="d-flex flex-row hover-list-item cursor-pointer px-2 flex-grow-1"
-      [class.unauthorized-item-bg]="phoneNumber.expired" (click)="selectPhoneNumber(phoneNumber)"
-      [class.selected-item]="selectedPhoneNumberId == phoneNumber.id">
+    <div class="d-flex flex-row hover-list-item cursor-pointer px-2 flex-grow-1" [ngClass]="{
+        'expired-item-bg':phoneNumber.expired,
+        'error-item-bg':phoneNumber.isError,
+      }" (click)="selectPhoneNumber(phoneNumber)" [class.selected-item]="selectedPhoneNumberId == phoneNumber.id">
       <div class="d-flex flex-row align-items-center justify-content-between fs-lg px-1 w-100">
         <div class="d-flex flex-row align-items-center flex-grow-1">
           @if(phoneNumber.isError) {
-          <i class="fa fa-ban text-error fs-5 me-3" aria-hidden="true" nz-tooltip
+          <i class="fa fa-ban text-danger fs-5 me-3" aria-hidden="true" nz-tooltip
             nzTooltipTitle="Phone number is error"></i>
 
           }@else if(phoneNumber.expired) {
@@ -42,11 +43,11 @@
             {{ phoneNumber.name }}
           </span>
         </div>
-        @if(phoneNumber.expired) {
+        @if(phoneNumber.isError && !phoneNumber.expired) {
         <button nz-popconfirm nzPopconfirmTitle="Do you want to replace this phone number?"
           (nzOnConfirm)="repacePhoneNumber(phoneNumber)" nzPopconfirmPlacement="right" nz-button nzType="text"
-          nzShape="circle" nzSize="small">
-          <i class="fa fa-refresh" aria-hidden="true" style="color: #777777"></i>
+          nzShape="circle" nzSize="small" nz-tooltip nzTooltipTitle="Replace new phone number">
+          <i class="fa fa-refresh primary-color" aria-hidden="true"></i>
         </button>
         }
       </div>

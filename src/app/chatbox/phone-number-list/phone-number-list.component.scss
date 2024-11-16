@@ -14,18 +14,21 @@
   height: 50px;
 }
 
-.hover-list-item:hover {
-  // transform: scale(1.05); /* Slightly scale the item */
-  background-color: #f0f5ff; /* Change background color on hover */
+.hover-list-item:not(.expired-item-bg):not(.error-item-bg):hover {
+  background-color: #f0f5ff;
 }
 
 .selected-item {
-  background-color: #e6f7ff; /* Light blue background */
-  color: #1890ff; /* Primary text color */
-  font-weight: bold; /* Bold text */
-  border: 1px solid #91d5ff; /* Optional: border to highlight selection */
+  background-color: #e6f7ff;
+  color: #1890ff;
+  font-weight: bold;
+  border: 1px solid #91d5ff;
 }
 
-.unauthorized-item-bg {
+.expired-item-bg {
   background: antiquewhite;
+}
+
+.error-item-bg {
+  background: #ff575791;
 }

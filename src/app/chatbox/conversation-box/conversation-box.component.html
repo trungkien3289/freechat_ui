@@ -126,12 +126,14 @@
   <div class="d-flex w-100 py-2" [ngClass]="{
     'flex-row': !messageItem.isOutgoing,
     'flex-row-reverse': messageItem.isOutgoing,
+
   }">
     <div class="d-flex flex-column" [ngClass]="{
         'message-main-receiver': !messageItem.isOutgoing,
         'message-main-sender': messageItem.isOutgoing,
         receiver: !messageItem.isOutgoing,
-        sender: messageItem.isOutgoing
+        sender: messageItem.isOutgoing,
+        'message-sender-color': messageItem.isOutgoing
       }">
       <div class="d-flex flex-row">
         <img nz-image width="200px" height="auto" nzSrc="{{ messageItem?.media?.image }}" alt="" class="me-1" [ngClass]="{
@@ -152,12 +154,14 @@
   <div class="d-flex py-2" [ngClass]="{
     'flex-row': !messageItem.isOutgoing,
     'flex-row-reverse': messageItem.isOutgoing,
+
   }">
     <div class="d-flex flex-column" [ngClass]="{
         'message-main-receiver': !messageItem.isOutgoing,
         'message-main-sender': messageItem.isOutgoing,
         receiver: !messageItem.isOutgoing,
-        sender: messageItem.isOutgoing
+        sender: messageItem.isOutgoing,
+        'message-sender-color': messageItem.isOutgoing
       }">
       <div class="d-flex flex-row">
         <audio *ngIf="messageItem?.media?.audio" controls>

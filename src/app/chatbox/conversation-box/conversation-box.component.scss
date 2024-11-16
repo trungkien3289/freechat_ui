@@ -65,7 +65,18 @@
   margin-left: 50px !important;
   font-size: 12px;
   text-align: right;
-  color: #fff;
+}
+
+.receiver {
+  .message-time {
+    color: #000;
+  }
+}
+
+.sender {
+  .message-time {
+    color: #fff;
+  }
 }
 
 .receiver {
