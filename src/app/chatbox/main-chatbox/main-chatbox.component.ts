@@ -22,7 +22,7 @@ import _ from 'lodash';
 import { UserService } from '../../services/user.service';
 
 const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 20000;
-const LIMIT_SEND_MESSAGE_FAIL = 3;
+const LIMIT_SEND_MESSAGE_FAIL = 5;
 
 @Component({
   selector: 'app-main-chatbox',
@@ -278,7 +278,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
         _.isString(error.error) &&
         error.error.trim('\n') == 'Reauthorize and try again'
       ) {
-        this.markPhoneAsError(phoneNumber, 'Reauthorize and try again');
+        // this.markPhoneAsError(phoneNumber, 'Reauthorize and try again');
       }
     }
 
@@ -295,6 +295,21 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       found.isError = true;
       // call api to set phone number as unAuthorized
       this._ResourceService.markPhoneNumberAsError(found, errorDescription);
+    }
+  };
+
+  triggerPhoneAsError = (data: {
+    phoneNumberId: string;
+    errorDescription: string;
+  }) => {
+    let found = this.phoneNumbers.find((p) => p.id === data.phoneNumberId);
+    if (found) {
+      found.isError = true;
+      // call api to set phone number as unAuthorized
+      this._ResourceService.markPhoneNumberAsError(
+        found,
+        data.errorDescription
+      );
     }
   };
 

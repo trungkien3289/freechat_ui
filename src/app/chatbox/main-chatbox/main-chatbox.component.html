@@ -18,11 +18,12 @@
     <div class="flex-grow-1 bg-light d-flex flex-column h-100 chatbox-panel" id="chatbox-column">
       @if (selectedContact?.conversationType == 'Group') {
       <app-group-conversation-box style="height: 100%" [contact]="selectedContact"
-        (sendMessageGroupSuccess)="sendMessageConversationSuccess()"></app-group-conversation-box>
+        (sendMessageGroupSuccess)="sendMessageConversationSuccess()" (markPhoneAsDown)="markPhoneAsDownHandler($event)"
+        (triggerPhoneAsError)="triggerPhoneAsError($event)"></app-group-conversation-box>
       }@else {
       <app-conversation-box style="height: 100%" [contact]="selectedContact"
-        (sendMessageSuccess)="sendMessageConversationSuccess()"
-        (markPhoneAsDown)="markPhoneAsDownHandler($event)"></app-conversation-box>
+        (sendMessageSuccess)="sendMessageConversationSuccess()" (markPhoneAsDown)="markPhoneAsDownHandler($event)"
+        (triggerPhoneAsError)="triggerPhoneAsError($event)"></app-conversation-box>
       }
     </div>
   </div>

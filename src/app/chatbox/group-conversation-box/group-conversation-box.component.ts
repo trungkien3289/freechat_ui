@@ -23,7 +23,7 @@ import { LocalStorageService } from '../../services/local-storage.service';
 import { v4 as uuidv4 } from 'uuid';
 import { NEW_GROUP_CONVERSATION_ID } from '../../utilities/chatbox.const';
 import { Utils } from '../../utilities/utils';
-import { debounce, get } from 'lodash';
+import { debounce, get, isString } from 'lodash';
 import { NzUploadFile, NzUploadXHRArgs } from 'ng-zorro-antd/upload';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { FileService } from '../../services/file.service';
@@ -85,6 +85,11 @@ export class GroupConversationBoxComponent
   }
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
   @Output() sendMessageGroupSuccess = new EventEmitter<void>();
+  @Output() markPhoneAsDown = new EventEmitter<string>();
+  @Output() triggerPhoneAsError = new EventEmitter<{
+    phoneNumberId: string;
+    errorDescription: string;
+  }>();
 
   listOfTagOptions: string[] = [];
   listOfOption: Array<{ label: string; value: string }> = [];
@@ -224,6 +229,14 @@ export class GroupConversationBoxComponent
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+      if (isString(error) && error == 'Missing sender assigned phone number') {
+        this.triggerPhoneAsError.emit({
+          phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+          errorDescription: 'Missing sender assigned phone number',
+        });
+      } else {
+        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      }
     }
 
     this.resetUploadImage();
@@ -249,6 +262,14 @@ export class GroupConversationBoxComponent
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+      if (isString(error) && error == 'Missing sender assigned phone number') {
+        this.triggerPhoneAsError.emit({
+          phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+          errorDescription: 'Missing sender assigned phone number',
+        });
+      } else {
+        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      }
     }
   };
 
@@ -284,6 +305,14 @@ export class GroupConversationBoxComponent
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+      if (isString(error) && error == 'Missing sender assigned phone number') {
+        this.triggerPhoneAsError.emit({
+          phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+          errorDescription: 'Missing sender assigned phone number',
+        });
+      } else {
+        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      }
     }
   };
 

@@ -85,6 +85,10 @@ export class ConversationBoxComponent
   }
   @Output() sendMessageSuccess = new EventEmitter<void>();
   @Output() markPhoneAsDown = new EventEmitter<string>();
+  @Output() triggerPhoneAsError = new EventEmitter<{
+    phoneNumberId: string;
+    errorDescription: string;
+  }>();
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
   messageViewItems: ContactMessageViewItem[] = [];
@@ -411,6 +415,17 @@ export class ConversationBoxComponent
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+      if (
+        _.isString(error) &&
+        error == 'Missing sender assigned phone number'
+      ) {
+        this.triggerPhoneAsError.emit({
+          phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+          errorDescription: 'Missing sender assigned phone number',
+        });
+      } else {
+        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      }
     }
 
     this.resetUploadImage();
@@ -447,6 +462,18 @@ export class ConversationBoxComponent
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+
+      if (
+        _.isString(error) &&
+        error == 'Missing sender assigned phone number'
+      ) {
+        this.triggerPhoneAsError.emit({
+          phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+          errorDescription: 'Missing sender assigned phone number',
+        });
+      } else {
+        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      }
     }
 
     return newMessage;
@@ -493,6 +520,17 @@ export class ConversationBoxComponent
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+      if (
+        _.isString(error) &&
+        error == 'Missing sender assigned phone number'
+      ) {
+        this.triggerPhoneAsError.emit({
+          phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+          errorDescription: 'Missing sender assigned phone number',
+        });
+      } else {
+        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      }
     }
 
     return newMessage;

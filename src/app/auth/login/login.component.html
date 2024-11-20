@@ -2,7 +2,11 @@
   <div class="container" id="container">
     <div class="form-container sign-in-container">
       <form [formGroup]="loginForm" (ngSubmit)="login()">
-        <h1>Sign in</h1>
+        <div class="w-100">
+          <i class="fa fa-user-circle-o logo-signin" aria-hidden="true"></i>
+        </div>
+
+        <h3 class="fw-bold text-white">Welcome</h3>
         <input type="username" placeholder="UserName" type="text" formControlName="username" name="username" required />
         <div *ngIf="
             loginForm.get('username')?.invalid &&
