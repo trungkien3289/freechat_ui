@@ -22,7 +22,7 @@ import _ from 'lodash';
 import { UserService } from '../../services/user.service';
 
 const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 20000;
-const LIMIT_SEND_MESSAGE_FAIL = 5;
+const LIMIT_SEND_MESSAGE_FAIL = 3;
 
 @Component({
   selector: 'app-main-chatbox',
