@@ -21,7 +21,7 @@ import {
 import { ChatService } from '../../services/chat.service';
 import { NotificationService } from '../../services/notification.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { first, last, set } from 'lodash';
+import { delay, first, last, set } from 'lodash';
 import { Utils } from '../../utilities/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { GroupContactCacheService } from '../../services/group-contact-cache.service';
@@ -94,6 +94,8 @@ export class ConversationBoxComponent
   messageViewItems: ContactMessageViewItem[] = [];
   contactGroup!: ContactMessageGroup;
   isLoading: boolean = false;
+  isSendingMessage: boolean = false;
+  isPauseFetchMessage: boolean = false;
   fetchMessageInterval: any;
   reTryError: number = 10;
   myForm: FormGroup;
@@ -173,6 +175,7 @@ export class ConversationBoxComponent
     groupId: string
   ) => {
     this.fetchMessageInterval = setInterval(async () => {
+      if (this.isPauseFetchMessage) return;
       try {
         this.isLoading = true;
         const messages = await this.fetchAllMessages(
@@ -213,6 +216,14 @@ export class ConversationBoxComponent
 
   stopFetchMessageInterval = () => {
     clearInterval(this.fetchMessageInterval);
+  };
+
+  pauseFetchMessageInterval = () => {
+    this.isPauseFetchMessage = true;
+  };
+
+  restartFetchMessageInterval = () => {
+    this.isPauseFetchMessage = false;
   };
 
   fetchNewMessages = async (
@@ -293,13 +304,20 @@ export class ConversationBoxComponent
     }
   };
 
-  sendMessageBtnClick = () => {
-    this.debouncedSubmit();
+  sendMessageBtnClick = async () => {
+    if (this.isSendingMessage == true) return;
+
+    this.isSendingMessage = true;
+    try {
+      await this.debouncedSubmit();
+    } catch (error) {}
+
+    this.isSendingMessage = false;
   };
 
-  debouncedSubmit = debounce(async () => {
+  debouncedSubmit = async () => {
     if (this.isRecording) return;
-    // this.stopFetchMessageInterval();
+    this.pauseFetchMessageInterval();
     this.isLoading = true;
 
     try {
@@ -335,15 +353,9 @@ export class ConversationBoxComponent
 
     this.isLoading = false;
     this.scrollToBottom();
-    // this.startFetchMessageInterval(
-    //   this.contactGroup.currentPhoneNumber.id,
-    //   this.contactGroup.currentPhoneNumber.phoneNumber,
-    //   this._first(
-    //     [...this.contactGroup.to, this.contactGroup.from].filter((n) => !n.own)
-    //   )?.TN || '',
-    //   this.contactGroup.id
-    // );
-  }, 200);
+
+    this.restartFetchMessageInterval();
+  };
 
   verifyHasNewMessage = async (): Promise<boolean> => {
     let lastMessage = _.findLast(

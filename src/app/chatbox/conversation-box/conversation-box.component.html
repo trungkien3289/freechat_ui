@@ -47,7 +47,8 @@
         </div>
 
         <textarea class="no-border flex-grow-1 text-muted" nz-input formControlName="textInput"
-          placeholder="Type a message" [nzAutosize]="{ maxRows: 6 }" (keydown)="onKeydown($event)"></textarea>
+          placeholder="Type a message" [nzAutosize]="{ maxRows: 6 }" (keydown)="onKeydown($event)"
+          [disabled]="isSendingMessage"></textarea>
 
         <button nz-button class="me-1" nzType="text" nzShape="circle" (click)="sendMessageBtnClick()">
           <i class="fa fa-send text-primary" aria-hidden="true"></i>
