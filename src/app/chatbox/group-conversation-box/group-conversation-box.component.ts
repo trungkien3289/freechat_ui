@@ -152,7 +152,9 @@ export class GroupConversationBoxComponent
   };
 
   sendMessageBtnClick = () => {
-    this.debouncedSubmit();
+    if (this.listOfTagOptions.length > 0) {
+      this.debouncedSubmit();
+    }
   };
 
   resetUploadImage = () => {
