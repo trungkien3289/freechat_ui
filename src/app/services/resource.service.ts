@@ -44,6 +44,7 @@ export class ResourceService {
         name: string;
         isExpired: boolean;
         isError: boolean;
+        assignDateTimestamp: number;
       }[] = (await firstValueFrom(
         this.http.get(`${this.apiUrl}/api/chat/user/phones`)
       )) as any;
@@ -59,6 +60,7 @@ export class ResourceService {
           expired: item.isExpired,
           isError: item.isError,
           failCount: 0,
+          assignDateTimestamp: item.assignDateTimestamp,
         };
       });
 
@@ -72,7 +74,7 @@ export class ResourceService {
     phoneNumber: PhoneNumber
   ): Promise<ContactMessageGroup[]> => {
     const defaultLastUpdateDate = Utils.convertDateToUtcTime(
-      new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
+      new Date(phoneNumber.assignDateTimestamp)
     );
 
     let requestBody = {
@@ -290,6 +292,7 @@ export class ResourceService {
         expired: res.newPhoneNumber.isExpired,
         isError: res.newPhoneNumber.isError,
         failCount: 0,
+        assignDateTimestamp: res.newPhoneNumber.assignDateTimestamp,
       };
     } catch (ex: any) {
       if (ex.error && ex.error.message) {

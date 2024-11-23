@@ -6,4 +6,5 @@ export type PhoneNumber = {
   expired: boolean;
   isError: boolean;
   failCount: number;
+  assignDateTimestamp: number;
 };

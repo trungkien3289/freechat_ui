@@ -7,12 +7,13 @@ import {
   PhoneComunicationType,
   PhoneShortSummary,
 } from '../models/phone-comunication.model';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, from } from 'rxjs';
 import { ContactMessage, SendStatus } from '../models/contact-message.model';
 import { Utils } from '../utilities/utils';
 import _ from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
 import { ChatBoxUtils } from '../utilities/chatbox-utils';
+import { PhoneNumber } from '../models/phone-number.model';
 
 @Injectable({
   providedIn: 'root',
@@ -116,14 +117,15 @@ export class ChatService {
   };
 
   fetchMessages = async (
-    fromPhoneNumberId: string,
-    fromPhoneNumber: string,
+    // fromPhoneNumberId: string,
+    // fromPhoneNumber: string,
+    fromPhone: PhoneNumber,
     toPhoneNumber: string,
     groupId: string
   ): Promise<ContactMessage[]> => {
     try {
       const defaultLastUpdateDate = Utils.convertDateToUtcTime(
-        new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
+        new Date(fromPhone.assignDateTimestamp)
       );
 
       let requestBody = {
@@ -142,7 +144,7 @@ export class ChatService {
       };
       let res: any = (await firstValueFrom(
         this.http.post(
-          `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/request`,
+          `${this.apiUrl}/api/chat/phone/${fromPhone.id}/request`,
           requestBody
         )
       )) as any;
@@ -191,20 +193,25 @@ export class ChatService {
 
       return messages;
     } catch (ex) {
-      throw `Fetch Messages from ${fromPhoneNumber} to ${toPhoneNumber} error`;
+      throw `Fetch Messages from ${fromPhone.phoneNumber} to ${toPhoneNumber} error`;
     }
   };
 
   fetchNewMessages = async (
-    fromPhoneNumberId: string,
-    fromPhoneNumber: string,
+    // fromPhoneNumberId: string,
+    // fromPhoneNumber: string,
+    fromPhone: PhoneNumber,
     toPhoneNumber: string,
     groupId: string,
     fromTime: string
   ): Promise<ContactMessage[]> => {
     try {
       let lastMessageTime = new Date(fromTime);
-      let updatedSinceDate = new Date(lastMessageTime.getTime() + 1000);
+      let assignDate = new Date(fromPhone.assignDateTimestamp);
+      let lastUpdateDate =
+        assignDate > lastMessageTime ? assignDate : lastMessageTime;
+      let updatedSinceDate = new Date(lastUpdateDate.getTime() + 1000);
+
       let sinceUpdateDateString = Utils.convertDateToUtcTime(updatedSinceDate);
 
       let requestBody = {
@@ -223,7 +230,7 @@ export class ChatService {
       };
       let res: any = (await firstValueFrom(
         this.http.post(
-          `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/request`,
+          `${this.apiUrl}/api/chat/phone/${fromPhone.id}/request`,
           requestBody
         )
       )) as any;
@@ -268,7 +275,7 @@ export class ChatService {
 
       return messages;
     } catch (ex) {
-      throw `Fetch Messages from ${fromPhoneNumber} to ${toPhoneNumber} error`;
+      throw `Fetch Messages from ${fromPhone.phoneNumber} to ${toPhoneNumber} error`;
     }
   };
 }

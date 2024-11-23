@@ -34,6 +34,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import _ from 'lodash';
 import moment from 'moment';
 import { DELAY_FOR_CHECK_NEW_COMMING_MESSAGE } from '../chat-settings.const';
+import { PhoneNumber } from '../../models/phone-number.model';
 
 const INTERVAL_RELOAD_CHATBOX = 5000;
 const MAX_RECORDING_SECONDS = 60;
@@ -72,8 +73,9 @@ export class ConversationBoxComponent
 
       this.stopFetchMessageInterval();
       this.startFetchMessageInterval(
-        this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.currentPhoneNumber.phoneNumber,
+        // this.contactGroup.currentPhoneNumber.id,
+        // this.contactGroup.currentPhoneNumber.phoneNumber,
+        this.contactGroup.currentPhoneNumber,
         this._first(
           [...this.contactGroup.to, this.contactGroup.from].filter(
             (n) => !n.own
@@ -169,8 +171,9 @@ export class ConversationBoxComponent
   }
 
   startFetchMessageInterval = (
-    fromPhoneNumberId: string,
-    fromPhoneNumber: string,
+    // fromPhoneNumberId: string,
+    // fromPhoneNumber: string,
+    fromPhone: PhoneNumber,
     toPhoneNumber: string,
     groupId: string
   ) => {
@@ -179,8 +182,9 @@ export class ConversationBoxComponent
       try {
         this.isLoading = true;
         const messages = await this.fetchAllMessages(
-          fromPhoneNumberId,
-          fromPhoneNumber,
+          // fromPhoneNumberId,
+          // fromPhoneNumber,
+          fromPhone,
           toPhoneNumber,
           groupId
         );
@@ -227,20 +231,22 @@ export class ConversationBoxComponent
   };
 
   fetchNewMessages = async (
-    fromPhoneNumberId: string,
-    fromPhoneNumber: string,
+    // fromPhoneNumberId: string,
+    // fromPhoneNumber: string,
+    fromPhone: PhoneNumber,
     toPhoneNumber: string,
     groupId: string,
     lastMessage?: ContactMessage
   ): Promise<ContactMessage[]> => {
     const defaultLastUpdateDate = Utils.convertDateToUtcTime(
-      new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
+      new Date(fromPhone.assignDateTimestamp)
     );
 
     try {
       let messages = await this._ChatService.fetchNewMessages(
-        fromPhoneNumberId,
-        fromPhoneNumber,
+        // fromPhoneNumberId,
+        // fromPhoneNumber,
+        fromPhone,
         toPhoneNumber,
         groupId,
         lastMessage?.timeCreated || defaultLastUpdateDate
@@ -253,15 +259,17 @@ export class ConversationBoxComponent
   };
 
   fetchAllMessages = async (
-    fromPhoneNumberId: string,
-    fromPhoneNumber: string,
+    // fromPhoneNumberId: string,
+    // fromPhoneNumber: string,
+    fromPhone: PhoneNumber,
     toPhoneNumber: string,
     groupId: string
   ): Promise<ContactMessage[]> => {
     try {
       let allMessages = await this._ChatService.fetchMessages(
-        fromPhoneNumberId,
-        fromPhoneNumber,
+        // fromPhoneNumberId,
+        // fromPhoneNumber,
+        fromPhone,
         toPhoneNumber,
         groupId
       );
@@ -344,8 +352,9 @@ export class ConversationBoxComponent
       this.sendMessageSuccess.emit();
 
       let allMessages = await this.fetchAllMessages(
-        this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.currentPhoneNumber.phoneNumber,
+        // this.contactGroup.currentPhoneNumber.id,
+        // this.contactGroup.currentPhoneNumber.phoneNumber,
+        this.contactGroup.currentPhoneNumber,
         this.contactGroup.isOutgoing
           ? this.contactGroup.to[0].TN
           : this.contactGroup.from.TN,
@@ -370,8 +379,9 @@ export class ConversationBoxComponent
     ) as ContactMessage | undefined;
     await Utils.delay(DELAY_FOR_CHECK_NEW_COMMING_MESSAGE);
     let commingMessages = await this.fetchNewMessages(
-      this.contactGroup.currentPhoneNumber.id,
-      this.contactGroup.currentPhoneNumber.phoneNumber,
+      // this.contactGroup.currentPhoneNumber.id,
+      // this.contactGroup.currentPhoneNumber.phoneNumber,
+      this.contactGroup.currentPhoneNumber,
       this.contactGroup.isOutgoing
         ? this.contactGroup.to[0].TN
         : this.contactGroup.from.TN,
