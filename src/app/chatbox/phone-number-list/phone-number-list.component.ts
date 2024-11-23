@@ -2,6 +2,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnInit,
   Output,
   SimpleChanges,
@@ -9,6 +10,8 @@ import {
 import { PhoneNumber } from '../../models/phone-number.model';
 import { FormControl } from '@angular/forms';
 import {
+  BehaviorSubject,
+  combineLatest,
   debounceTime,
   distinctUntilChanged,
   map,
@@ -27,12 +30,15 @@ import _ from 'lodash';
 export class PhoneNumberListComponent implements OnInit {
   @Input() userId: string = '';
   @Input() selectedPhoneNumberId?: string;
-  @Input() phoneNumbers: PhoneNumber[] = [];
-  // phoneNumbers: PhoneNumber[] = [];
-  isLoading: boolean = false;
+  @Input() set phoneNumbers(value: PhoneNumber[]) {
+    this.filteredPhones = this.filterPhones(value, this.searchControl.value);
+    this._phoneNumbers = value;
+  }
+
+  @Input() isLoading: boolean = false;
+  _phoneNumbers: PhoneNumber[] = [];
   searchControl = new FormControl();
-  filteredPhones$: Observable<PhoneNumber[]> | undefined;
-  // selectedItem: PhoneNumber | null = null;
+  filteredPhones: PhoneNumber[] = [];
 
   @Output() onSelectItem = new EventEmitter<PhoneNumber>();
   @Output() replacePhoneNumberSuccess = new EventEmitter<{
@@ -46,17 +52,19 @@ export class PhoneNumberListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.filteredPhones$ = this.searchControl.valueChanges.pipe(
-      startWith(''),
-      debounceTime(300),
-      distinctUntilChanged(),
-      map((searchTerm) => this.filterPhones(searchTerm))
+    this.filteredPhones = this.filterPhones(
+      this._phoneNumbers,
+      this.searchControl.value
     );
   }
 
-  filterPhones = (searchTerm: number): PhoneNumber[] => {
-    if (!searchTerm) return this.phoneNumbers;
-    return this.phoneNumbers.filter((phone) =>
+  onFilterChange = (searchTerm: any) => {
+    this.filteredPhones = this.filterPhones(this._phoneNumbers, searchTerm);
+  };
+
+  filterPhones = (phones: PhoneNumber[], searchTerm: number): PhoneNumber[] => {
+    if (!searchTerm) return phones;
+    return phones.filter((phone) =>
       phone.phoneNumber.includes(searchTerm.toString())
     );
   };
@@ -89,7 +97,7 @@ export class PhoneNumberListComponent implements OnInit {
     phoneId: string,
     newMessageCount: number
   ) => {
-    const phone = this.phoneNumbers.find((p) => p.id === phoneId);
+    const phone = this._phoneNumbers.find((p) => p.id === phoneId);
     if (!phone) return;
     phone.newMessageCount = newMessageCount;
   };

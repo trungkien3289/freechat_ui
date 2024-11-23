@@ -2,8 +2,9 @@
   <div class="d-flex flex-row h-100 m-0 main-chat-container">
     <div class="bg-light border-end h-100 phone-list-panel">
       <div class="h-100">
-        <app-phone-number-list [userId]="userId" [selectedPhoneNumberId]="selectedPhoneNumberItem?.id"
-          [phoneNumbers]="phoneNumbers" (onSelectItem)="selectPhoneNumber($event)"
+        <app-phone-number-list [isLoading]="isLoadingPhoneNumbers" [userId]="userId"
+          [selectedPhoneNumberId]="selectedPhoneNumberItem?.id" [phoneNumbers]="phoneNumbers"
+          (onSelectItem)="selectPhoneNumber($event)"
           (replacePhoneNumberSuccess)="replacePhoneNumberSuccess($event)"></app-phone-number-list>
       </div>
     </div>

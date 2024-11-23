@@ -6,7 +6,8 @@
       </div>
 
       <nz-input-group [nzSuffix]="suffixIconSearch" nzSize="large" class="rounded-3 mt-2">
-        <input type="number" nz-input placeholder="Search" [formControl]="searchControl" />
+        <input type="number" nz-input placeholder="Search" [formControl]="searchControl"
+          (ngModelChange)="onFilterChange($event)" />
       </nz-input-group>
       <ng-template #suffixIconSearch>
         <span nz-icon nzType="search"></span>
@@ -14,11 +15,18 @@
     </div>
   </div>
   <div class="d-flex flex-column flex-grow-1 mt-2 list-container px-2">
-    @for (phoneNumber of filteredPhones$ | async; track phoneNumber.id) {
+
+    @if(isLoading) {
+    <nz-spin nzTip="Loading..." class="h-100"></nz-spin>
+    }@else {
+    @if (filteredPhones.length === 0) {
+    <nz-list-empty />
+    }@else {
+    @for (phoneNumber of filteredPhones; track phoneNumber.id) {
     <div class="d-flex flex-row hover-list-item cursor-pointer px-2 flex-grow-1" [ngClass]="{
-        'expired-item-bg':phoneNumber.expired,
-        'error-item-bg':phoneNumber.isError,
-      }" (click)="selectPhoneNumber(phoneNumber)" [class.selected-item]="selectedPhoneNumberId == phoneNumber.id">
+          'expired-item-bg':phoneNumber.expired,
+          'error-item-bg':phoneNumber.isError,
+        }" (click)="selectPhoneNumber(phoneNumber)" [class.selected-item]="selectedPhoneNumberId == phoneNumber.id">
       <div class="d-flex flex-row align-items-center justify-content-between fs-lg px-1 w-100">
         <div class="d-flex flex-row align-items-center flex-grow-1">
           @if(phoneNumber.isError) {
@@ -32,9 +40,9 @@
           }@else {
           <nz-badge class="me-3" nzSize="small" [nzCount]="phoneNumber.newMessageCount" [nzOverflowCount]="99"
             [nzStyle]="{
-                backgroundColor: '#eb3535',
-                color: '#fff',
-              }">
+                  backgroundColor: '#eb3535',
+                  color: '#fff',
+                }">
             <i class="fa fa-phone primary-color fs-4"></i>
           </nz-badge>
           }
@@ -52,8 +60,10 @@
         }
       </div>
     </div>
-    } @if (phoneNumbers.length === 0) {
-    <nz-list-empty />
+    }
+    }
+
+
     }
   </div>
 </div>

@@ -30,6 +30,7 @@ import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { AudioRecordingService } from '../services/audio-recording.service';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 
 @NgModule({
   declarations: [
@@ -65,6 +66,7 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
     NzProgressModule,
     NzBadgeModule,
     PickerComponent,
+    NzSpinModule,
   ],
   providers: [AudioRecordingService],
 })
