@@ -203,12 +203,16 @@ export class ChatService {
     fromTime: string
   ): Promise<ContactMessage[]> => {
     try {
+      let lastMessageTime = new Date(fromTime);
+      let updatedSinceDate = new Date(lastMessageTime.getTime() + 1000);
+      let sinceUpdateDateString = Utils.convertDateToUtcTime(updatedSinceDate);
+
       let requestBody = {
         requests: [
           {
             queryParams: [
               { createdSince: '2024-10-10 04:23:36.512952' },
-              { updatedSince: Utils.convertDateStringToUtcTime(fromTime) },
+              { updatedSince: sinceUpdateDateString },
             ],
             contentType: 'application/json',
             useHTTPS: '1',
