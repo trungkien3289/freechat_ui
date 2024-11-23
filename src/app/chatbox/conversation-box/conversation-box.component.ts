@@ -233,13 +233,17 @@ export class ConversationBoxComponent
     groupId: string,
     lastMessage?: ContactMessage
   ): Promise<ContactMessage[]> => {
+    const defaultLastUpdateDate = Utils.convertDateToUtcTime(
+      new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
+    );
+
     try {
       let messages = await this._ChatService.fetchNewMessages(
         fromPhoneNumberId,
         fromPhoneNumber,
         toPhoneNumber,
         groupId,
-        lastMessage?.timeCreated || '2024-10-24 18:35:52.180564'
+        lastMessage?.timeCreated || defaultLastUpdateDate
       );
 
       return messages;

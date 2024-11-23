@@ -71,12 +71,16 @@ export class ResourceService {
   getComunications = async (
     phoneNumber: PhoneNumber
   ): Promise<ContactMessageGroup[]> => {
+    const defaultLastUpdateDate = Utils.convertDateToUtcTime(
+      new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
+    );
+
     let requestBody = {
       requests: [
         {
           queryParams: [
             { createdSince: '2024-10-10 04:23:36.512952' },
-            { updatedSince: '2024-10-24 04:23:36.467539' },
+            { updatedSince: defaultLastUpdateDate },
           ],
           contentType: 'application/json',
           useHTTPS: '1',

@@ -83,6 +83,11 @@ export class Utils {
       reader.onerror = (error) => reject(error);
     });
 
+  static convertDateToUtcTime = (date: Date): string => {
+    let utcDate = date.getTime() + date.getTimezoneOffset() * 60000;
+    return Utils.formatDateWithServerTimeFormat(new Date(utcDate));
+  };
+
   static convertDateStringToUtcTime = (dateString: string): string => {
     let date = new Date(dateString);
     let utcDate = date.getTime() + date.getTimezoneOffset() * 60000;
