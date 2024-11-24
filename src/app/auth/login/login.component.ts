@@ -33,6 +33,9 @@ export class LoginComponent {
           this.userService.login(this.loginForm.value)
         );
         localStorage.setItem('token', response.token);
+        if(response.isExpired != null && response.isExpired == true) {
+          this.router.navigate(['/auth/user-expired']);
+        }
         this.router.navigate(['/chatbox']);
       } catch (error: any) {
         this.errorMessages = 'Sign in failed. Please try again.';

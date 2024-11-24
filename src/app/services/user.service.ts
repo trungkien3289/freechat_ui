@@ -10,6 +10,7 @@ interface DecodedToken {
   userName: string;
   exp: number;
   iat: number;
+  isExpired: boolean;
 }
 
 @Injectable({
@@ -74,5 +75,10 @@ export class UserService {
   getUserId(): string {
     const decodedToken = this.getDecodedToken();
     return decodedToken ? decodedToken.id : '';
+  }
+
+  isUserExpired(): boolean {
+    const decodedToken = this.getDecodedToken();
+    return decodedToken ? decodedToken.isExpired : false;
   }
 }

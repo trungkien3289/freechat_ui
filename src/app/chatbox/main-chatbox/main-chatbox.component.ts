@@ -13,7 +13,7 @@ import {
   NEW_GROUP_CONVERSATION_ID,
   NEW_GROUP_CONVERSATION_NAME,
 } from '../../utilities/chatbox.const';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PhoneNumberListComponent } from '../phone-number-list/phone-number-list.component';
 import { GroupContactCacheService } from '../../services/group-contact-cache.service';
 import { from, mergeMap } from 'rxjs';
@@ -44,7 +44,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     private _NotificationService: NotificationService,
     private _LocalStorageService: LocalStorageService,
     private _GroupContactCacheService: GroupContactCacheService,
-    private _UserService: UserService
+    private _UserService: UserService,
+    private _Router: Router
   ) {}
   ngOnDestroy(): void {
     this.stopCheckNewMessageInterval();
@@ -63,6 +64,11 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       this.userId = this._UserService.getUserId();
       console.log('User ID:', this.userId);
     });
+
+    let isUserExpired = this._UserService.isUserExpired();
+    if (isUserExpired) {
+      this._Router.navigate(['/auth/user-expired']);
+    }
 
     this.loadData();
   }
