@@ -243,6 +243,14 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
         },
         0
       );
+
+      if (newMessageCount > 0) {
+        console.info(
+          'New message comming',
+          phoneNumber.phoneNumber,
+          newMessageCount
+        );
+      }
       this.phoneNumberListComponent.updateNewMessageComming(
         phoneNumber.id,
         newMessageCount
