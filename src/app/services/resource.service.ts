@@ -74,7 +74,8 @@ export class ResourceService {
     phoneNumber: PhoneNumber
   ): Promise<ContactMessageGroup[]> => {
     const defaultLastUpdateDate = Utils.convertDateToUtcTime(
-      new Date(phoneNumber.assignDateTimestamp)
+      // new Date(phoneNumber.assignDateTimestamp)
+      new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
     );
 
     let requestBody = {
@@ -82,7 +83,8 @@ export class ResourceService {
         {
           queryParams: [
             { createdSince: '2024-10-10 04:23:36.512952' },
-            { updatedSince: defaultLastUpdateDate },
+            // { updatedSince: '2024-11-24 04:23:36.467539' },
+            { updatedSince: defaultLastUpdateDate }, //check
           ],
           contentType: 'application/json',
           useHTTPS: '1',
