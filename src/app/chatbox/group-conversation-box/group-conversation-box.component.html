@@ -5,10 +5,7 @@
       <i class="fa fa-info-circle me-2 primary-color fs-5"></i>
       <span class="fw-bold group-label">Group: </span>
       <span class="fs-6 flex-grow-1">{{ contactGroup.name }}</span>
-      <button *ngIf="isNewGroupConversation" nz-button nzType="text" (click)="resetNewGroupConversation()">
-        <i class="fa fa-repeat me-2" aria-hidden="true"></i>
-        Reset
-      </button>
+
     </div>
     <div class="d-flex flex-row py-2 align-items-center">
       <i class="fa fa-user-circle-o me-2 primary-color fs-5"></i>
@@ -25,13 +22,8 @@
       <div class="d-flex flex-column flex-grow-1 flex-gap-2">
         @if(isNewGroupConversation){
 
-        <div class="my-2 d-flex flex-row align-items-center">
-          <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber" [specialCharacters]="[' ', '(', ')', '-', '.']"
-            mask="(000) 000-0000">
-          <button class="btn-add-phone primary-bg-color" nz-button nzType="primary" (click)="addPhoneNumer()"><i
-              class="fa fa-plus me-1" aria-hidden="true"></i>Add Phone</button>
-        </div>
-        <nz-select class="w-100 multiple-select-phone-number border-round" [(ngModel)]="listOfTagOptions"
+
+        <!-- <nz-select class="w-100 multiple-select-phone-number border-round" [(ngModel)]="listOfTagOptions"
           [nzBorderless]="false" [nzDropdownStyle]="{ display: 'none' }" (ngModelChange)="onToNumbersChange($event)"
           [nzOpen]="false" nzMode="tags" [nzTokenSeparators]="[',']" nzPlaceHolder="Input phone number"
           [nzCustomTemplate]="defaultTemplate" [disabled]="!isNewGroupConversation">
@@ -41,7 +33,27 @@
         </nz-select>
         <ng-template #defaultTemplate let-selected>
           {{ selected.nzLabel | phoneNumberFormatNoCode }}
-        </ng-template>
+        </ng-template> -->
+
+        <div class="w-100 multiple-select-phone-number border-round">
+          <ng-container *ngFor="let phone of listOfTagOptions;">
+            <nz-tag class="phone-tag" [nzMode]="'closeable'" (nzOnClose)="removePhoneNumber(phone)">
+              {{ phone | phoneNumberFormatNoCode }}
+            </nz-tag>
+          </ng-container>
+        </div>
+
+        <div class="my-2 d-flex flex-row align-items-center">
+          <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber" [specialCharacters]="[' ', '(', ')', '-', '.']"
+            mask="(000) 000-0000">
+          <button class="btn-add-phone primary-bg-color me-1" nz-button nzType="primary" (click)="addPhoneNumer()"><i
+              class="fa fa-plus me-1" aria-hidden="true"></i>Add Phone</button>
+          <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"
+            (click)="resetNewGroupConversation()">
+            <i class="fa fa-repeat me-1" aria-hidden="true"></i>
+            Reset
+          </button>
+        </div>
 
 
         }@else {

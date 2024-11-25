@@ -175,13 +175,6 @@
   min-width: 100px;
 }
 
-::ng-deep nz-select.multiple-select-phone-number {
-  nz-select-top-control {
-    border-radius: 10px !important;
-    padding: 5px !important;
-  }
-}
-
 .border-round {
   border-radius: 15px;
 }
@@ -263,12 +256,18 @@
   }
 }
 
+input:focus {
+  border-color: #007bff; /* Blue border */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Optional glow effect */
+}
+
 .phone-input {
-  width: 200px;
-  height: 40px;
-  border: 1px solid #ccc;
+  width: 250px;
+  height: 35px;
+  border: 1px solid #ccc !important;
   border-radius: 10px;
   padding: 10px;
+  outline: none;
 
   &:hover {
     border: 1px solid #3498db !important;
@@ -279,7 +278,29 @@
   }
 }
 
-.btn-add-phone {
-  height: 40px;
+.btn-add-phone,
+.btn-reset-phone {
+  height: 35px;
   border-radius: 10px;
+}
+
+// ::ng-deep nz-select.multiple-select-phone-number {
+//   nz-select-top-control {
+//     border-radius: 10px !important;
+//     padding: 5px !important;
+//   }
+// }
+
+.multiple-select-phone-number {
+  border-radius: 5px !important;
+  border: 1px solid #ccc;
+  background-color: #dddddd;
+  height: 40px;
+}
+
+.phone-tag {
+  border-radius: 10px !important;
+  padding: 3px !important;
+  border: 1px solid #ccc;
+  margin: 5px;
 }

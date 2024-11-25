@@ -141,25 +141,43 @@ export class GroupConversationBoxComponent
   }
 
   addPhoneNumer = () => {
-    if (this.inputPhoneNumber) {
+    if (
+      this.inputPhoneNumber &&
+      this.listOfTagOptions.includes(this.inputPhoneNumber) === false
+    ) {
       this.listOfTagOptions = [...this.listOfTagOptions, this.inputPhoneNumber];
       this.inputPhoneNumber = '';
 
-      this.contactGroup.to = this.listOfTagOptions.map((phoneNumber) => {
-        const numericString = phoneNumber.replace(/\D/g, '');
-        return {
-          TN: Utils.formatPhoneNumberTN(numericString),
-          name: Utils.formatPhoneNumberName(numericString),
-        };
-      });
+      this.updateContactGroup();
+    }
+  };
 
-      // save to local storage
-      if (this.isNewGroupConversation) {
-        this._LocalStorageService.setItem(
-          `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
-          this.contactGroup
-        );
-      }
+  removePhoneNumber = (phoneNumber: string) => {
+    if (phoneNumber) {
+      // remove from list of tag options
+      this.listOfTagOptions = this.listOfTagOptions.filter(
+        (item) => item !== phoneNumber
+      );
+
+      this.updateContactGroup();
+    }
+  };
+
+  updateContactGroup = () => {
+    this.contactGroup.to = this.listOfTagOptions.map((phoneNumber) => {
+      const numericString = phoneNumber.replace(/\D/g, '');
+      return {
+        TN: Utils.formatPhoneNumberTN(numericString),
+        name: Utils.formatPhoneNumberName(numericString),
+      };
+    });
+
+    // save to local storage
+    if (this.isNewGroupConversation) {
+      this._LocalStorageService.setItem(
+        `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
+        this.contactGroup
+      );
     }
   };
 

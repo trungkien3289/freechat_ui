@@ -210,7 +210,7 @@ export class ChatService {
       let assignDate = new Date(fromPhone.assignDateTimestamp);
       let lastUpdateDate =
         assignDate > lastMessageTime ? assignDate : lastMessageTime;
-      let updatedSinceDate = new Date(lastUpdateDate.getTime() + 1000);
+      let updatedSinceDate = new Date(lastUpdateDate.getTime());
 
       let sinceUpdateDateString = Utils.convertDateToUtcTime(updatedSinceDate);
 

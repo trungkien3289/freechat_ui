@@ -32,6 +32,7 @@ import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 
 @NgModule({
   declarations: [
@@ -70,6 +71,7 @@ import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
     NzSpinModule,
     NgxMaskDirective,
     NgxMaskPipe,
+    NzTagModule,
   ],
   providers: [
     AudioRecordingService,
