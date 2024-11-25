@@ -63,6 +63,9 @@ export class GroupConversationBoxComponent
   // emoji popup
   isEmojiPickerVisible: boolean = false;
 
+  // add multiple phone numbers
+  inputPhoneNumber: string = '';
+
   @ViewChild('uploadComponent', { static: false }) uploadComponent!: any;
   fileInput: HTMLInputElement | null = null;
 
@@ -136,6 +139,29 @@ export class GroupConversationBoxComponent
   ngOnDestroy(): void {
     this.resetChatBox();
   }
+
+  addPhoneNumer = () => {
+    if (this.inputPhoneNumber) {
+      this.listOfTagOptions = [...this.listOfTagOptions, this.inputPhoneNumber];
+      this.inputPhoneNumber = '';
+
+      this.contactGroup.to = this.listOfTagOptions.map((phoneNumber) => {
+        const numericString = phoneNumber.replace(/\D/g, '');
+        return {
+          TN: Utils.formatPhoneNumberTN(numericString),
+          name: Utils.formatPhoneNumberName(numericString),
+        };
+      });
+
+      // save to local storage
+      if (this.isNewGroupConversation) {
+        this._LocalStorageService.setItem(
+          `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
+          this.contactGroup
+        );
+      }
+    }
+  };
 
   formatTime = (dateTime: string) => {
     const date = new Date(dateTime);
@@ -330,21 +356,6 @@ export class GroupConversationBoxComponent
 
   onToNumbersChange = (toPhoneNumbers: string[]) => {
     console.log(toPhoneNumbers);
-    this.contactGroup.to = toPhoneNumbers.map((phoneNumber) => {
-      const numericString = phoneNumber.replace(/\D/g, '');
-      return {
-        TN: Utils.formatPhoneNumberTN(numericString),
-        name: Utils.formatPhoneNumberName(numericString),
-      };
-    });
-
-    // save to local storage
-    if (this.isNewGroupConversation) {
-      this._LocalStorageService.setItem(
-        `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
-        this.contactGroup
-      );
-    }
   };
 
   addMessageToGroup = (

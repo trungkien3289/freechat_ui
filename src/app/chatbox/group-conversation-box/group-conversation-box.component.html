@@ -18,27 +18,40 @@
         }}</span>
     </div>
 
-    <div class="d-flex flex-row py-2 align-items-center">
+
+    <div class="d-flex flex-row py-2 align-items-start flex-gap-1">
       <i class="fa fa-users me-1 primary-color fs-5"></i>
       <span class="fw-bold group-label">To: </span>
-      @if(isNewGroupConversation){
-      <nz-select class="w-100 multiple-select-phone-number border-round" [(ngModel)]="listOfTagOptions"
-        [nzBorderless]="false" [nzDropdownStyle]="{ display: 'none' }" (ngModelChange)="onToNumbersChange($event)"
-        [nzOpen]="false" nzMode="tags" [nzTokenSeparators]="[',']" nzPlaceHolder="Input phone number"
-        [nzCustomTemplate]="defaultTemplate" [disabled]="!isNewGroupConversation">
-        @for (option of listOfOption; track option.value) {
-        <nz-option [nzLabel]="option.label" [nzValue]="option.value"></nz-option>
+      <div class="d-flex flex-column flex-grow-1 flex-gap-2">
+        @if(isNewGroupConversation){
+
+        <div class="my-2 d-flex flex-row align-items-center">
+          <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber" [specialCharacters]="[' ', '(', ')', '-', '.']"
+            mask="(000) 000-0000">
+          <button class="btn-add-phone primary-bg-color" nz-button nzType="primary" (click)="addPhoneNumer()"><i
+              class="fa fa-plus me-1" aria-hidden="true"></i>Add Phone</button>
+        </div>
+        <nz-select class="w-100 multiple-select-phone-number border-round" [(ngModel)]="listOfTagOptions"
+          [nzBorderless]="false" [nzDropdownStyle]="{ display: 'none' }" (ngModelChange)="onToNumbersChange($event)"
+          [nzOpen]="false" nzMode="tags" [nzTokenSeparators]="[',']" nzPlaceHolder="Input phone number"
+          [nzCustomTemplate]="defaultTemplate" [disabled]="!isNewGroupConversation">
+          @for (option of listOfOption; track option.value) {
+          <nz-option [nzLabel]="option.label" [nzValue]="option.value"></nz-option>
+          }
+        </nz-select>
+        <ng-template #defaultTemplate let-selected>
+          {{ selected.nzLabel | phoneNumberFormatNoCode }}
+        </ng-template>
+
+
+        }@else {
+        <span class="d-flex flex-row py-2 align-items-center fs-6">{{
+          contactGroup.name
+          }}</span>
         }
-      </nz-select>
-      <ng-template #defaultTemplate let-selected>
-        {{ selected.nzLabel | phoneNumberFormatNoCode }}
-      </ng-template>
-      }@else {
-      <span class="d-flex flex-row py-2 align-items-center fs-6">{{
-        contactGroup.name
-        }}</span>
-      }
+      </div>
     </div>
+
   </div>
 
   <div class="message flex-grow-1 p-2 pe-5" id="conversation" #scrollContainer>

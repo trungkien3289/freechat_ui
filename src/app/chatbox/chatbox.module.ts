@@ -31,6 +31,7 @@ import { AudioRecordingService } from '../services/audio-recording.service';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 
 @NgModule({
   declarations: [
@@ -67,7 +68,12 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
     NzBadgeModule,
     PickerComponent,
     NzSpinModule,
+    NgxMaskDirective,
+    NgxMaskPipe,
   ],
-  providers: [AudioRecordingService],
+  providers: [
+    AudioRecordingService,
+    provideNgxMask({ showMaskTyped: true, validation: false }),
+  ],
 })
 export class ChatboxModule {}

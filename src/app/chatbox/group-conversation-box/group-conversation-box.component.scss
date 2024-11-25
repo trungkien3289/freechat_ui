@@ -262,3 +262,24 @@
       0px 0px 0px 10px rgba(255, 255, 255, 0);
   }
 }
+
+.phone-input {
+  width: 200px;
+  height: 40px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+
+  &:hover {
+    border: 1px solid #3498db !important;
+  }
+
+  &:hover {
+    border: 1px solid #3498db !important;
+  }
+}
+
+.btn-add-phone {
+  height: 40px;
+  border-radius: 10px;
+}

@@ -230,7 +230,11 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
   checkNewMessageComming = async (phoneNumber: PhoneNumber) => {
     let contactMessageGroups = await this.fetchMessagesSilence(phoneNumber);
-
+    console.info(
+      '>>>>>>>>>>>>> Fet new message comming',
+      phoneNumber.phoneNumber,
+      contactMessageGroups
+    );
     // update new message comming in phone number list
     if (this.phoneNumberListComponent) {
       let newMessageCount = contactMessageGroups.reduce(
