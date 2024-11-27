@@ -327,121 +327,156 @@ export class ResourceService {
 
   /// Fetch new messages from server for phone number
 
-  // fetNewMessageOfPhones = async (
-  //   phones: PhoneNumber[]
-  // ): Promise<
-  //   {
-  //     phoneId: string;
-  //     newMessageCount: number;
-  //     messages: any[];
-  //   }[]
-  // > => {
-  //   const requestBody = phones.map((phone) => {
-  //     return this.generateSingleBodyRequest(phone);
-  //   });
+  fetchNewMessageOfPhones = async (
+    phones: PhoneNumber[]
+  ): Promise<
+    {
+      phoneId: string;
+      newMessageCount: number;
+      contactGroupsInfoDic: {
+        [key: string]: {
+          newMessageCount: number;
+          newMessages: ContactMessage[];
+        };
+      };
+    }[]
+  > => {
+    const requestPhoneBodys: {
+      phoneId: string;
+      requestBody: any;
+    }[] = phones.map((phone) => {
+      return this.generateSingleBodyRequest(phone);
+    });
 
-  //   const response = await this.callAPI(requestBody);
+    const results: {
+      success: boolean;
+      phoneId: string;
+      pingerResult: any;
+      message: string;
+    }[] = await this.callAPI(requestPhoneBodys);
 
-  //   const result = response.result.map((phoneInfo: any) => {
-  //     this.processSingleItem(phoneInfo.id, phoneInfo.data);
-  //   });
+    let successResults = results.filter((item) => item.success);
 
-  //   return result;
-  // };
+    const inforItems = successResults.map(
+      (result: { phoneId: string; pingerResult: any }) => {
+        const communicationsRes = JSON.parse(
+          result.pingerResult.result[0].body
+        );
+        let communications = communicationsRes.result
+          .newCommunications as PhoneComunication[];
 
-  // callAPI = async (requestBody: any): Promise<any> => {
-  //   let res: any = (await firstValueFrom(
-  //     this.http.post(
-  //       `${this.apiUrl}/api/chat/phone/fetch-new-messages`,
-  //       requestBody
-  //     )
-  //   )) as any;
+        const phone = phones.find((item) => item.id == result.phoneId);
+        if (!phone) throw 'Phone number not found';
 
-  //   return res;
-  // };
+        return this.processSingleItem(phone, communications);
+      }
+    );
 
-  // processSingleItem = (
-  //   phoneNumber: PhoneNumber,
-  //   newCommunications: any[]
-  // ): {
-  //   phoneId: string;
-  //   newMessageCount: number;
-  //   messages: any[];
-  // }[] => {
-  //   // const communicationsRes = JSON.parse(res.result[0].body);
-  //   // let communications = communicationsRes.result
-  //   //   .newCommunications as PhoneComunication[];
+    return inforItems;
+  };
 
-  //   //TODO: Now just filter only messages
-  //   const communications = newCommunications.filter(
-  //     (item) => item.type == PhoneComunicationType.MESSAGE
-  //   );
+  callAPI = async (requestBody: any): Promise<any> => {
+    let res: any = (await firstValueFrom(
+      this.http.post(
+        `${this.apiUrl}/api/chat/phone/fetch-new-messages`,
+        requestBody
+      )
+    )) as any;
 
-  //   let contactMessageGroups: ContactMessageGroup[] = this.groupCommunications(
-  //     communications,
-  //     phoneNumber
-  //   );
-  //   let newMessageCount = contactMessageGroups.reduce(
-  //     (countNewMessage, group) => {
-  //       return (
-  //         countNewMessage +
-  //         group.messages.filter((message) => message.myStatus === 'UNREAD')
-  //           .length
-  //       );
-  //     },
-  //     0
-  //   );
+    return res;
+  };
 
-  //   // update new message comming in phone number list
+  processSingleItem = (
+    phone: PhoneNumber,
+    newCommunications: PhoneComunication[]
+  ): {
+    phoneId: string;
+    newMessageCount: number;
+    contactGroupsInfoDic: {
+      [key: string]: {
+        newMessageCount: number;
+        newMessages: ContactMessage[];
+      };
+    };
+  } => {
+    // const communicationsRes = JSON.parse(res.result[0].body);
+    // let communications = communicationsRes.result
+    //   .newCommunications as PhoneComunication[];
 
-  //   // update new message comming in contact list
-  //   // if (this.contactListComponent) {
-  //   //   let updateDic: {
-  //   //     [key: string]: {
-  //   //       newMessageCount: number;
-  //   //       newMessages: ContactMessage[];
-  //   //     };
-  //   //   } = {};
-  //   //   contactMessageGroups.forEach((group) => {
-  //   //     let newMessages = group.messages.filter(
-  //   //       (message) => message.myStatus === 'UNREAD'
-  //   //     );
-  //   //     updateDic[group.id] = {
-  //   //       newMessageCount: newMessages.length,
-  //   //       newMessages,
-  //   //     };
-  //   //     // updateDic[group.id] = group.messages.filter(
-  //   //     //   (message) => message.myStatus === 'UNREAD'
-  //   //     // ).length;
-  //   //   });
-  //   //   this.contactListComponent.updateNewMessageComming(updateDic);
-  //   // }
-  // };
+    //TODO: Now just filter only messages
+    const communications = newCommunications.filter(
+      (item) => item.type == PhoneComunicationType.MESSAGE
+    );
 
-  // generateSingleBodyRequest = (phone: PhoneNumber) => {
-  //   const defaultLastUpdateDate = Utils.convertDateToUtcTime(
-  //     // new Date(phoneNumber.assignDateTimestamp)
-  //     new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
-  //   );
+    let contactMessageGroups: ContactMessageGroup[] = this.groupCommunications(
+      communications,
+      phone
+    );
 
-  //   let requestBody = {
-  //     requests: [
-  //       {
-  //         queryParams: [
-  //           { createdSince: '2024-10-10 04:23:36.512952' },
-  //           { updatedSince: defaultLastUpdateDate },
-  //         ],
-  //         contentType: 'application/json',
-  //         useHTTPS: '1',
-  //         resource: '/2.0/communications/sync',
-  //         method: 'GET',
-  //       },
-  //     ],
-  //   };
+    let newMessageCount = contactMessageGroups.reduce(
+      (countNewMessage, group) => {
+        return (
+          countNewMessage +
+          group.messages.filter((message) => message.myStatus === 'UNREAD')
+            .length
+        );
+      },
+      0
+    );
 
-  //   return {
-  //     phoneId: phone.id,
-  //     request: requestBody,
-  //   };
-  // };
+    // update new message comming in contact list
+    let contactGroupsInfoDic: {
+      [key: string]: {
+        newMessageCount: number;
+        newMessages: ContactMessage[];
+      };
+    } = {};
+    contactMessageGroups.forEach((group) => {
+      let newMessages = group.messages.filter(
+        (message) => message.myStatus === 'UNREAD'
+      );
+      contactGroupsInfoDic[group.id] = {
+        newMessageCount: newMessages.length,
+        newMessages,
+      };
+    });
+
+    return {
+      phoneId: phone.id,
+      newMessageCount: newMessageCount,
+      contactGroupsInfoDic: contactGroupsInfoDic,
+    };
+  };
+
+  generateSingleBodyRequest = (
+    phone: PhoneNumber
+  ): {
+    phoneId: string;
+    requestBody: any;
+  } => {
+    const defaultLastUpdateDate = Utils.convertDateToUtcTime(
+      // new Date(phoneNumber.assignDateTimestamp)
+      new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
+    );
+
+    let requestBody = {
+      requests: [
+        {
+          queryParams: [
+            { createdSince: '2024-10-10 04:23:36.512952' },
+            { updatedSince: defaultLastUpdateDate },
+          ],
+          contentType: 'application/json',
+          useHTTPS: '1',
+          resource: '/2.0/communications/sync',
+          method: 'GET',
+        },
+      ],
+    };
+
+    return {
+      phoneId: phone.id,
+      requestBody: requestBody,
+    };
+  };
 }

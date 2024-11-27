@@ -222,23 +222,42 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
   startCheckNewCommingMessageInterval = (phoneNumberList: PhoneNumber[]) => {
     this.newCommingMessageInterval = setInterval(async () => {
-      phoneNumberList.forEach(async (phoneNumber) => {
-        this.checkNewMessageComming(phoneNumber);
-      });
-      // this.checkNewMessageForAllPhoneNumbers(phoneNumberList);
+      // phoneNumberList.forEach(async (phoneNumber) => {
+      //   this.checkNewMessageComming(phoneNumber);
+      // });
+      this.checkNewMessageForAllPhoneNumbers(phoneNumberList);
     }, CHECK_NEW_COMMING_MESSAGE_INTERVAL);
   };
 
-  // checkNewMessageForAllPhoneNumbers = async (phoneNumbers: PhoneNumber[]) => {
-  //   const phoneNewMessInfors: {
-  //     phoneId: string;
-  //     newMessageCount: number;
-  //     messages: any[];
-  //   }[] = await this._ResourceService.fetNewMessageOfPhones(phoneNumbers);
-  //   //generate request body for all phone numbers
-  //   // send request
-  //   // handle response
-  // };
+  checkNewMessageForAllPhoneNumbers = async (phoneNumbers: PhoneNumber[]) => {
+    const phoneNewMessInfors: {
+      phoneId: string;
+      newMessageCount: number;
+      contactGroupsInfoDic: {
+        [key: string]: {
+          newMessageCount: number;
+          newMessages: ContactMessage[];
+        };
+      };
+    }[] = await this._ResourceService.fetchNewMessageOfPhones(phoneNumbers);
+
+    // Update UI
+
+    phoneNewMessInfors.forEach((infoObj) => {
+      if (this.contactListComponent) {
+        this.phoneNumberListComponent.updateNewMessageComming(
+          infoObj.phoneId,
+          infoObj.newMessageCount
+        );
+      }
+
+      if (this.contactListComponent) {
+        this.contactListComponent.updateNewMessageComming(
+          infoObj.contactGroupsInfoDic
+        );
+      }
+    });
+  };
 
   checkNewMessageComming = async (phoneNumber: PhoneNumber) => {
     let contactMessageGroups = await this.fetchMessagesSilence(phoneNumber);
