@@ -55,7 +55,8 @@
         </button>
       </div>
 
-      <button nz-button class="me-1" nzType="primary" nzShape="circle" (click)="triggerUploadDialog()">
+      <button [disabled]="true" nz-button class="me-1" nzType="primary" nzShape="circle"
+        (click)="triggerUploadDialog()">
         <i class="fa fa-picture-o" aria-hidden="true"></i>
       </button>
 
