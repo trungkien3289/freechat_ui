@@ -45,6 +45,7 @@ export class ResourceService {
         isExpired: boolean;
         isError: boolean;
         assignDateTimestamp: number;
+        canReplacePhone: boolean;
       }[] = (await firstValueFrom(
         this.http.get(`${this.apiUrl}/api/chat/user/phones`)
       )) as any;
@@ -61,6 +62,7 @@ export class ResourceService {
           isError: item.isError,
           failCount: 0,
           assignDateTimestamp: item.assignDateTimestamp,
+          canReplacePhone: item.canReplacePhone,
         };
       });
 
@@ -116,7 +118,6 @@ export class ResourceService {
     communications: PhoneComunication[],
     currentPhone: PhoneNumber
   ): ContactMessageGroup[] => {
-    const groupCacheDict = this._GroupContactCacheService.getAllGroupCache();
     const grouped: any = {};
     let currentTime;
 
@@ -295,6 +296,7 @@ export class ResourceService {
         isError: res.newPhoneNumber.isError,
         failCount: 0,
         assignDateTimestamp: res.newPhoneNumber.assignDateTimestamp,
+        canReplacePhone: true,
       };
     } catch (ex: any) {
       if (ex.error && ex.error.message) {
@@ -322,4 +324,124 @@ export class ResourceService {
       throw 'Mark phone number as error failed.';
     }
   };
+
+  /// Fetch new messages from server for phone number
+
+  // fetNewMessageOfPhones = async (
+  //   phones: PhoneNumber[]
+  // ): Promise<
+  //   {
+  //     phoneId: string;
+  //     newMessageCount: number;
+  //     messages: any[];
+  //   }[]
+  // > => {
+  //   const requestBody = phones.map((phone) => {
+  //     return this.generateSingleBodyRequest(phone);
+  //   });
+
+  //   const response = await this.callAPI(requestBody);
+
+  //   const result = response.result.map((phoneInfo: any) => {
+  //     this.processSingleItem(phoneInfo.id, phoneInfo.data);
+  //   });
+
+  //   return result;
+  // };
+
+  // callAPI = async (requestBody: any): Promise<any> => {
+  //   let res: any = (await firstValueFrom(
+  //     this.http.post(
+  //       `${this.apiUrl}/api/chat/phone/fetch-new-messages`,
+  //       requestBody
+  //     )
+  //   )) as any;
+
+  //   return res;
+  // };
+
+  // processSingleItem = (
+  //   phoneNumber: PhoneNumber,
+  //   newCommunications: any[]
+  // ): {
+  //   phoneId: string;
+  //   newMessageCount: number;
+  //   messages: any[];
+  // }[] => {
+  //   // const communicationsRes = JSON.parse(res.result[0].body);
+  //   // let communications = communicationsRes.result
+  //   //   .newCommunications as PhoneComunication[];
+
+  //   //TODO: Now just filter only messages
+  //   const communications = newCommunications.filter(
+  //     (item) => item.type == PhoneComunicationType.MESSAGE
+  //   );
+
+  //   let contactMessageGroups: ContactMessageGroup[] = this.groupCommunications(
+  //     communications,
+  //     phoneNumber
+  //   );
+  //   let newMessageCount = contactMessageGroups.reduce(
+  //     (countNewMessage, group) => {
+  //       return (
+  //         countNewMessage +
+  //         group.messages.filter((message) => message.myStatus === 'UNREAD')
+  //           .length
+  //       );
+  //     },
+  //     0
+  //   );
+
+  //   // update new message comming in phone number list
+
+  //   // update new message comming in contact list
+  //   // if (this.contactListComponent) {
+  //   //   let updateDic: {
+  //   //     [key: string]: {
+  //   //       newMessageCount: number;
+  //   //       newMessages: ContactMessage[];
+  //   //     };
+  //   //   } = {};
+  //   //   contactMessageGroups.forEach((group) => {
+  //   //     let newMessages = group.messages.filter(
+  //   //       (message) => message.myStatus === 'UNREAD'
+  //   //     );
+  //   //     updateDic[group.id] = {
+  //   //       newMessageCount: newMessages.length,
+  //   //       newMessages,
+  //   //     };
+  //   //     // updateDic[group.id] = group.messages.filter(
+  //   //     //   (message) => message.myStatus === 'UNREAD'
+  //   //     // ).length;
+  //   //   });
+  //   //   this.contactListComponent.updateNewMessageComming(updateDic);
+  //   // }
+  // };
+
+  // generateSingleBodyRequest = (phone: PhoneNumber) => {
+  //   const defaultLastUpdateDate = Utils.convertDateToUtcTime(
+  //     // new Date(phoneNumber.assignDateTimestamp)
+  //     new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
+  //   );
+
+  //   let requestBody = {
+  //     requests: [
+  //       {
+  //         queryParams: [
+  //           { createdSince: '2024-10-10 04:23:36.512952' },
+  //           { updatedSince: defaultLastUpdateDate },
+  //         ],
+  //         contentType: 'application/json',
+  //         useHTTPS: '1',
+  //         resource: '/2.0/communications/sync',
+  //         method: 'GET',
+  //       },
+  //     ],
+  //   };
+
+  //   return {
+  //     phoneId: phone.id,
+  //     request: requestBody,
+  //   };
+  // };
 }

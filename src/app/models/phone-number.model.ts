@@ -7,4 +7,5 @@ export type PhoneNumber = {
   isError: boolean;
   failCount: number;
   assignDateTimestamp: number;
+  canReplacePhone: boolean;
 };

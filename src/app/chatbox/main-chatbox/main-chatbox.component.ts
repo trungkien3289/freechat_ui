@@ -225,8 +225,20 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       phoneNumberList.forEach(async (phoneNumber) => {
         this.checkNewMessageComming(phoneNumber);
       });
+      // this.checkNewMessageForAllPhoneNumbers(phoneNumberList);
     }, CHECK_NEW_COMMING_MESSAGE_INTERVAL);
   };
+
+  // checkNewMessageForAllPhoneNumbers = async (phoneNumbers: PhoneNumber[]) => {
+  //   const phoneNewMessInfors: {
+  //     phoneId: string;
+  //     newMessageCount: number;
+  //     messages: any[];
+  //   }[] = await this._ResourceService.fetNewMessageOfPhones(phoneNumbers);
+  //   //generate request body for all phone numbers
+  //   // send request
+  //   // handle response
+  // };
 
   checkNewMessageComming = async (phoneNumber: PhoneNumber) => {
     let contactMessageGroups = await this.fetchMessagesSilence(phoneNumber);
@@ -295,7 +307,6 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
       return contactMessageGroups;
     } catch (error: any) {
-      // handle 'Reauthorize and try again' error
       if (
         _.isString(error.error) &&
         error.error.trim('\n') == 'Reauthorize and try again'
