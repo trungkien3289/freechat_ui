@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { PhoneNumber } from '../../models/phone-number.model';
 import { ResourceService } from '../../services/resource.service';
 import { NotificationService } from '../../services/notification.service';
+import moment from 'moment';
 import {
   ContactMessage,
   ContactMessageGroup,
@@ -62,7 +63,6 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this._ActivatedRoute.paramMap.subscribe((params) => {
       this.userId = this._UserService.getUserId();
-      console.log('User ID:', this.userId);
     });
 
     let isUserExpired = this._UserService.isUserExpired();
@@ -115,7 +115,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
           contactMessageGroups.forEach((group) => {
             this._GroupContactCacheService.setLastSeen(
               group.id,
-              new Date(),
+              moment().subtract(1, 'minutes').toDate(),
               // new Date('2021-10-20'),
               group
             );
@@ -127,7 +127,6 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
   selectPhoneNumber = async (phoneNumber: PhoneNumber) => {
     if (!phoneNumber.isError && !phoneNumber.expired) {
-      console.log('Phone number is selected', phoneNumber.phoneNumber);
       this.selectedPhoneNumberItem = phoneNumber;
       await this.reloadContactList(phoneNumber);
       this.selectContactItem(this.contactMessageGroups[0]);
@@ -222,9 +221,6 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
   startCheckNewCommingMessageInterval = (phoneNumberList: PhoneNumber[]) => {
     this.newCommingMessageInterval = setInterval(async () => {
-      // phoneNumberList.forEach(async (phoneNumber) => {
-      //   this.checkNewMessageComming(phoneNumber);
-      // });
       this.checkNewMessageForAllPhoneNumbers(phoneNumberList);
     }, CHECK_NEW_COMMING_MESSAGE_INTERVAL);
   };

@@ -50,9 +50,6 @@ export class GroupContactCacheService {
       };
     } else {
       this.groupDic[groupId].lastSeen = lastSeen;
-      // this.groupDic[groupId].group = group;
     }
-
-    // console.log('setLastSeen', groupId, lastSeen, this.groupDic);
   };
 }

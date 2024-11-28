@@ -120,8 +120,7 @@ export class ResourceService {
   ): ContactMessageGroup[] => {
     const grouped: any = {};
     let currentTime;
-
-    for (const message of communications) {
+    communications.forEach((message) => {
       if (message.direction == 'out') {
         const from = currentPhone.phoneNumber;
         const t = [...message.to, message.from].filter(
@@ -165,9 +164,9 @@ export class ResourceService {
           itemType: ChatBoxUtils.getMessageItemType(message),
         });
       }
-    }
-    for (const message of communications) {
-      // only get message from single number to current phone number
+    });
+
+    communications.forEach((message) => {
       if (message.direction == 'in' && message.to.length == 1) {
         const from = currentPhone.phoneNumber;
         const t = [...message.to, message.from].filter(
@@ -213,7 +212,7 @@ export class ResourceService {
           media: message.media,
         });
       }
-    }
+    });
 
     // Convert grouped object to an array
     return Object.keys(grouped)
@@ -341,6 +340,7 @@ export class ResourceService {
       };
     }[]
   > => {
+    const phoneItems = JSON.parse(JSON.stringify(phones)) as any[];
     const requestPhoneBodys: {
       phoneId: string;
       requestBody: any;
@@ -357,20 +357,18 @@ export class ResourceService {
 
     let successResults = results.filter((item) => item.success);
 
-    const inforItems = successResults.map(
-      (result: { phoneId: string; pingerResult: any }) => {
-        const communicationsRes = JSON.parse(
-          result.pingerResult.result[0].body
-        );
-        let communications = communicationsRes.result
-          .newCommunications as PhoneComunication[];
-
-        const phone = phones.find((item) => item.id == result.phoneId);
-        if (!phone) throw 'Phone number not found';
-
-        return this.processSingleItem(phone, communications);
-      }
-    );
+    const inforItems: any[] = [];
+    successResults.forEach((result: { phoneId: string; pingerResult: any }) => {
+      const communicationsRes = JSON.parse(result.pingerResult.result[0].body);
+      let communications = communicationsRes.result
+        .newCommunications as PhoneComunication[];
+      const phone = phoneItems.find((item) => {
+        return item.id == result.phoneId;
+      });
+      if (!phone) throw 'Phone number not found';
+      let infoItem = this.processSingleItem(phone, communications);
+      inforItems.push(infoItem);
+    });
 
     return inforItems;
   };
@@ -399,11 +397,6 @@ export class ResourceService {
       };
     };
   } => {
-    // const communicationsRes = JSON.parse(res.result[0].body);
-    // let communications = communicationsRes.result
-    //   .newCommunications as PhoneComunication[];
-
-    //TODO: Now just filter only messages
     const communications = newCommunications.filter(
       (item) => item.type == PhoneComunicationType.MESSAGE
     );
