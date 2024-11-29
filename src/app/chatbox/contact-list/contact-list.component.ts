@@ -63,12 +63,12 @@ export class ContactListComponent {
       const group = this.contactMessageGroups.find((g) => g.id === groupId);
       if (!group) return;
       group.newMessageCount = updateDic[groupId].newMessageCount || 0;
-      if (
-        updateDic[groupId].newMessages &&
-        updateDic[groupId].newMessages.length > 0
-      ) {
-        group.messages = group.messages.concat(updateDic[groupId].newMessages);
-      }
+      // if (
+      //   updateDic[groupId].newMessages &&
+      //   updateDic[groupId].newMessages.length > 0
+      // ) {
+      //   group.messages = group.messages.concat(updateDic[groupId].newMessages);
+      // }
     });
   };
 }
