@@ -2,17 +2,10 @@ import { ChatboxModule } from './chatbox/chatbox.module';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
+import { AuthGuard } from './gaurds/auth.guard';
 
 const routes: Routes = [
-  // { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
-  // { path: 'emotion', component: EmotionComponent, canActivate: [AuthGuard] }, // Protect route
-  // { path: '', redirectTo: '/login', pathMatch: 'full' },
-  // {
-  //   path: 'dashboard',
-  //   component: DashboardComponent,
-  //   canActivate: [AuthGuard],
-  // },
   {
     path: 'auth',
     loadChildren: () => import('./auth/auth.module').then((m) => m.AuthModule),
@@ -21,8 +14,9 @@ const routes: Routes = [
     path: 'chatbox',
     loadChildren: () =>
       import('./chatbox/chatbox.module').then((m) => m.ChatboxModule),
+    canActivate: [AuthGuard],
   },
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: '', redirectTo: '/chatbox', pathMatch: 'full' },
 ];
 
 @NgModule({
