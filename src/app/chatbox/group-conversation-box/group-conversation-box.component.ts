@@ -281,7 +281,7 @@ export class GroupConversationBoxComponent
           errorDescription: 'Missing sender assigned phone number',
         });
       } else {
-        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     }
 
@@ -314,7 +314,7 @@ export class GroupConversationBoxComponent
           errorDescription: 'Missing sender assigned phone number',
         });
       } else {
-        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     }
   };
@@ -357,7 +357,7 @@ export class GroupConversationBoxComponent
           errorDescription: 'Missing sender assigned phone number',
         });
       } else {
-        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     }
   };

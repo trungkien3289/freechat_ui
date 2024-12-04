@@ -126,12 +126,12 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   };
 
   selectPhoneNumber = async (phoneNumber: PhoneNumber) => {
-    if (!phoneNumber.isError && !phoneNumber.expired) {
-      this.selectedPhoneNumberItem = phoneNumber;
-      await this.reloadContactList(phoneNumber);
-      this.selectContactItem(this.contactMessageGroups[0]);
-      this.checkNewMessageComming(phoneNumber);
-    }
+    // if (!phoneNumber.isError && !phoneNumber.expired) {
+    this.selectedPhoneNumberItem = phoneNumber;
+    await this.reloadContactList(phoneNumber);
+    this.selectContactItem(this.contactMessageGroups[0]);
+    this.checkNewMessageComming(phoneNumber);
+    // }
   };
 
   reloadContactList = async (phoneNumber: PhoneNumber) => {
@@ -257,11 +257,11 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
   checkNewMessageComming = async (phoneNumber: PhoneNumber) => {
     let contactMessageGroups = await this.fetchMessagesSilence(phoneNumber);
-    console.info(
-      '>>>>>>>>>>>>> Fet new message comming',
-      phoneNumber.phoneNumber,
-      contactMessageGroups
-    );
+    // console.info(
+    //   '>>>>>>>>>>>>> Fet new message comming',
+    //   phoneNumber.phoneNumber,
+    //   contactMessageGroups
+    // );
     // update new message comming in phone number list
     if (this.phoneNumberListComponent) {
       let newMessageCount = contactMessageGroups.reduce(

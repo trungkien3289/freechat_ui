@@ -219,7 +219,7 @@ export class ChatService {
 
       let sinceUpdateDateString = Utils.convertDateToUtcTime(updatedSinceDate);
       const createdSince = Utils.convertDateToUtcTime(
-        moment().startOf('month').toDate()
+        moment(lastUpdateDate).startOf('month').toDate()
       );
 
       let requestBody = {

@@ -436,7 +436,7 @@ export class ConversationBoxComponent
       } else {
         this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
         // Should notify phone number error
-        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     } catch (error: any) {
       this._NotificationService.error(error);
@@ -450,7 +450,7 @@ export class ConversationBoxComponent
           errorDescription: 'Missing sender assigned phone number',
         });
       } else {
-        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     }
 
@@ -481,13 +481,18 @@ export class ConversationBoxComponent
       if (hasNewMessage) {
         this.updateMessageStatus(newMessage.id, SendStatus.SENT);
       } else {
-        this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+        this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+        // this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
         // Should notify phone number error
-        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+
+        // this.removeMessage(newMessage.id);
       }
     } catch (error: any) {
       this._NotificationService.error(error);
-      this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      // this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+      // this.removeMessage(newMessage.id);
 
       if (
         _.isString(error) &&
@@ -498,7 +503,7 @@ export class ConversationBoxComponent
           errorDescription: 'Missing sender assigned phone number',
         });
       } else {
-        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     }
 
@@ -541,7 +546,7 @@ export class ConversationBoxComponent
       } else {
         this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
         // Should notify phone number error
-        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     } catch (error: any) {
       this._NotificationService.error(error);
@@ -555,7 +560,7 @@ export class ConversationBoxComponent
           errorDescription: 'Missing sender assigned phone number',
         });
       } else {
-        this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     }
 
@@ -619,6 +624,19 @@ export class ConversationBoxComponent
     if (!!messageViewItem) {
       messageViewItem.sendStatus = status;
     }
+
+    this._GroupContactCacheService.cacheGroupUnsentMessage(
+      this.contactGroup.id,
+      this.contactGroup.messages.filter(
+        (mess) => mess.sendStatus != SendStatus.SENT
+      )
+    );
+  };
+
+  removeMessage = (messageId: string) => {
+    this.messageViewItems = this.messageViewItems.filter(
+      (item) => item.id != messageId
+    );
 
     this._GroupContactCacheService.cacheGroupUnsentMessage(
       this.contactGroup.id,

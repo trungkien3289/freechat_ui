@@ -82,7 +82,7 @@ export class ResourceService {
     );
 
     const createdSince = Utils.convertDateToUtcTime(
-      moment().startOf('month').toDate()
+      moment(defaultLastUpdateDate).startOf('month').toDate()
     );
 
     let requestBody = {
@@ -458,7 +458,7 @@ export class ResourceService {
     );
 
     const createdSince = Utils.convertDateToUtcTime(
-      moment().startOf('month').toDate()
+      moment(defaultLastUpdateDate).startOf('month').toDate()
     );
 
     let requestBody = {
