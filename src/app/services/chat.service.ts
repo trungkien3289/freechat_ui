@@ -14,6 +14,7 @@ import _ from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
 import { ChatBoxUtils } from '../utilities/chatbox-utils';
 import { PhoneNumber } from '../models/phone-number.model';
+import moment from 'moment';
 
 @Injectable({
   providedIn: 'root',
@@ -128,11 +129,15 @@ export class ChatService {
         new Date(fromPhone.assignDateTimestamp)
       );
 
+      const createdSince = Utils.convertDateToUtcTime(
+        moment().startOf('month').toDate()
+      );
+
       let requestBody = {
         requests: [
           {
             queryParams: [
-              { createdSince: '2024-10-10 04:23:36.512952' },
+              { createdSince: createdSince },
               { updatedSince: defaultLastUpdateDate },
             ],
             contentType: 'application/json',
@@ -213,12 +218,15 @@ export class ChatService {
       let updatedSinceDate = new Date(lastUpdateDate.getTime());
 
       let sinceUpdateDateString = Utils.convertDateToUtcTime(updatedSinceDate);
+      const createdSince = Utils.convertDateToUtcTime(
+        moment().startOf('month').toDate()
+      );
 
       let requestBody = {
         requests: [
           {
             queryParams: [
-              { createdSince: '2024-10-10 04:23:36.512952' },
+              { createdSince: createdSince },
               { updatedSince: sinceUpdateDateString },
             ],
             contentType: 'application/json',

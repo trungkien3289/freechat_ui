@@ -20,6 +20,7 @@ import { Utils } from '../utilities/utils';
 import _ from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
 import { ChatBoxUtils } from '../utilities/chatbox-utils';
+import moment from 'moment';
 
 @Injectable({
   providedIn: 'root',
@@ -80,11 +81,15 @@ export class ResourceService {
       new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
     );
 
+    const createdSince = Utils.convertDateToUtcTime(
+      moment().startOf('month').toDate()
+    );
+
     let requestBody = {
       requests: [
         {
           queryParams: [
-            { createdSince: '2024-10-10 04:23:36.512952' },
+            { createdSince: createdSince },
             // { updatedSince: '2024-11-24 04:23:36.467539' },
             { updatedSince: defaultLastUpdateDate }, //check
           ],
@@ -417,13 +422,13 @@ export class ResourceService {
       0
     );
 
-    // update new message comming in contact list
     let contactGroupsInfoDic: {
       [key: string]: {
         newMessageCount: number;
         newMessages: ContactMessage[];
       };
     } = {};
+
     contactMessageGroups.forEach((group) => {
       let newMessages = group.messages.filter(
         (message) => message.myStatus === 'UNREAD'
@@ -452,11 +457,15 @@ export class ResourceService {
       new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
     );
 
+    const createdSince = Utils.convertDateToUtcTime(
+      moment().startOf('month').toDate()
+    );
+
     let requestBody = {
       requests: [
         {
           queryParams: [
-            { createdSince: '2024-10-10 04:23:36.512952' },
+            { createdSince: createdSince },
             { updatedSince: defaultLastUpdateDate },
           ],
           contentType: 'application/json',
