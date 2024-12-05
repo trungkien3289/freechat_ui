@@ -11,8 +11,9 @@
 
     <div class="bg-white border-end h-100 contact-panel">
       <div class="h-100" *ngIf="selectedContact != null">
-        <app-contact-list [selectedContactId]="selectedContact.id" [phoneNumber]="selectedPhoneNumberItem"
-          [contactMessageGroups]="contactMessageGroups" (onSelectItem)="selectContactItem($event)"></app-contact-list>
+        <app-contact-list [isLoading]="isLoadingContactList" [selectedContactId]="selectedContact.id"
+          [phoneNumber]="selectedPhoneNumberItem" [contactMessageGroups]="contactMessageGroups"
+          (onSelectItem)="selectContactItem($event)"></app-contact-list>
       </div>
     </div>
 

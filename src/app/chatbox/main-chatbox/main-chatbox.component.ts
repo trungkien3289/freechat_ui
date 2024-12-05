@@ -33,6 +33,7 @@ const LIMIT_SEND_MESSAGE_FAIL = 3;
 export class MainChatboxComponent implements OnInit, OnDestroy {
   userId: string = '';
   isLoadingPhoneNumbers: boolean = false;
+  isLoadingContactList: boolean = false;
   isLoading: boolean = false;
   selectedPhoneNumberItem?: PhoneNumber;
   selectedContact?: ContactMessageGroup;
@@ -126,12 +127,12 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   };
 
   selectPhoneNumber = async (phoneNumber: PhoneNumber) => {
-    // if (!phoneNumber.isError && !phoneNumber.expired) {
-    this.selectedPhoneNumberItem = phoneNumber;
-    await this.reloadContactList(phoneNumber);
-    this.selectContactItem(this.contactMessageGroups[0]);
-    this.checkNewMessageComming(phoneNumber);
-    // }
+    if (!phoneNumber.isError && !phoneNumber.expired) {
+      this.selectedPhoneNumberItem = phoneNumber;
+      await this.reloadContactList(phoneNumber);
+      this.selectContactItem(this.contactMessageGroups[0]);
+      this.checkNewMessageComming(phoneNumber);
+    }
   };
 
   reloadContactList = async (phoneNumber: PhoneNumber) => {
@@ -154,18 +155,18 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   getPhoneDetails = async (
     phoneNumber: PhoneNumber
   ): Promise<ContactMessageGroup[]> => {
-    this.isLoading = true;
+    this.isLoadingContactList = true;
     try {
       const contactMessageGroups = await this._ResourceService.getComunications(
         phoneNumber
       );
 
-      this.isLoading = false;
+      this.isLoadingContactList = false;
       return contactMessageGroups;
     } catch (error: any) {
       // console.error(error);
       this._NotificationService.error(error.error);
-      this.isLoading = false;
+      this.isLoadingContactList = false;
     }
 
     return [];

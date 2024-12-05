@@ -17,33 +17,21 @@
         </ng-template> -->
   </div>
   <div class="d-flex flex-column flex-grow-1 mt-2 list-container px-2">
+    @if(isLoading) {
+    <nz-spin nzTip="Loading..." class="h-100"></nz-spin>
+    }@else {
     @for (item of contactMessageGroups; track item.id) {
-    <div
-      (click)="selectItem(item)"
-      class="d-flex flex-row hover-list-item cursor-pointer px-2"
-      [class.selected-item]="selectedContactId == item.id"
-    >
-      <div
-        class="d-flex flex-row align-items-center p-1 justify-content-between w-100"
-      >
-        <div
-          class="d-flex flex-row align-items-center flex-grow-1 overflow-hidden"
-        >
+    <div (click)="selectItem(item)" class="d-flex flex-row hover-list-item cursor-pointer px-2"
+      [class.selected-item]="selectedContactId == item.id">
+      <div class="d-flex flex-row align-items-center p-1 justify-content-between w-100">
+        <div class="d-flex flex-row align-items-center flex-grow-1 overflow-hidden">
           <div class="contact-icon-wrapper">
-            <nz-badge
-              nzSize="small"
-              [nzCount]="item.newMessageCount"
-              [nzOverflowCount]="99"
-              [nzStyle]="{
+            <nz-badge nzSize="small" [nzCount]="item.newMessageCount" [nzOverflowCount]="99" [nzStyle]="{
                 backgroundColor: '#eb3535',
                 color: '#fff',
-              }"
-            >
+              }">
               @if(item.conversationType == 'Group') {
-              <i
-                class="fa fa-users me-3 primary-color fs-4"
-                aria-hidden="true"
-              ></i>
+              <i class="fa fa-users me-3 primary-color fs-4" aria-hidden="true"></i>
               }@else {
               <i class="fa fa-user me-3 primary-color fs-4"></i>
               }
@@ -52,38 +40,25 @@
 
           <div class="d-flex flex-column flex-grow-1 overflow-hidden">
             <div class="d-flex flex-row align-items-center">
-              <span
-                [class.fw-bold]="item.newMessageCount > 0"
-                nz-tooltip
-                [nzTooltipTitle]="item.name"
-                [nzTooltipColor]="'blue'"
-                nzTooltipPlacement="topLeft"
-                class="flex-grow-1 fs-6 text-truncate me-1"
-              >
+              <span [class.fw-bold]="item.newMessageCount > 0" nz-tooltip [nzTooltipTitle]="item.name"
+                [nzTooltipColor]="'blue'" nzTooltipPlacement="topLeft" class="flex-grow-1 fs-6 text-truncate me-1">
                 {{ item.name }}
               </span>
             </div>
 
-            <span
-              class="fw-light text-truncate recent-message"
-              *ngIf="item.id != 'New_Group_Conversation'"
-            >
-              {{ _last(item.messages)?.text }}</span
-            >
+            <span class="fw-light text-truncate recent-message" *ngIf="item.id != 'New_Group_Conversation'">
+              {{ _last(item.messages)?.text }}</span>
           </div>
         </div>
 
-        <span
-          *ngIf="item.id != 'New_Group_Conversation'"
-          class="fst-italic text-truncate"
-          style="font-size: 11px; width: 75px"
-        >
-          {{ _last(item.messages)?.timeCreated | dateStringFormat }}</span
-        >
+        <span *ngIf="item.id != 'New_Group_Conversation'" class="fst-italic text-truncate"
+          style="font-size: 11px; width: 75px">
+          {{ _last(item.messages)?.timeCreated | dateStringFormat }}</span>
       </div>
     </div>
     } @if (contactMessageGroups.length === 0) {
     <nz-list-empty />
+    }
     }
   </div>
 </div>

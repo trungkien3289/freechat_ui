@@ -23,7 +23,7 @@ export class ContactListComponent {
   @Input() contactMessageGroups: ContactMessageGroup[] = [];
   @Output() onSelectItem = new EventEmitter<ContactMessageGroup>();
   @Output() onNewGroupConversation = new EventEmitter<void>();
-  isLoading: boolean = false;
+  @Input() isLoading: boolean = false;
   selectedContact?: ContactMessageGroup;
   _last = last;
   _first = first;
