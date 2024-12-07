@@ -13,6 +13,7 @@ import { LocalStorageService } from '../../services/local-storage.service';
 import {
   NEW_GROUP_CONVERSATION_ID,
   NEW_GROUP_CONVERSATION_NAME,
+  MAXIMIZE_CONTACT_NUMBER,
 } from '../../utilities/chatbox.const';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PhoneNumberListComponent } from '../phone-number-list/phone-number-list.component';
@@ -127,25 +128,33 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   };
 
   selectPhoneNumber = async (phoneNumber: PhoneNumber) => {
-    if (!phoneNumber.isError && !phoneNumber.expired) {
-      this.selectedPhoneNumberItem = phoneNumber;
-      await this.reloadContactList(phoneNumber);
-      this.selectContactItem(this.contactMessageGroups[0]);
-      this.checkNewMessageComming(phoneNumber);
-    }
+    // if (!phoneNumber.isError && !phoneNumber.expired) {
+    this.selectedPhoneNumberItem = phoneNumber;
+    await this.reloadContactList(phoneNumber, true);
+    this.selectContactItem(this.contactMessageGroups[0]);
+    this.checkNewMessageComming(phoneNumber);
+    // }
   };
 
-  reloadContactList = async (phoneNumber: PhoneNumber) => {
+  reloadContactList = async (
+    phoneNumber: PhoneNumber,
+    showLoading: boolean = false
+  ) => {
+    this.isLoadingContactList = showLoading;
     this.contactMessageGroups = await this.getPhoneDetails(phoneNumber);
-    if (!this.checkIfGroupConversationExist(phoneNumber)) {
-      this.newGroupConversation(phoneNumber);
+    if (this.contactMessageGroups.length < MAXIMIZE_CONTACT_NUMBER) {
+      if (!this.checkIfGroupConversationExist(phoneNumber)) {
+        this.newGroupConversation(phoneNumber);
+      }
+
+      this.contactMessageGroups.unshift(
+        this._LocalStorageService.getItem(
+          `GroupConversation_${phoneNumber.phoneNumber}`
+        )
+      );
     }
 
-    this.contactMessageGroups.unshift(
-      this._LocalStorageService.getItem(
-        `GroupConversation_${phoneNumber.phoneNumber}`
-      )
-    );
+    this.isLoadingContactList = false;
   };
 
   selectContactItem = (contact: ContactMessageGroup) => {
@@ -155,18 +164,15 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   getPhoneDetails = async (
     phoneNumber: PhoneNumber
   ): Promise<ContactMessageGroup[]> => {
-    this.isLoadingContactList = true;
     try {
       const contactMessageGroups = await this._ResourceService.getComunications(
         phoneNumber
       );
 
-      this.isLoadingContactList = false;
       return contactMessageGroups;
     } catch (error: any) {
       // console.error(error);
       this._NotificationService.error(error.error);
-      this.isLoadingContactList = false;
     }
 
     return [];

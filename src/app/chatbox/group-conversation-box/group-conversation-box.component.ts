@@ -63,8 +63,8 @@ export class GroupConversationBoxComponent
   // emoji popup
   isEmojiPickerVisible: boolean = false;
 
-  // add multiple phone numbers
   inputPhoneNumber: string = '';
+  isValidPhoneNumber: boolean = true;
 
   @ViewChild('uploadComponent', { static: false }) uploadComponent!: any;
   fileInput: HTMLInputElement | null = null;
@@ -82,8 +82,6 @@ export class GroupConversationBoxComponent
           formattedTime: this.formatTime(item.timeCreated),
         } as ContactMessageViewItem;
       });
-
-      this.listOfTagOptions = contactGroup.to.map((item) => item.TN);
     }
   }
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
@@ -93,9 +91,6 @@ export class GroupConversationBoxComponent
     phoneNumberId: string;
     errorDescription: string;
   }>();
-
-  listOfTagOptions: string[] = [];
-  listOfOption: Array<{ label: string; value: string }> = [];
 
   constructor(
     private _ChatService: ChatService,
@@ -140,45 +135,32 @@ export class GroupConversationBoxComponent
     this.resetChatBox();
   }
 
-  addPhoneNumer = () => {
-    if (
-      this.inputPhoneNumber &&
-      this.listOfTagOptions.includes(this.inputPhoneNumber) === false
-    ) {
-      this.listOfTagOptions = [...this.listOfTagOptions, this.inputPhoneNumber];
-      this.inputPhoneNumber = '';
+  onInputFocusOut = () => {
+    this.isValidPhoneNumber = Utils.validatePhoneNumber(
+      this.inputPhoneNumber.toString()
+    );
 
-      this.updateContactGroup();
-    }
-  };
-
-  removePhoneNumber = (phoneNumber: string) => {
-    if (phoneNumber) {
-      // remove from list of tag options
-      this.listOfTagOptions = this.listOfTagOptions.filter(
-        (item) => item !== phoneNumber
-      );
-
+    if (this.isValidPhoneNumber) {
       this.updateContactGroup();
     }
   };
 
   updateContactGroup = () => {
-    this.contactGroup.to = this.listOfTagOptions.map((phoneNumber) => {
-      const numericString = phoneNumber.replace(/\D/g, '');
-      return {
-        TN: Utils.formatPhoneNumberTN(numericString),
-        name: Utils.formatPhoneNumberName(numericString),
-      };
-    });
+    const numericString = this.inputPhoneNumber.toString().replace(/\D/g, '');
+    const toPhone = {
+      TN: Utils.formatPhoneNumberTN(numericString),
+      name: Utils.formatPhoneNumberName(numericString),
+    };
+
+    this.contactGroup.to = [toPhone];
 
     // save to local storage
-    if (this.isNewGroupConversation) {
-      this._LocalStorageService.setItem(
-        `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
-        this.contactGroup
-      );
-    }
+    // if (this.isNewGroupConversation) {
+    //   this._LocalStorageService.setItem(
+    //     `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
+    //     this.contactGroup
+    //   );
+    // }
   };
 
   formatTime = (dateTime: string) => {
@@ -191,12 +173,14 @@ export class GroupConversationBoxComponent
     this.messageViewItems = [];
     this.reTryError = 10;
     this.myForm.reset();
+    this.isValidPhoneNumber = true;
+    this.inputPhoneNumber = '';
     this.fileList = [];
     this.abortRecording();
   };
 
   sendMessageBtnClick = () => {
-    if (this.listOfTagOptions.length > 0) {
+    if (this.inputPhoneNumber != '') {
       this.debouncedSubmit();
     }
   };
@@ -218,6 +202,11 @@ export class GroupConversationBoxComponent
 
   debouncedSubmit = debounce(async () => {
     if (this.isRecording) return;
+
+    if (!this._ChatService.canSendMessage()) {
+      this._NotificationService.error('Cannot send messages for a miniute');
+      return;
+    }
 
     this.isLoading = true;
     // If have images upload
@@ -435,8 +424,7 @@ export class GroupConversationBoxComponent
       this.contactGroup.to = [];
       this.contactGroup.messages = [];
       this.messageViewItems = [];
-      this.listOfOption = [];
-      this.listOfTagOptions = [];
+      this.inputPhoneNumber = '';
       this._LocalStorageService.setItem(
         `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
         this.contactGroup

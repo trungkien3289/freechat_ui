@@ -329,6 +329,12 @@ export class ConversationBoxComponent
 
   debouncedSubmit = async () => {
     if (this.isRecording) return;
+
+    if (!this._ChatService.canSendMessage()) {
+      this._NotificationService.error('Cannot send messages for a miniute');
+      return;
+    }
+
     this.pauseFetchMessageInterval();
     this.isLoading = true;
 

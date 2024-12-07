@@ -77,6 +77,7 @@ export class PhoneNumberListComponent implements OnInit {
 
   repacePhoneNumber = async (phoneNumber: PhoneNumber) => {
     try {
+      this.isLoading = true;
       const newPhoneNumber = await this._ResourceService.replacePhoneNumber(
         phoneNumber
       );
@@ -91,6 +92,8 @@ export class PhoneNumberListComponent implements OnInit {
         this._NotificationService.error('Error replace phone number');
       }
     }
+
+    this.isLoading = false;
   };
 
   public updateNewMessageComming = (

@@ -21,6 +21,8 @@ import moment from 'moment';
 })
 export class ChatService {
   private apiUrl = ``;
+  private lastSendMessageTime: number = new Date().getTime() - 60 * 1000;
+
   constructor(
     private http: HttpClient,
     public jwtHelper: JwtHelperService,
@@ -53,6 +55,8 @@ export class ChatService {
         )
       );
 
+      this.updateLastSendMessageTime();
+
       return res;
     } catch (ex: any) {
       if (!_.isEmpty(ex.error)) {
@@ -80,6 +84,8 @@ export class ChatService {
         )
       );
 
+      this.updateLastSendMessageTime();
+
       return res;
     } catch (ex: any) {
       if (!_.isEmpty(ex.error)) {
@@ -106,6 +112,8 @@ export class ChatService {
           }
         )
       );
+
+      this.updateLastSendMessageTime();
 
       return res;
     } catch (ex: any) {
@@ -285,5 +293,14 @@ export class ChatService {
     } catch (ex) {
       throw `Fetch Messages from ${fromPhone.phoneNumber} to ${toPhoneNumber} error`;
     }
+  };
+
+  updateLastSendMessageTime = () => {
+    this.lastSendMessageTime = new Date().getTime();
+  };
+
+  canSendMessage = () => {
+    const now = new Date().getTime();
+    return now - this.lastSendMessageTime > 60 * 1000;
   };
 }

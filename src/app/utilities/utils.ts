@@ -56,7 +56,10 @@ export class Utils {
   };
 
   static removeCountryCode = (phoneNumber: string) => {
-    return phoneNumber.substring(1);
+    if (phoneNumber.length > 10) {
+      phoneNumber = phoneNumber.substring(1);
+    }
+    return phoneNumber;
   };
 
   static scrollToBottom(container: any): void {
@@ -98,4 +101,9 @@ export class Utils {
     const dateString = moment(date).format('YYYY-MM-DD HH:mm:ss.SSSSSS');
     return dateString;
   }
+
+  static validatePhoneNumber = (phoneNumber: string) => {
+    const phoneRegex = /^\(?([0-9]{3})\)?[-.●]?([0-9]{3})[-.●]?([0-9]{4})$/;
+    return phoneRegex.test(phoneNumber);
+  };
 }

@@ -16,44 +16,16 @@
     </div>
 
 
-    <div class="d-flex flex-row py-2 align-items-start flex-gap-1">
+    <div class="d-flex flex-row py-2 align-items-center flex-gap-1">
       <i class="fa fa-users me-1 primary-color fs-5"></i>
       <span class="fw-bold group-label">To: </span>
-      <div class="d-flex flex-column flex-grow-1 flex-gap-2">
+      <div class="d-flex flex-row align-items-center flex-grow-1 flex-gap-2">
         @if(isNewGroupConversation){
-
-
-        <!-- <nz-select class="w-100 multiple-select-phone-number border-round" [(ngModel)]="listOfTagOptions"
-          [nzBorderless]="false" [nzDropdownStyle]="{ display: 'none' }" (ngModelChange)="onToNumbersChange($event)"
-          [nzOpen]="false" nzMode="tags" [nzTokenSeparators]="[',']" nzPlaceHolder="Input phone number"
-          [nzCustomTemplate]="defaultTemplate" [disabled]="!isNewGroupConversation">
-          @for (option of listOfOption; track option.value) {
-          <nz-option [nzLabel]="option.label" [nzValue]="option.value"></nz-option>
-          }
-        </nz-select>
-        <ng-template #defaultTemplate let-selected>
-          {{ selected.nzLabel | phoneNumberFormatNoCode }}
-        </ng-template> -->
-
-        <div class="w-100 multiple-select-phone-number border-round">
-          <ng-container *ngFor="let phone of listOfTagOptions;">
-            <nz-tag class="phone-tag" [nzMode]="'closeable'" (nzOnClose)="removePhoneNumber(phone)">
-              {{ phone | phoneNumberFormatNoCode }}
-            </nz-tag>
-          </ng-container>
-        </div>
-
-        <div class="my-2 d-flex flex-row align-items-center">
+        <div class="d-flex flex-row align-items-center">
           <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber" [specialCharacters]="[' ', '(', ')', '-', '.']"
-            mask="(000) 000-0000">
-          <button class="btn-add-phone primary-bg-color me-1" nz-button nzType="primary" (click)="addPhoneNumer()"><i
-              class="fa fa-plus me-1" aria-hidden="true"></i>Add Phone</button>
-          <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"
-            (click)="resetNewGroupConversation()">
-            <i class="fa fa-repeat me-1" aria-hidden="true"></i>
-            Reset
-          </button>
+            mask="(000) 000-0000" (focusout)="onInputFocusOut()">
         </div>
+        <span *ngIf="!isValidPhoneNumber" class="text-danger">Phone number invalid</span>
 
 
         }@else {
@@ -102,7 +74,7 @@
           title="Choose your emoji"></emoji-mart>
         <div class="emoji-picker-container">
           <button nz-button class="me-1" nzType="text" nzShape="circle"
-            (click)="isEmojiPickerVisible = !isEmojiPickerVisible" [disabled]="listOfTagOptions.length == 0">
+            (click)="isEmojiPickerVisible = !isEmojiPickerVisible" [disabled]="!isValidPhoneNumber">
             <i class="fa fa-smile-o fs-4 emoji-icon" aria-hidden="true"></i>
           </button>
         </div>
@@ -111,12 +83,12 @@
           placeholder="Type a message" [nzAutosize]="{ maxRows: 6 }" (keydown)="onKeydown($event)"></textarea>
 
         <button nz-button class="me-1" nzType="text" nzShape="circle" (click)="sendMessageBtnClick()"
-          [disabled]="listOfTagOptions.length ==0">
+          [disabled]="!isValidPhoneNumber">
           <i class="fa fa-send text-primary" aria-hidden="true"></i>
         </button>
       </div>
       <button nz-button class="me-1" nzType="primary" nzShape="circle" (click)="triggerUploadDialog()"
-        [disabled]="listOfTagOptions.length ==0">
+        [disabled]="!isValidPhoneNumber">
         <i class="fa fa-picture-o" aria-hidden="true"></i>
       </button>
       <!-- <button
@@ -131,7 +103,7 @@
       <div class="d-flex flex-row align-items-center w-100">
         <div class="d-flex flex-row align-items-center rounded-pill recording-panel flex-grow-1 me-1 px-1">
           <button nz-button class="me-1" nzType="text" nzShape="circle" (click)="abortRecording()"
-            [disabled]="listOfTagOptions.length ==0">
+            [disabled]="!isValidPhoneNumber">
             <i class="fa fa-times" aria-hidden="true"></i>
           </button>
           <nz-progress class="flex-grow-1 me-1" nzStrokeLinecap="round" [nzShowInfo]="false"
@@ -140,7 +112,7 @@
         </div>
 
         <button nz-button nzType="primary" [nzSize]="'default'" nzShape="round" (click)="sendAudioMessageClick()"
-          [disabled]="listOfTagOptions.length ==0">
+          [disabled]="!isValidPhoneNumber">
           <i class="fa fa-send" style="font-size: 12px" aria-hidden="true"></i>
         </button>
       </div>
