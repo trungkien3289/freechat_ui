@@ -21,12 +21,19 @@
       <span class="fw-bold group-label">To: </span>
       <div class="d-flex flex-row align-items-center flex-grow-1 flex-gap-2">
         @if(isNewGroupConversation){
-        <div class="d-flex flex-row align-items-center">
-          <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber" [specialCharacters]="[' ', '(', ')', '-', '.']"
-            mask="(000) 000-0000" (focusout)="onInputFocusOut()">
+        <div class="flex-grow-1 d-flex flex-row align-items-center flex-gap-2">
+          <div class="d-flex flex-row align-items-center">
+            <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber"
+              [specialCharacters]="[' ', '(', ')', '-', '.']" mask="(000) 000-0000" (focusout)="onInputFocusOut()">
+          </div>
+          <span *ngIf="!isValidPhoneNumber" class="text-danger">Phone number invalid</span>
         </div>
-        <span *ngIf="!isValidPhoneNumber" class="text-danger">Phone number invalid</span>
 
+        <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"
+          (click)="resetNewGroupConversation()">
+          <i class="fa fa-repeat me-1" aria-hidden="true"></i>
+          Reset
+        </button>
 
         }@else {
         <span class="d-flex flex-row py-2 align-items-center fs-6">{{

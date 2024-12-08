@@ -21,7 +21,8 @@ import moment from 'moment';
 })
 export class ChatService {
   private apiUrl = ``;
-  private lastSendMessageTime: number = new Date().getTime() - 60 * 1000;
+  // private lastSendMessageTime: number = new Date().getTime() - 60 * 1000;
+  private lastSendMessageTime: { [key: string]: number } = {};
 
   constructor(
     private http: HttpClient,
@@ -55,7 +56,7 @@ export class ChatService {
         )
       );
 
-      this.updateLastSendMessageTime();
+      this.updateLastSendMessageTime(fromPhoneNumber);
 
       return res;
     } catch (ex: any) {
@@ -84,7 +85,7 @@ export class ChatService {
         )
       );
 
-      this.updateLastSendMessageTime();
+      this.updateLastSendMessageTime(fromPhoneNumber);
 
       return res;
     } catch (ex: any) {
@@ -113,7 +114,7 @@ export class ChatService {
         )
       );
 
-      this.updateLastSendMessageTime();
+      this.updateLastSendMessageTime(fromPhoneNumber);
 
       return res;
     } catch (ex: any) {
@@ -295,12 +296,27 @@ export class ChatService {
     }
   };
 
-  updateLastSendMessageTime = () => {
-    this.lastSendMessageTime = new Date().getTime();
+  updateLastSendMessageTime = (fromPhoneNumber: string) => {
+    this.lastSendMessageTime[fromPhoneNumber] = new Date().getTime();
   };
 
-  canSendMessage = () => {
+  canSendMessage = (fromPhoneNumber: string) => {
+    if (this.lastSendMessageTime[fromPhoneNumber] == null) {
+      this.lastSendMessageTime[fromPhoneNumber] = new Date().getTime();
+      return true;
+    }
     const now = new Date().getTime();
-    return now - this.lastSendMessageTime > 60 * 1000;
+    return now - this.lastSendMessageTime[fromPhoneNumber] > 60 * 1000;
+  };
+
+  getWaitToSendSeconds = (fromPhoneNumber: string) => {
+    if (this.lastSendMessageTime[fromPhoneNumber] == null) {
+      this.lastSendMessageTime[fromPhoneNumber] =
+        new Date().getTime() - 60 * 1000 - 1;
+    }
+    const now = new Date().getTime();
+    return (
+      60 - Math.round((now - this.lastSendMessageTime[fromPhoneNumber]) / 1000)
+    );
   };
 }
