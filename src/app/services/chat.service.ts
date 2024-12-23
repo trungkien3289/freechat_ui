@@ -12,9 +12,9 @@ import { ContactMessage, SendStatus } from '../models/contact-message.model';
 import { Utils } from '../utilities/utils';
 import _ from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
-import { ChatBoxUtils } from '../utilities/chatbox-utils';
 import { PhoneNumber } from '../models/phone-number.model';
 import moment from 'moment';
+import { ChatBoxUtils } from '../utilities/chatbox-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -50,7 +50,7 @@ export class ChatService {
         this.http.post(
           `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/message`,
           {
-            text,
+            text: ChatBoxUtils.replaceSpecialCharactersInMessage(text),
             to,
           }
         )

@@ -5,7 +5,7 @@ import {
 } from '../models/phone-comunication.model';
 
 export class ChatBoxUtils {
-  static getMessageItemType(message: PhoneComunication) {
+  public static getMessageItemType(message: PhoneComunication) {
     if (message.type == PhoneComunicationType.MESSAGE) {
       if (message.media?.image) {
         return ConversationItemType.IMAGE;
@@ -19,5 +19,12 @@ export class ChatBoxUtils {
     } else {
       return ConversationItemType.MESSAGE;
     }
+  }
+
+  public static replaceSpecialCharactersInMessage(text: string) {
+    let updatedText = text.replace(/(https?:\/\/)(\S+)/g, '$1 $2');
+    updatedText = updatedText.replace(/\$/g, ' $');
+
+    return updatedText;
   }
 }
