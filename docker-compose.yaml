@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   frontend:
-    image: trungkien3289/freechat_ui
+    image: trungkien3289/multiple_textnow_ui
     stdin_open: true
     tty: true
     # depends_on:

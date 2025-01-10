@@ -3,7 +3,7 @@
   <div class="heading d-flex flex-row align-items-center p-3">
     <i class="fa fa-user-circle-o me-3 primary-color fs-2"></i>
     <span class="fs-5 fw-bold flex-grow-1">{{
-      contactGroup.to[0]?.TN | phoneNumberFormatNoCode
+      contactGroup.to | phoneNumberFormatNoCode
       }}</span>
   </div>
 
@@ -110,7 +110,7 @@
 
         }">
         <div class="message-text d-flex flex-row align-items-center justify-content-between">
-          <span class="mx-3 text-wrap">{{ messageItem.text }}</span>
+          <span class="mx-3 text-wrap">{{ messageItem.message }}</span>
           <ng-container *ngTemplateOutlet="
               messageStatusTemplate;
               context: { messageItem: messageItem }

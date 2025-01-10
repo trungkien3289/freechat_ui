@@ -28,6 +28,10 @@ import { NzUploadFile, NzUploadXHRArgs } from 'ng-zorro-antd/upload';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { FileService } from '../../services/file.service';
 import { AudioRecordingService } from '../../services/audio-recording.service';
+import {
+  MessageDirection,
+  PhoneComunicationType,
+} from '../../models/phone-comunication.model';
 
 const INTERVAL_RELOAD_CHATBOX = 10000;
 const MAX_RECORDING_SECONDS = 60;
@@ -79,7 +83,7 @@ export class GroupConversationBoxComponent
         return {
           ...item,
           sendStatus: item.sendStatus || SendStatus.SENT,
-          formattedTime: this.formatTime(item.timeCreated),
+          formattedTime: this.formatTime(item.date),
         } as ContactMessageViewItem;
       });
     }
@@ -147,12 +151,12 @@ export class GroupConversationBoxComponent
 
   updateContactGroup = () => {
     const numericString = this.inputPhoneNumber.toString().replace(/\D/g, '');
-    const toPhone = {
-      TN: Utils.formatPhoneNumberTN(numericString),
-      name: Utils.formatPhoneNumberName(numericString),
-    };
+    // const toPhone = {
+    //   TN: Utils.formatPhoneNumberTN(numericString),
+    //   name: Utils.formatPhoneNumberName(numericString),
+    // };
 
-    this.contactGroup.to = [toPhone];
+    this.contactGroup.to = Utils.formatPhoneNumberTN(numericString);
 
     // save to local storage
     // if (this.isNewGroupConversation) {
@@ -174,7 +178,7 @@ export class GroupConversationBoxComponent
     this.reTryError = 10;
     this.myForm.reset();
     this.isValidPhoneNumber = true;
-    this.inputPhoneNumber = '';
+    // this.inputPhoneNumber = '';
     this.fileList = [];
     this.abortRecording();
   };
@@ -203,18 +207,18 @@ export class GroupConversationBoxComponent
   debouncedSubmit = debounce(async () => {
     if (this.isRecording) return;
 
-    if (
-      !this._ChatService.canSendMessage(
-        this.contactGroup.currentPhoneNumber.phoneNumber
-      )
-    ) {
-      this._NotificationService.warning(
-        `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
-          'NewGroup'
-        )} second(s)`
-      );
-      return;
-    }
+    // if (
+    //   !this._ChatService.canSendMessage(
+    //     this.contactGroup.currentPhoneNumber.phoneNumber
+    //   )
+    // ) {
+    //   this._NotificationService.warning(
+    //     `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
+    //       'NewGroup'
+    //     )} second(s)`
+    //   );
+    //   return;
+    // }
 
     this.isLoading = true;
     // If have images upload
@@ -263,7 +267,7 @@ export class GroupConversationBoxComponent
     try {
       await this._ChatService.sendImage(
         this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.from.TN,
+        this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.to,
         imageUrl
       );
@@ -296,9 +300,12 @@ export class GroupConversationBoxComponent
     try {
       await this._ChatService.sendMessage(
         this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.from.TN,
+        this.contactGroup.currentPhoneNumber.clientId,
+        this.contactGroup.currentPhoneNumber.username,
+        this.contactGroup.currentPhoneNumber.userAgent,
+        this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.to,
-        newMessage.text
+        newMessage.message
       );
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
@@ -339,7 +346,7 @@ export class GroupConversationBoxComponent
 
       await this._ChatService.sendAudio(
         this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.from.TN,
+        this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.to,
         fileUrl
       );
@@ -381,11 +388,17 @@ export class GroupConversationBoxComponent
     let newMessage = {
       id: uuidv4(),
       myStatus: 'READ',
-      timeCreated: new Date().toISOString(),
-      direction: 'out',
+      date: new Date().toString(),
+      message_direction: MessageDirection.OUT,
+      message: message,
       isOutgoing: true,
-      text: message,
       sendStatus: SendStatus.SENDING,
+      message_type: PhoneComunicationType.MESSAGE,
+      contact_value: this.contactGroup.to,
+      e164_contact_value: `1${this.contactGroup.to}`,
+      read: true,
+      deleted: false,
+      contact_name: this.contactGroup.to,
       itemType: itemType,
       media: media,
     } as ContactMessage;
@@ -398,7 +411,7 @@ export class GroupConversationBoxComponent
     }
     this.messageViewItems.push({
       ...newMessage,
-      formattedTime: this.formatTime(newMessage.timeCreated),
+      formattedTime: this.formatTime(newMessage.date),
     } as ContactMessageViewItem);
 
     return newMessage;
@@ -429,7 +442,7 @@ export class GroupConversationBoxComponent
 
   resetNewGroupConversation = () => {
     if (this.isNewGroupConversation) {
-      this.contactGroup.to = [];
+      this.contactGroup.to = '';
       this.contactGroup.messages = [];
       this.messageViewItems = [];
       this.inputPhoneNumber = '';

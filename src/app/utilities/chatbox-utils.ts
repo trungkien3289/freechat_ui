@@ -6,7 +6,7 @@ import {
 
 export class ChatBoxUtils {
   public static getMessageItemType(message: PhoneComunication) {
-    if (message.type == PhoneComunicationType.MESSAGE) {
+    if (message.message_type == PhoneComunicationType.MESSAGE) {
       if (message.media?.image) {
         return ConversationItemType.IMAGE;
       }

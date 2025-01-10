@@ -6,21 +6,19 @@ import { environment } from '../environment';
 import { EnvService } from './env.service';
 import { PhoneNumber } from '../models/phone-number.model';
 import {
+  MessageDirection,
   PhoneComunication,
   PhoneComunicationType,
 } from '../models/phone-comunication.model';
 import {
   ContactMessage,
   ContactMessageGroup,
-  ConversationItemType,
-  ConversationType,
   SendStatus,
 } from '../models/contact-message.model';
 import { Utils } from '../utilities/utils';
 import _ from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
 import { ChatBoxUtils } from '../utilities/chatbox-utils';
-import moment from 'moment';
 
 @Injectable({
   providedIn: 'root',
@@ -47,6 +45,9 @@ export class ResourceService {
         isError: boolean;
         assignDateTimestamp: number;
         canReplacePhone: boolean;
+        clientId: string;
+        username: string;
+        userAgent: string;
       }[] = (await firstValueFrom(
         this.http.get(`${this.apiUrl}/api/chat/user/phones`)
       )) as any;
@@ -64,6 +65,9 @@ export class ResourceService {
           failCount: 0,
           assignDateTimestamp: item.assignDateTimestamp,
           canReplacePhone: item.canReplacePhone,
+          clientId: item.clientId,
+          username: item.username,
+          userAgent: item.userAgent,
         };
       });
 
@@ -76,44 +80,19 @@ export class ResourceService {
   getComunications = async (
     phoneNumber: PhoneNumber
   ): Promise<ContactMessageGroup[]> => {
-    const defaultLastUpdateDate = Utils.convertDateToUtcTime(
-      // new Date(phoneNumber.assignDateTimestamp)
-      new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
-    );
-
-    const createdSince = Utils.convertDateToUtcTime(
-      moment(defaultLastUpdateDate).startOf('month').toDate()
-    );
-
-    let requestBody = {
-      requests: [
-        {
-          queryParams: [
-            { createdSince: createdSince },
-            // { updatedSince: '2024-11-24 04:23:36.467539' },
-            { updatedSince: defaultLastUpdateDate }, //check
-          ],
-          contentType: 'application/json',
-          useHTTPS: '1',
-          resource: '/2.0/communications/sync',
-          method: 'GET',
-        },
-      ],
-    };
-    let res: any = (await firstValueFrom(
+    let communications: PhoneComunication[] = (await firstValueFrom(
       this.http.post(
-        `${this.apiUrl}/api/chat/phone/${phoneNumber.id}/request`,
-        requestBody
+        `${this.apiUrl}/api/chat/phone/${phoneNumber.id}/fetch-messages`,
+        {
+          clientId: phoneNumber.clientId,
+          username: phoneNumber.username,
+          userAgent: phoneNumber.userAgent,
+        }
       )
     )) as any;
 
-    const communicationsRes = JSON.parse(res.result[0].body);
-    let communications = communicationsRes.result
-      .newCommunications as PhoneComunication[];
-
-    //TODO: Now just filter only messages
     communications = communications.filter(
-      (item) => item.type == PhoneComunicationType.MESSAGE
+      (item) => item.message_type == PhoneComunicationType.MESSAGE
     );
 
     return this.groupCommunications(communications, phoneNumber);
@@ -124,159 +103,62 @@ export class ResourceService {
     currentPhone: PhoneNumber
   ): ContactMessageGroup[] => {
     const grouped: any = {};
-    let currentTime;
     communications.forEach((message) => {
-      if (message.direction == 'out') {
-        const from = currentPhone.phoneNumber;
-        const t = [...message.to, message.from].filter(
-          (recipient) => !recipient.own
-        );
-        const to = t
-          .map((recipient) => recipient.TN)
-          .sort()
-          .join(','); // Create a unique key for 'to' numbers
-
-        const key = `${from}|${to}`; // Create a unique key combining 'from' and 'to'
-        if (!grouped[key]) {
-          currentTime = message.timeCreated;
-          grouped[key] = {
-            id: key,
-            type: message.type,
-            direction: message.direction,
-            from: message.from,
-            to: message.to,
-            messages: [],
-            conversationType:
-              message.to.length > 1
-                ? ConversationType.GROUP
-                : ConversationType.SINGLE,
-            timeCreated:
-              currentTime > message.timeCreated
-                ? currentTime
-                : message.timeCreated,
-          };
-        }
-
-        grouped[key].messages.push({
-          text: message.text,
-          id: message.id,
-          myStatus: message.myStatus,
-          timeCreated: Utils.convertDateStringToLocalTime(message.timeCreated),
-          direction: 'out',
-          isOutgoing: true,
-          sendStatus: SendStatus.SENT,
-          media: message.media,
-          itemType: ChatBoxUtils.getMessageItemType(message),
-        });
+      if (!grouped[message.contact_value]) {
+        grouped[message.contact_value] = {
+          name: message.contact_name,
+          currentPhoneNumber: currentPhone,
+          from: currentPhone.phoneNumber,
+          to: message.contact_value,
+          id: `${currentPhone.phoneNumber}|${message.contact_value}`,
+          messages: [],
+        };
       }
-    });
 
-    communications.forEach((message) => {
-      if (message.direction == 'in' && message.to.length == 1) {
-        const from = currentPhone.phoneNumber;
-        const t = [...message.to, message.from].filter(
-          (recipient) => !recipient.own
-        );
-        const to = t
-          .map((recipient) => recipient.TN)
-          .sort()
-          .join(',');
-
-        let fromObject = [...message.to].filter(
-          (recipient) => recipient.own == true
-        );
-
-        let toObject = message.from;
-
-        const key = `${from}|${to}`; // Create a unique key combining 'from' and 'to'
-        if (!grouped[key]) {
-          currentTime = message.timeCreated;
-          grouped[key] = {
-            id: key,
-            type: message.type,
-            direction: message.direction,
-            from: _.first(fromObject),
-            to: [toObject],
-            conversationType: ConversationType.SINGLE,
-            messages: [],
-            timeCreated:
-              currentTime > message.timeCreated
-                ? currentTime
-                : message.timeCreated,
-          };
-        }
-        grouped[key].messages.push({
-          text: message.text,
-          id: message.id,
-          myStatus: message.myStatus,
-          timeCreated: Utils.convertDateStringToLocalTime(message.timeCreated),
-          direction: 'in',
-          isOutgoing: false,
-          sendStatus: SendStatus.SENT,
-          itemType: ChatBoxUtils.getMessageItemType(message),
-          media: message.media,
-        });
-      }
+      grouped[message.contact_value].messages.push({
+        ...message,
+        date: message.date,
+        sendStatus: SendStatus.SENT,
+        isOutgoing: message.message_direction == MessageDirection.OUT,
+        itemType: ChatBoxUtils.getMessageItemType(message),
+        timeCreated: Utils.convertDateStringToLocalTime(message.date),
+      });
     });
 
     // Convert grouped object to an array
-    return Object.keys(grouped)
-      .map((key) => {
-        let group = grouped[key];
-        const t = [...group.to, group.from].filter(
-          (recipient) => !recipient.own
-        );
+    return Object.keys(grouped).map((key) => {
+      let group: ContactMessageGroup = grouped[key];
+      // update message read status base on last seen of group
+      const lastSeen: Date = this._GroupContactCacheService.getGroupLastSeen(
+        group.id
+      );
 
-        // update message read status base on last seen of group
-        const lastSeen: Date = this._GroupContactCacheService.getGroupLastSeen(
-          group.id
-        );
+      group.messages = group.messages
+        .map((mess: ContactMessage) => {
+          return {
+            ...mess,
+            myStatus:
+              lastSeen && new Date(mess.date) > lastSeen ? 'UNREAD' : 'READ',
+          } as ContactMessage;
+        })
+        .sort((a: ContactMessage, b: ContactMessage) => {
+          if (a?.date == null || b?.date == null) return 0;
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        });
 
-        group.messages = group.messages
-          .map((mess: ContactMessage) => {
-            return {
-              ...mess,
-              myStatus:
-                lastSeen && new Date(mess.timeCreated) > lastSeen
-                  ? 'UNREAD'
-                  : 'READ',
-            } as ContactMessage;
-          })
-          .sort((a: ContactMessage, b: ContactMessage) => {
-            if (a?.timeCreated == null || b?.timeCreated == null) return 0;
-            return (
-              new Date(a.timeCreated).getTime() -
-              new Date(b.timeCreated).getTime()
-            );
-          });
-
-        return {
-          id: group.id,
-          name: t
-            .map((recipient) => Utils.convertPhoneNumber(recipient).name)
-            .join(', '),
-          currentPhoneNumber: currentPhone,
-          type: group.type,
-          direction: group.direction,
-          from: Utils.convertPhoneNumber(group.from),
-          to: group.to.map((t: any) => Utils.convertPhoneNumber(t)),
-          messages: group.messages,
-          timeCreated: group.timeCreated,
-          isOutgoing: group.direction == 'out',
-          conversationType: group.conversationType,
-        } as ContactMessageGroup;
-      })
-      .sort((a, b) => {
-        if (a?.messages.length == 0 || b?.messages.length == 0) return 0;
-        return (
-          new Date(
-            (_.last(b.messages) as ContactMessage).timeCreated.split('.')[0]
-          ).getTime() -
-          new Date(
-            (_.last(a.messages) as ContactMessage).timeCreated.split('.')[0]
-          ).getTime()
-        );
-      });
+      return group as ContactMessageGroup;
+    });
+    // .sort((a, b) => {
+    //   if (a?.messages.length == 0 || b?.messages.length == 0) return 0;
+    //   return (
+    //     new Date(
+    //       (_.last(b.messages) as ContactMessage).timeCreated.split('.')[0]
+    //     ).getTime() -
+    //     new Date(
+    //       (_.last(a.messages) as ContactMessage).timeCreated.split('.')[0]
+    //     ).getTime()
+    //   );
+    // });
   };
 
   replacePhoneNumber = async (
@@ -295,6 +177,9 @@ export class ResourceService {
         name: Utils.formatPhoneNumberName(
           Utils.removeCountryCode(res.newPhoneNumber.phoneNumber)
         ),
+        clientId: res.newPhoneNumber.clientId,
+        username: res.newPhoneNumber.username,
+        userAgent: res.newPhoneNumber.userAgent,
         newMessageCount: 0,
         expired: res.newPhoneNumber.isExpired,
         isError: res.newPhoneNumber.isError,
@@ -348,9 +233,16 @@ export class ResourceService {
     const phoneItems = JSON.parse(JSON.stringify(phones)) as any[];
     const requestPhoneBodys: {
       phoneId: string;
-      requestBody: any;
+      clientId: string;
+      username: string;
+      userAgent: string;
     }[] = phones.map((phone) => {
-      return this.generateSingleBodyRequest(phone);
+      return {
+        phoneId: phone.id,
+        clientId: phone.clientId,
+        username: phone.username,
+        userAgent: phone.userAgent,
+      };
     });
 
     const results: {
@@ -364,9 +256,7 @@ export class ResourceService {
 
     const inforItems: any[] = [];
     successResults.forEach((result: { phoneId: string; pingerResult: any }) => {
-      const communicationsRes = JSON.parse(result.pingerResult.result[0].body);
-      let communications = communicationsRes.result
-        .newCommunications as PhoneComunication[];
+      let communications = result.pingerResult as PhoneComunication[];
       const phone = phoneItems.find((item) => {
         return item.id == result.phoneId;
       });
@@ -403,7 +293,7 @@ export class ResourceService {
     };
   } => {
     const communications = newCommunications.filter(
-      (item) => item.type == PhoneComunicationType.MESSAGE
+      (item) => item.message_type == PhoneComunicationType.MESSAGE
     );
 
     let contactMessageGroups: ContactMessageGroup[] = this.groupCommunications(
@@ -443,42 +333,6 @@ export class ResourceService {
       phoneId: phone.id,
       newMessageCount: newMessageCount,
       contactGroupsInfoDic: contactGroupsInfoDic,
-    };
-  };
-
-  generateSingleBodyRequest = (
-    phone: PhoneNumber
-  ): {
-    phoneId: string;
-    requestBody: any;
-  } => {
-    const defaultLastUpdateDate = Utils.convertDateToUtcTime(
-      // new Date(phoneNumber.assignDateTimestamp)
-      new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000)
-    );
-
-    const createdSince = Utils.convertDateToUtcTime(
-      moment(defaultLastUpdateDate).startOf('month').toDate()
-    );
-
-    let requestBody = {
-      requests: [
-        {
-          queryParams: [
-            { createdSince: createdSince },
-            { updatedSince: defaultLastUpdateDate },
-          ],
-          contentType: 'application/json',
-          useHTTPS: '1',
-          resource: '/2.0/communications/sync',
-          method: 'GET',
-        },
-      ],
-    };
-
-    return {
-      phoneId: phone.id,
-      requestBody: requestBody,
     };
   };
 }

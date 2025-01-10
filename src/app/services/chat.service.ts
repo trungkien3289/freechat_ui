@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { EnvService } from './env.service';
 import {
+  MessageDirection,
   PhoneComunication,
   PhoneComunicationType,
   PhoneShortSummary,
@@ -35,21 +36,21 @@ export class ChatService {
 
   sendMessage = async (
     fromPhoneNumberId: string,
+    clientId: string,
+    username: string,
+    userAgent: string,
     fromPhoneNumber: string,
-    to: PhoneShortSummary[],
+    to: string,
     text: string
   ): Promise<any> => {
     try {
-      //TODO: for testing
-
-      // if (Math.random() > 0.5) {
-      //   Utils.delay(2000);
-      //   throw 'Send message error bt network';
-      // }
       const res = await firstValueFrom(
         this.http.post(
           `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/message`,
           {
+            clientId,
+            username,
+            userAgent,
             text: ChatBoxUtils.replaceSpecialCharactersInMessage(text),
             to,
           }
@@ -71,7 +72,7 @@ export class ChatService {
   sendImage = async (
     fromPhoneNumberId: string,
     fromPhoneNumber: string,
-    to: PhoneShortSummary[],
+    to: string,
     imageUrl: string
   ) => {
     try {
@@ -100,7 +101,7 @@ export class ChatService {
   sendAudio = async (
     fromPhoneNumberId: string,
     fromPhoneNumber: string,
-    to: PhoneShortSummary[],
+    to: string,
     audioUrl: string
   ) => {
     try {
@@ -127,48 +128,48 @@ export class ChatService {
   };
 
   fetchMessages = async (
-    // fromPhoneNumberId: string,
-    // fromPhoneNumber: string,
     fromPhone: PhoneNumber,
     toPhoneNumber: string,
     groupId: string
   ): Promise<ContactMessage[]> => {
     try {
-      const defaultLastUpdateDate = Utils.convertDateToUtcTime(
-        new Date(fromPhone.assignDateTimestamp)
-      );
+      // const defaultLastUpdateDate = Utils.convertDateToUtcTime(
+      //   new Date(fromPhone.assignDateTimestamp)
+      // );
 
-      const createdSince = Utils.convertDateToUtcTime(
-        moment().startOf('month').toDate()
-      );
+      // const createdSince = Utils.convertDateToUtcTime(
+      //   moment().startOf('month').toDate()
+      // );
 
-      let requestBody = {
-        requests: [
-          {
-            queryParams: [
-              { createdSince: createdSince },
-              { updatedSince: defaultLastUpdateDate },
-            ],
-            contentType: 'application/json',
-            useHTTPS: '1',
-            resource: '/2.0/communications/sync',
-            method: 'GET',
-          },
-        ],
-      };
+      // let requestBody = {
+      //   requests: [
+      //     {
+      //       queryParams: [
+      //         { createdSince: createdSince },
+      //         { updatedSince: defaultLastUpdateDate },
+      //       ],
+      //       contentType: 'application/json',
+      //       useHTTPS: '1',
+      //       resource: '/2.0/communications/sync',
+      //       method: 'GET',
+      //     },
+      //   ],
+      // };
+
       let res: any = (await firstValueFrom(
         this.http.post(
-          `${this.apiUrl}/api/chat/phone/${fromPhone.id}/request`,
-          requestBody
+          `${this.apiUrl}/api/chat/phone/${fromPhone.id}/fetch-messages`,
+          {
+            clientId: fromPhone.clientId,
+            username: fromPhone.username,
+            userAgent: fromPhone.userAgent,
+          }
         )
       )) as any;
 
-      const communicationsRes = JSON.parse(res.result[0].body);
-      let communications = communicationsRes.result
-        .newCommunications as PhoneComunication[];
-
+      let communications = res as PhoneComunication[];
       communications = communications.filter(
-        (item) => item.type === PhoneComunicationType.MESSAGE
+        (item) => item.message_type === PhoneComunicationType.MESSAGE
       );
 
       // update message read status base on last seen of group
@@ -177,30 +178,30 @@ export class ChatService {
 
       let messages = communications
         .filter((item) => {
-          return [...item.to, item.from]
-            .filter((n) => !n.own)
-            .some((to) => to.TN === toPhoneNumber);
+          return item.contact_value == toPhoneNumber;
         })
         .map((message) => {
           let updateTimeCreatedMessage = Utils.convertDateStringToLocalTime(
-            message.timeCreated
+            message.date
           );
           return {
-            direction: message.direction,
-            text: message.text,
+            message_direction: message.message_direction,
+            message: message.message,
             id: message.id,
-            // myStatus:
-            //   lastSeen && new Date(message.timeCreated) > lastSeen
-            //     ? 'UNREAD'
-            //     : 'READ',
+            contact_name: message.contact_name,
+            contact_value: message.contact_value,
+            e164_contact_value: message.e164_contact_value,
+            read: message.read,
+            date: message.date,
             myStatus:
               lastSeen && new Date(updateTimeCreatedMessage) > lastSeen
                 ? 'UNREAD'
                 : 'READ',
             timeCreated: updateTimeCreatedMessage,
-            isOutgoing: message.direction == 'out',
+            isOutgoing: message.message_direction == MessageDirection.OUT,
             sendStatus: SendStatus.SENT,
-            media: message.media,
+            message_type: message.message_type,
+            deleted: message.deleted,
             itemType: ChatBoxUtils.getMessageItemType(message),
           } as ContactMessage;
         });
@@ -231,24 +232,35 @@ export class ChatService {
         moment(lastUpdateDate).startOf('month').toDate()
       );
 
-      let requestBody = {
-        requests: [
-          {
-            queryParams: [
-              { createdSince: createdSince },
-              { updatedSince: sinceUpdateDateString },
-            ],
-            contentType: 'application/json',
-            useHTTPS: '1',
-            resource: '/2.0/communications/sync',
-            method: 'GET',
-          },
-        ],
-      };
+      // let requestBody = {
+      //   requests: [
+      //     {
+      //       queryParams: [
+      //         { createdSince: createdSince },
+      //         { updatedSince: sinceUpdateDateString },
+      //       ],
+      //       contentType: 'application/json',
+      //       useHTTPS: '1',
+      //       resource: '/2.0/communications/sync',
+      //       method: 'GET',
+      //     },
+      //   ],
+      // };
+      // let res: any = (await firstValueFrom(
+      //   this.http.post(
+      //     `${this.apiUrl}/api/chat/phone/${fromPhone.id}/request`,
+      //     requestBody
+      //   )
+      // )) as any;
+
       let res: any = (await firstValueFrom(
         this.http.post(
-          `${this.apiUrl}/api/chat/phone/${fromPhone.id}/request`,
-          requestBody
+          `${this.apiUrl}/api/chat/phone/${fromPhone.id}/fetch-messages`,
+          {
+            clientId: fromPhone.clientId,
+            username: fromPhone.username,
+            userAgent: fromPhone.userAgent,
+          }
         )
       )) as any;
 
@@ -257,7 +269,7 @@ export class ChatService {
         .newCommunications as PhoneComunication[];
 
       communications = communications.filter(
-        (item) => item.type === PhoneComunicationType.MESSAGE
+        (item) => item.message_type === PhoneComunicationType.MESSAGE
       );
 
       // update message read status base on last seen of group
@@ -266,26 +278,31 @@ export class ChatService {
 
       let messages = communications
         .filter((item) => {
-          return [...item.to, item.from]
-            .filter((n) => !n.own)
-            .some((to) => to.TN === toPhoneNumber);
+          return item.contact_value == toPhoneNumber;
         })
         .map((message) => {
           let updateTimeCreatedMessage = Utils.convertDateStringToLocalTime(
-            message.timeCreated
+            message.date
           );
           return {
-            direction: message.direction,
-            text: message.text,
+            message_direction: message.message_direction,
+            message: message.message,
             id: message.id,
+            contact_name: message.contact_name,
+            contact_value: message.contact_value,
+            e164_contact_value: message.e164_contact_value,
+            read: message.read,
+            date: message.date,
             myStatus:
               lastSeen && new Date(updateTimeCreatedMessage) > lastSeen
                 ? 'UNREAD'
                 : 'READ',
             timeCreated: updateTimeCreatedMessage,
-            isOutgoing: message.direction == 'out',
+            isOutgoing: message.message_direction == MessageDirection.OUT,
             sendStatus: SendStatus.SENT,
             media: message.media,
+            message_type: message.message_type,
+            deleted: message.deleted,
             itemType: ChatBoxUtils.getMessageItemType(message),
           } as ContactMessage;
         });

@@ -128,12 +128,12 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   };
 
   selectPhoneNumber = async (phoneNumber: PhoneNumber) => {
-    // if (!phoneNumber.isError && !phoneNumber.expired) {
-    this.selectedPhoneNumberItem = phoneNumber;
-    await this.reloadContactList(phoneNumber, true);
-    this.selectContactItem(this.contactMessageGroups[0]);
-    this.checkNewMessageComming(phoneNumber);
-    // }
+    if (!phoneNumber.isError && !phoneNumber.expired) {
+      this.selectedPhoneNumberItem = phoneNumber;
+      await this.reloadContactList(phoneNumber, true);
+      this.selectContactItem(this.contactMessageGroups[0]);
+      this.checkNewMessageComming(phoneNumber);
+    }
   };
 
   reloadContactList = async (
@@ -193,16 +193,10 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       name: NEW_GROUP_CONVERSATION_NAME,
       conversationType: ConversationType.GROUP,
       currentPhoneNumber: phoneNumber,
-      direction: 'out',
-      isOutgoing: true,
       timeCreated: new Date().toISOString(),
       type: 'message',
-      from: Utils.convertPhoneNumber({
-        TN: phoneNumber.phoneNumber,
-        name: phoneNumber.phoneNumber,
-        own: true,
-      }),
-      to: [],
+      from: phoneNumber.phoneNumber,
+      to: '',
       messages: [],
       newMessageCount: 0,
     } as ContactMessageGroup;
@@ -377,8 +371,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       found.phoneNumber = data.newPhoneNumber.phoneNumber;
       found.name = data.newPhoneNumber.name;
       found.id = data.newPhoneNumber.id;
-      found.expired = false;
-      found.isError = false;
+      found.expired = data.newPhoneNumber.expired;
+      found.isError = data.newPhoneNumber.isError;
       found.failCount = 0;
       found.newMessageCount = 0;
       //TODO need handle more action like reload list contact of new phone number

@@ -8,4 +8,7 @@ export type PhoneNumber = {
   failCount: number;
   assignDateTimestamp: number;
   canReplacePhone: boolean;
+  clientId: string;
+  username: string;
+  userAgent: string;
 };

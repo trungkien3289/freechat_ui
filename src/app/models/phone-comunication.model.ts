@@ -1,18 +1,39 @@
+// export type PhoneComunication = {
+//   type: PhoneComunicationType;
+//   direction: string;
+//   from: PhoneShortSummary;
+//   to: PhoneShortSummary[];
+//   text: string;
+//   id: string;
+//   myStatus: string;
+//   timeCreated: string;
+//   media?: { image?: string; audio?: string };
+// };
+
 export type PhoneComunication = {
-  type: PhoneComunicationType;
-  direction: string;
-  from: PhoneShortSummary;
-  to: PhoneShortSummary[];
-  text: string;
   id: string;
-  myStatus: string;
-  timeCreated: string;
+  message_type: PhoneComunicationType;
+  message_direction: MessageDirection;
+  contact_value: string; // phone number without country code
+  e164_contact_value: string; // phone number with country code
+  contact_name: string;
+  message: string;
+  read: boolean;
+  date: string;
+  deleted: boolean;
   media?: { image?: string; audio?: string };
 };
 
 export enum PhoneComunicationType {
-  CALL = 'call',
-  MESSAGE = 'message',
+  CALL = 0,
+  MESSAGE = 1,
+  AUDIO = 2,
+  IMAGE = 3,
+}
+
+export enum MessageDirection {
+  IN = 1,
+  OUT = 2,
 }
 
 export type PhoneShortSummary = {

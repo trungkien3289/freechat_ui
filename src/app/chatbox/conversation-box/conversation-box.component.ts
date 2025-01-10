@@ -35,6 +35,10 @@ import _ from 'lodash';
 import moment from 'moment';
 import { DELAY_FOR_CHECK_NEW_COMMING_MESSAGE } from '../chat-settings.const';
 import { PhoneNumber } from '../../models/phone-number.model';
+import {
+  MessageDirection,
+  PhoneComunicationType,
+} from '../../models/phone-comunication.model';
 
 const INTERVAL_RELOAD_CHATBOX = 5000;
 const MAX_RECORDING_SECONDS = 60;
@@ -54,6 +58,7 @@ export class ConversationBoxComponent
       if (this.contactGroup != null) {
         this._GroupContactCacheService.clearUnsentMessage(this.contactGroup.id);
       }
+      this.isLoading = true;
       this.resetChatBox();
       this.contactGroup = contactGroup;
       this._GroupContactCacheService.setLastSeen(
@@ -70,17 +75,13 @@ export class ConversationBoxComponent
 
       this.messageViewItems = this.mapToMessageViewItems(updatedMessages);
       this.scrollToBottom();
+      console.log('UPDATE list message', this.messageViewItems);
+      this.isLoading = false;
 
       this.stopFetchMessageInterval();
       this.startFetchMessageInterval(
-        // this.contactGroup.currentPhoneNumber.id,
-        // this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.currentPhoneNumber,
-        this._first(
-          [...this.contactGroup.to, this.contactGroup.from].filter(
-            (n) => !n.own
-          )
-        )?.TN || '',
+        this.contactGroup.to || '',
         this.contactGroup.id
       );
     }
@@ -249,7 +250,7 @@ export class ConversationBoxComponent
         fromPhone,
         toPhoneNumber,
         groupId,
-        lastMessage?.timeCreated || defaultLastUpdateDate
+        lastMessage?.date || defaultLastUpdateDate
       );
 
       return messages;
@@ -266,6 +267,7 @@ export class ConversationBoxComponent
     groupId: string
   ): Promise<ContactMessage[]> => {
     try {
+      console.log('>>>>>>>>>>>>>>>>>>>>> START Get messages');
       let allMessages = await this._ChatService.fetchMessages(
         // fromPhoneNumberId,
         // fromPhoneNumber,
@@ -285,6 +287,10 @@ export class ConversationBoxComponent
           ...allMessages,
           ...notSendMessages,
         ]);
+        console.log(
+          '>>>>>>>>>>>>>>>>>>>>> FINISH Get messages',
+          this.messageViewItems
+        );
       }
 
       return allMessages;
@@ -330,18 +336,18 @@ export class ConversationBoxComponent
   debouncedSubmit = async () => {
     if (this.isRecording) return;
 
-    if (
-      !this._ChatService.canSendMessage(
-        this.contactGroup.currentPhoneNumber.phoneNumber
-      )
-    ) {
-      this._NotificationService.warning(
-        `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
-          this.contactGroup.currentPhoneNumber.phoneNumber
-        )} second(s)`
-      );
-      return;
-    }
+    // if (
+    //   !this._ChatService.canSendMessage(
+    //     this.contactGroup.currentPhoneNumber.phoneNumber
+    //   )
+    // ) {
+    //   this._NotificationService.warning(
+    //     `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
+    //       this.contactGroup.currentPhoneNumber.phoneNumber
+    //     )} second(s)`
+    //   );
+    //   return;
+    // }
 
     this.pauseFetchMessageInterval();
     this.isLoading = true;
@@ -366,12 +372,8 @@ export class ConversationBoxComponent
       this.sendMessageSuccess.emit();
 
       let allMessages = await this.fetchAllMessages(
-        // this.contactGroup.currentPhoneNumber.id,
-        // this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.currentPhoneNumber,
-        this.contactGroup.isOutgoing
-          ? this.contactGroup.to[0].TN
-          : this.contactGroup.from.TN,
+        this.contactGroup.to,
         this.contactGroup.id
       );
     } catch (error) {
@@ -384,33 +386,34 @@ export class ConversationBoxComponent
     this.restartFetchMessageInterval();
   };
 
-  verifyHasNewMessage = async (): Promise<boolean> => {
-    let lastMessage = _.findLast(
-      this.contactGroup.messages,
-      (mes: ContactMessage) => {
-        return mes.sendStatus == SendStatus.SENT && mes.isOutgoing;
-      }
-    ) as ContactMessage | undefined;
-    await Utils.delay(DELAY_FOR_CHECK_NEW_COMMING_MESSAGE);
-    let commingMessages = await this.fetchNewMessages(
-      // this.contactGroup.currentPhoneNumber.id,
-      // this.contactGroup.currentPhoneNumber.phoneNumber,
-      this.contactGroup.currentPhoneNumber,
-      this.contactGroup.isOutgoing
-        ? this.contactGroup.to[0].TN
-        : this.contactGroup.from.TN,
-      this.contactGroup.id,
-      lastMessage
-    );
+  // verifyHasNewMessage = async (): Promise<boolean> => {
+  //   let lastMessage = _.findLast(
+  //     this.contactGroup.messages,
+  //     (mes: ContactMessage) => {
+  //       return (
+  //         mes.sendStatus == SendStatus.SENT &&
+  //         mes.message_direction == MessageDirection.OUT
+  //       );
+  //     }
+  //   ) as ContactMessage | undefined;
+  //   await Utils.delay(DELAY_FOR_CHECK_NEW_COMMING_MESSAGE);
+  //   let commingMessages = await this.fetchNewMessages(
+  //     // this.contactGroup.currentPhoneNumber.id,
+  //     // this.contactGroup.currentPhoneNumber.phoneNumber,
+  //     this.contactGroup.currentPhoneNumber,
+  //     this.contactGroup.to,
+  //     this.contactGroup.id,
+  //     lastMessage
+  //   );
 
-    if (commingMessages.length > 0) {
-      //has new message - send message success
-      return true;
-    } else {
-      // has no new message - send message failed
-      return false;
-    }
-  };
+  //   if (commingMessages.length > 0) {
+  //     //has new message - send message success
+  //     return true;
+  //   } else {
+  //     // has no new message - send message failed
+  //     return false;
+  //   }
+  // };
 
   sendAudioMessageClick = async () => {
     console.log('send audio message');
@@ -439,19 +442,20 @@ export class ConversationBoxComponent
     try {
       await this._ChatService.sendImage(
         this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.from.TN,
+        this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.to,
         imageUrl
       );
 
-      let hasNewMessage = await this.verifyHasNewMessage();
-      if (hasNewMessage) {
-        this.updateMessageStatus(newMessage.id, SendStatus.SENT);
-      } else {
-        this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-        // Should notify phone number error
-        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
-      }
+      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      // let hasNewMessage = await this.verifyHasNewMessage();
+      // if (hasNewMessage) {
+      //   this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      // } else {
+      //   this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+      //   // Should notify phone number error
+      //   // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      // }
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
@@ -486,22 +490,26 @@ export class ConversationBoxComponent
     try {
       await this._ChatService.sendMessage(
         this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.from.TN,
+        this.contactGroup.currentPhoneNumber.clientId,
+        this.contactGroup.currentPhoneNumber.username,
+        this.contactGroup.currentPhoneNumber.userAgent,
+        this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.to,
-        newMessage.text
+        newMessage.message
       );
 
-      let hasNewMessage = await this.verifyHasNewMessage();
-      if (hasNewMessage) {
-        this.updateMessageStatus(newMessage.id, SendStatus.SENT);
-      } else {
-        this.updateMessageStatus(newMessage.id, SendStatus.SENT);
-        // this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-        // Should notify phone number error
-        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      // let hasNewMessage = await this.verifyHasNewMessage();
+      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      // if (hasNewMessage) {
+      //   this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      // } else {
+      //   this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      //   // this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+      //   // Should notify phone number error
+      //   // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
 
-        // this.removeMessage(newMessage.id);
-      }
+      //   // this.removeMessage(newMessage.id);
+      // }
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
@@ -549,19 +557,20 @@ export class ConversationBoxComponent
 
       await this._ChatService.sendAudio(
         this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.from.TN,
+        this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.to,
         fileUrl
       );
 
-      let hasNewMessage = await this.verifyHasNewMessage();
-      if (hasNewMessage) {
-        this.updateMessageStatus(newMessage.id, SendStatus.SENT);
-      } else {
-        this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-        // Should notify phone number error
-        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
-      }
+      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      // let hasNewMessage = await this.verifyHasNewMessage();
+      // if (hasNewMessage) {
+      //   this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      // } else {
+      //   this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+      //   // Should notify phone number error
+      //   // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      // }
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
@@ -591,11 +600,17 @@ export class ConversationBoxComponent
     let newMessage = {
       id: uuidv4(),
       myStatus: 'READ',
-      timeCreated: new Date().toString(),
-      direction: 'out',
+      date: new Date().toString(),
+      message_direction: MessageDirection.OUT,
       isOutgoing: true,
-      text: messageText,
+      message: messageText,
       sendStatus: SendStatus.SENDING,
+      message_type: PhoneComunicationType.MESSAGE,
+      contact_value: this.contactGroup.to,
+      e164_contact_value: `1${this.contactGroup.to}`,
+      read: true,
+      deleted: false,
+      contact_name: this.contactGroup.to,
       itemType: itemType,
       media: media,
     } as ContactMessage;
@@ -604,7 +619,7 @@ export class ConversationBoxComponent
 
     this.messageViewItems.push({
       ...newMessage,
-      formattedTime: Utils.formatTime(newMessage.timeCreated),
+      formattedTime: Utils.formatTime(newMessage.date),
     } as ContactMessageViewItem);
 
     this._GroupContactCacheService.cacheGroupUnsentMessage(
@@ -678,13 +693,13 @@ export class ConversationBoxComponent
         ...item,
         sendStatus: item.sendStatus || SendStatus.SENT,
         itemType: item.itemType,
-        formattedTime: Utils.formatTime(item.timeCreated),
+        formattedTime: Utils.formatTime(item.date),
       } as ContactMessageViewItem;
     });
     orderedMessages.sort((a, b) => {
       return (
-        new Date(a.timeCreated.split('.')[0]).getTime() -
-        new Date(b.timeCreated.split('.')[0]).getTime()
+        new Date(a.date.split('.')[0]).getTime() -
+        new Date(b.date.split('.')[0]).getTime()
       );
     });
 
@@ -699,9 +714,7 @@ export class ConversationBoxComponent
 
     sortedMessages.forEach((item) => {
       // Convert the date to YYYY-MM-DD format for easier comparison
-      const currentDate = new Date(item.timeCreated)
-        .toISOString()
-        .split('T')[0];
+      const currentDate = new Date(item.date).toISOString().split('T')[0];
 
       // If there is a date change, add a separator item
       if (previousDate !== currentDate) {

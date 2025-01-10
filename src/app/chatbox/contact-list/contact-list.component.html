@@ -47,13 +47,13 @@
             </div>
 
             <span class="fw-light text-truncate recent-message" *ngIf="item.id != 'New_Group_Conversation'">
-              {{ _last(item.messages)?.text }}</span>
+              {{ _last(item.messages)?.message }}</span>
           </div>
         </div>
 
         <span *ngIf="item.id != 'New_Group_Conversation'" class="fst-italic text-truncate"
           style="font-size: 11px; width: 75px">
-          {{ _last(item.messages)?.timeCreated | dateStringFormat }}</span>
+          {{ _last(item.messages)?.date | dateStringFormat }}</span>
       </div>
     </div>
     } @if (contactMessageGroups.length === 0) {
