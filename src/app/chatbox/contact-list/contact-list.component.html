@@ -20,6 +20,9 @@
     @if(isLoading) {
     <nz-spin nzTip="Loading..." class="h-100"></nz-spin>
     }@else {
+    @if (contactMessageGroups.length === 0) {
+    <nz-list-empty />
+    }@else{
     @for (item of contactMessageGroups; track item.id) {
     <div (click)="selectItem(item)" class="d-flex flex-row hover-list-item cursor-pointer px-2"
       [class.selected-item]="selectedContactId == item.id">
@@ -27,9 +30,9 @@
         <div class="d-flex flex-row align-items-center flex-grow-1 overflow-hidden">
           <div class="contact-icon-wrapper">
             <nz-badge nzSize="small" [nzCount]="item.newMessageCount" [nzOverflowCount]="99" [nzStyle]="{
-                backgroundColor: '#eb3535',
-                color: '#fff',
-              }">
+                    backgroundColor: '#eb3535',
+                    color: '#fff',
+                  }">
               @if(item.conversationType == 'Group') {
               <i class="fa fa-users me-3 primary-color fs-4" aria-hidden="true"></i>
               }@else {
@@ -56,8 +59,7 @@
           {{ _last(item.messages)?.date | dateStringFormat }}</span>
       </div>
     </div>
-    } @if (contactMessageGroups.length === 0) {
-    <nz-list-empty />
+    }
     }
     }
   </div>
