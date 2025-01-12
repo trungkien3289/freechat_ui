@@ -376,7 +376,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       found.clientId = data.newPhoneNumber.clientId;
       found.username = data.newPhoneNumber.username;
       found.name = data.newPhoneNumber.name;
-      found.name = data.newPhoneNumber.name;
+      found.userAgent = data.newPhoneNumber.userAgent;
       found.id = data.newPhoneNumber.id;
       found.expired = data.newPhoneNumber.expired;
       found.isError = data.newPhoneNumber.isError;
@@ -398,7 +398,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       found.name = data.newPhoneNumber.name;
       found.clientId = data.newPhoneNumber.clientId;
       found.username = data.newPhoneNumber.username;
-      found.name = data.newPhoneNumber.name;
+      found.userAgent = data.newPhoneNumber.userAgent;
       found.name = data.newPhoneNumber.name;
       found.id = data.newPhoneNumber.id;
       found.expired = data.newPhoneNumber.expired;
