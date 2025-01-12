@@ -11,4 +11,5 @@ export type PhoneNumber = {
   clientId: string;
   username: string;
   userAgent: string;
+  isEmpty: boolean;
 };

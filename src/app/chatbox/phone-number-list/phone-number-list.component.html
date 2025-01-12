@@ -3,7 +3,9 @@
     <div class="d-flex flex-column px-2">
       <div class="d-flex align-items-center justify-content-center" style="height: 45px">
         <span class="title-text text-center">Phone Numbers</span>
+
       </div>
+      <span class="text-center">Available phone in stock: {{availablePhoneCount}}</span>
 
       <nz-input-group [nzSuffix]="suffixIconSearch" nzSize="large" class="rounded-3 mt-2">
         <input type="number" nz-input placeholder="Search" [formControl]="searchControl"
@@ -23,12 +25,14 @@
     <nz-list-empty />
     }@else {
     @for (phoneNumber of filteredPhones; track phoneNumber.id) {
-    <div class="d-flex flex-row hover-list-item cursor-pointer px-2 flex-grow-1 my-1" [ngClass]="{
+    <div class="d-flex flex-row hover-list-item cursor-pointer px-2 flex-grow-1 mb-1" [ngClass]="{
           'expired-item-bg':phoneNumber.expired,
           'error-item-bg':phoneNumber.isError,
+          'emplty-item-bg':phoneNumber.isEmpty,
         }" (click)="selectPhoneNumber(phoneNumber)" [class.selected-item]="selectedPhoneNumberId == phoneNumber.id">
       <div class="d-flex flex-row align-items-center justify-content-between fs-lg px-1 w-100">
-        <div class="d-flex flex-row align-items-center flex-grow-1">
+        <div class="d-flex flex-row align-items-center justify-content-center flex-grow-1">
+          @if(!phoneNumber.isEmpty) {
           @if(phoneNumber.isError) {
           <i class="fa fa-ban text-danger fs-5 me-3" aria-hidden="true" nz-tooltip
             nzTooltipTitle="Phone number is error"></i>
@@ -48,13 +52,20 @@
           }
 
           <span class="text-truncate flex-grow-1" [class.fw-bold]="phoneNumber.newMessageCount > 0">
+
             {{ phoneNumber.name }}
           </span>
+          }@else {
+          <span class="w-100 text-white" (click)="pickPhoneNumber(phoneNumber)" nz-button nzSize="large">
+            <i class="fa fa-hand-o-right white-color me-1" aria-hidden="true"></i>
+            Pick Phone Number
+          </span>
+          }
         </div>
         @if(phoneNumber.isError && !phoneNumber.expired && phoneNumber.canReplacePhone) {
         <button class="primary-bg-color" nzShape="round" nzType="primary" nz-popconfirm
           nzPopconfirmTitle="Do you want to replace this phone number?" (nzOnConfirm)="repacePhoneNumber(phoneNumber)"
-          nzPopconfirmPlacement="right" nz-button nzSize="small" nz-tooltip nzTooltipTitle="Replace new phone number">
+          nzPopconfirmPlacement="right" nz-button nzSize="small">
           <i class="fa fa-refresh white-color me-1" aria-hidden="true"></i>
           Replace
         </button>

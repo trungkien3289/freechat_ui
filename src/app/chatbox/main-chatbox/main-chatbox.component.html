@@ -4,8 +4,8 @@
       <div class="h-100">
         <app-phone-number-list [isLoading]="isLoadingPhoneNumbers" [userId]="userId"
           [selectedPhoneNumberId]="selectedPhoneNumberItem?.id" [phoneNumbers]="phoneNumbers"
-          (onSelectItem)="selectPhoneNumber($event)"
-          (replacePhoneNumberSuccess)="replacePhoneNumberSuccess($event)"></app-phone-number-list>
+          (onSelectItem)="selectPhoneNumber($event)" (replacePhoneNumberSuccess)="replacePhoneNumberSuccess($event)"
+          (pickPhoneNumberSuccess)="pickPhoneNumberSuccess($event)"></app-phone-number-list>
       </div>
     </div>
 

@@ -40,6 +40,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   selectedContact?: ContactMessageGroup;
   contactMessageGroups: ContactMessageGroup[] = [];
   newCommingMessageInterval: any;
+  systemInfoInterval: any;
 
   constructor(
     private _ActivatedRoute: ActivatedRoute,
@@ -51,7 +52,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     private _Router: Router
   ) {}
   ngOnDestroy(): void {
-    this.stopCheckNewMessageInterval();
+    clearInterval(this.newCommingMessageInterval);
+    clearInterval(this.systemInfoInterval);
   }
 
   @ViewChild(PhoneNumberListComponent)
@@ -92,9 +94,12 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       this.phoneNumbers = items;
 
       // set the first item as selected
-      if (items.length > 0 && items.some((p) => !p.expired && !p.isError)) {
+      if (
+        items.length > 0 &&
+        items.some((p) => !p.expired && !p.isError && !p.isEmpty)
+      ) {
         let availablePhoneNumbers = items.filter(
-          (p) => !p.expired && !p.isError
+          (p) => !p.expired && !p.isError && !p.isEmpty
         );
         this.selectPhoneNumber(availablePhoneNumbers[0]);
       }
@@ -108,7 +113,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   };
 
   initAllGroupContactCache = async (phoneNumbers: PhoneNumber[]) => {
-    from(phoneNumbers)
+    let phones = phoneNumbers.filter((p) => !p.isEmpty);
+    from(phones)
       .pipe(
         mergeMap((phoneNumber) => this.fetchMessagesSilence(phoneNumber), 3) // Limit to 5 concurrent requests
       )
@@ -128,7 +134,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   };
 
   selectPhoneNumber = async (phoneNumber: PhoneNumber) => {
-    if (!phoneNumber.isError && !phoneNumber.expired) {
+    if (phoneNumber && !phoneNumber.isError && !phoneNumber.expired) {
       this.selectedPhoneNumberItem = phoneNumber;
       await this.reloadContactList(phoneNumber, true);
       this.selectContactItem(this.contactMessageGroups[0]);
@@ -222,7 +228,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
   startCheckNewCommingMessageInterval = (phoneNumberList: PhoneNumber[]) => {
     this.newCommingMessageInterval = setInterval(async () => {
-      this.checkNewMessageForAllPhoneNumbers(phoneNumberList);
+      let phones = phoneNumberList.filter((p) => !p.isEmpty);
+      this.checkNewMessageForAllPhoneNumbers(phones);
     }, CHECK_NEW_COMMING_MESSAGE_INTERVAL);
   };
 
@@ -334,10 +341,6 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     return [];
   };
 
-  stopCheckNewMessageInterval = () => {
-    clearInterval(this.newCommingMessageInterval);
-  };
-
   markPhoneAsError = (phoneNumber: PhoneNumber, errorDescription: string) => {
     let found = this.phoneNumbers.find((p) => p.id === phoneNumber.id);
     if (found) {
@@ -379,6 +382,31 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       found.isError = data.newPhoneNumber.isError;
       found.failCount = 0;
       found.newMessageCount = 0;
+
+      //TODO need handle more action like reload list contact of new phone number
+      this.selectPhoneNumber(found);
+    }
+  };
+
+  pickPhoneNumberSuccess = (data: {
+    oldPhoneId: string;
+    newPhoneNumber: PhoneNumber;
+  }) => {
+    const found = this.phoneNumbers.find((p) => p.id === data.oldPhoneId);
+    if (found) {
+      found.phoneNumber = data.newPhoneNumber.phoneNumber;
+      found.name = data.newPhoneNumber.name;
+      found.clientId = data.newPhoneNumber.clientId;
+      found.username = data.newPhoneNumber.username;
+      found.name = data.newPhoneNumber.name;
+      found.name = data.newPhoneNumber.name;
+      found.id = data.newPhoneNumber.id;
+      found.expired = data.newPhoneNumber.expired;
+      found.isError = data.newPhoneNumber.isError;
+      found.failCount = 0;
+      found.newMessageCount = 0;
+      found.isEmpty = false;
+      found.canReplacePhone = true;
 
       //TODO need handle more action like reload list contact of new phone number
       this.selectPhoneNumber(found);

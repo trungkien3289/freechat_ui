@@ -16,9 +16,11 @@ import {
   SendStatus,
 } from '../models/contact-message.model';
 import { Utils } from '../utilities/utils';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
 import { ChatBoxUtils } from '../utilities/chatbox-utils';
+
+const TOTAL_PHONE_NUMBER = 10;
 
 @Injectable({
   providedIn: 'root',
@@ -68,8 +70,30 @@ export class ResourceService {
           clientId: item.clientId,
           username: item.username,
           userAgent: item.userAgent,
+          isEmpty: false,
         };
       });
+
+      let remainPhoneNumber = TOTAL_PHONE_NUMBER - phoneNumbers.length;
+      if (remainPhoneNumber > 0) {
+        for (let i = 0; i < remainPhoneNumber; i++) {
+          phoneNumbers.push({
+            id: Utils.newGuid(),
+            phoneNumber: '',
+            name: '',
+            newMessageCount: 0,
+            expired: false,
+            isError: false,
+            failCount: 0,
+            assignDateTimestamp: 0,
+            canReplacePhone: false,
+            clientId: '',
+            username: '',
+            userAgent: '',
+            isEmpty: true,
+          });
+        }
+      }
 
       return phoneNumbers;
     } catch (ex) {
@@ -189,12 +213,45 @@ export class ResourceService {
         failCount: 0,
         assignDateTimestamp: res.newPhoneNumber.assignDateTimestamp,
         canReplacePhone: true,
+        isEmpty: false,
       };
     } catch (ex: any) {
       if (ex.error && ex.error.message) {
         throw ex.error.message;
       } else {
         throw 'Replace phone number error';
+      }
+    }
+  };
+
+  pickPhoneNumber = async (phoneNumber: PhoneNumber): Promise<PhoneNumber> => {
+    try {
+      let res: any = (await firstValueFrom(
+        this.http.post(`${this.apiUrl}/api/chat/phone/pick-phone`, {})
+      )) as any;
+
+      return {
+        id: res.newPhoneNumber._id,
+        phoneNumber: res.newPhoneNumber.phoneNumber,
+        name: Utils.formatPhoneNumberName(
+          Utils.removeCountryCode(res.newPhoneNumber.phoneNumber)
+        ),
+        clientId: res.newPhoneNumber.clientId,
+        username: res.newPhoneNumber.username,
+        userAgent: res.newPhoneNumber.userAgent,
+        newMessageCount: 0,
+        expired: res.newPhoneNumber.isExpired,
+        isError: res.newPhoneNumber.isError,
+        failCount: 0,
+        assignDateTimestamp: res.newPhoneNumber.assignDateTimestamp,
+        canReplacePhone: true,
+        isEmpty: false,
+      };
+    } catch (ex: any) {
+      if (ex.error && ex.error.message) {
+        throw ex.error.message;
+      } else {
+        throw 'Pick phone number error';
       }
     }
   };
@@ -269,6 +326,18 @@ export class ResourceService {
     });
 
     return inforItems;
+  };
+
+  countAvailablePhoneNumbers = async (): Promise<number> => {
+    try {
+      let res: number = (await firstValueFrom(
+        this.http.get(`${this.apiUrl}/api/chat/phone/count-available`)
+      )) as any;
+
+      return res;
+    } catch (ex) {
+      throw 'Count available phone numbers failed.';
+    }
   };
 
   callAPI = async (requestBody: any): Promise<any> => {

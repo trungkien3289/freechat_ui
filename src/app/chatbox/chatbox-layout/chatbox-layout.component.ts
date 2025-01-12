@@ -33,6 +33,8 @@ export class ChatboxLayoutComponent {
     },
     value: false,
   };
+
+  visiblePolicyDialog = false;
   constructor(
     private _Router: Router,
     private _UserService: UserService,
@@ -48,7 +50,11 @@ export class ChatboxLayoutComponent {
     this._Router.navigate(['/auth/login']);
   };
 
-  // changeTheme = () => {
-  //   this._ThemeService.toggleTheme();
-  // };
+  openPolicy(): void {
+    this.visiblePolicyDialog = true;
+  }
+
+  closePolicy(): void {
+    this.visiblePolicyDialog = false;
+  }
 }

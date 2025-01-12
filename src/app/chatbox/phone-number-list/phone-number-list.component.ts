@@ -2,32 +2,24 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnChanges,
+  OnDestroy,
   OnInit,
   Output,
-  SimpleChanges,
 } from '@angular/core';
 import { PhoneNumber } from '../../models/phone-number.model';
 import { FormControl } from '@angular/forms';
-import {
-  BehaviorSubject,
-  combineLatest,
-  debounceTime,
-  distinctUntilChanged,
-  map,
-  Observable,
-  startWith,
-} from 'rxjs';
 import { ResourceService } from '../../services/resource.service';
 import { NotificationService } from '../../services/notification.service';
 import _ from 'lodash';
+
+const COUNT_AVAILABLE_PHONE_INTERVAL = 10000;
 
 @Component({
   selector: 'app-phone-number-list',
   templateUrl: './phone-number-list.component.html',
   styleUrl: './phone-number-list.component.scss',
 })
-export class PhoneNumberListComponent implements OnInit {
+export class PhoneNumberListComponent implements OnInit, OnDestroy {
   @Input() userId: string = '';
   @Input() selectedPhoneNumberId?: string;
   @Input() set phoneNumbers(value: PhoneNumber[]) {
@@ -45,18 +37,42 @@ export class PhoneNumberListComponent implements OnInit {
     oldPhoneId: string;
     newPhoneNumber: PhoneNumber;
   }>();
+  @Output() pickPhoneNumberSuccess = new EventEmitter<{
+    oldPhoneId: string;
+    newPhoneNumber: PhoneNumber;
+  }>();
+
+  systemInfoInterval: any;
+  availablePhoneCount: number = 0;
 
   constructor(
     private _ResourceService: ResourceService,
     private _NotificationService: NotificationService
   ) {}
 
+  ngOnDestroy(): void {
+    clearInterval(this.systemInfoInterval);
+  }
+
   ngOnInit(): void {
     this.filteredPhones = this.filterPhones(
       this._phoneNumbers,
       this.searchControl.value
     );
+
+    this.startFetchSystemInfoInterval();
+
+    this._ResourceService.countAvailablePhoneNumbers().then((res) => {
+      this.availablePhoneCount = res;
+    });
   }
+
+  startFetchSystemInfoInterval = () => {
+    this.systemInfoInterval = setInterval(async () => {
+      this.availablePhoneCount =
+        await this._ResourceService.countAvailablePhoneNumbers();
+    }, COUNT_AVAILABLE_PHONE_INTERVAL);
+  };
 
   onFilterChange = (searchTerm: any) => {
     this.filteredPhones = this.filterPhones(this._phoneNumbers, searchTerm);
@@ -70,7 +86,11 @@ export class PhoneNumberListComponent implements OnInit {
   };
 
   selectPhoneNumber = (phoneNumberItem: PhoneNumber) => {
-    if (!phoneNumberItem.expired && !phoneNumberItem.isError) {
+    if (
+      !phoneNumberItem.expired &&
+      !phoneNumberItem.isError &&
+      !phoneNumberItem.isEmpty
+    ) {
       this.onSelectItem.emit(phoneNumberItem);
     }
   };
@@ -90,6 +110,27 @@ export class PhoneNumberListComponent implements OnInit {
         this._NotificationService.error(ex);
       } else {
         this._NotificationService.error('Error replace phone number');
+      }
+    }
+
+    this.isLoading = false;
+  };
+
+  pickPhoneNumber = async (phoneNumber: PhoneNumber) => {
+    try {
+      this.isLoading = true;
+      const newPhoneNumber = await this._ResourceService.pickPhoneNumber(
+        phoneNumber
+      );
+      this.pickPhoneNumberSuccess.emit({
+        oldPhoneId: phoneNumber.id,
+        newPhoneNumber,
+      });
+    } catch (ex) {
+      if (_.isString(ex)) {
+        this._NotificationService.error(ex);
+      } else {
+        this._NotificationService.error('Error pick phone number');
       }
     }
 

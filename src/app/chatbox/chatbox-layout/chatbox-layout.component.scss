@@ -11,3 +11,9 @@
 .fixed-top {
   z-index: 3;
 }
+
+::ng-deep .ant-drawer {
+  .ant-drawer-content {
+    background-color: #fff8dc !important;
+  }
+}
