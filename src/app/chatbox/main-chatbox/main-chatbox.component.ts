@@ -370,11 +370,16 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     if (found) {
       found.phoneNumber = data.newPhoneNumber.phoneNumber;
       found.name = data.newPhoneNumber.name;
+      found.clientId = data.newPhoneNumber.clientId;
+      found.username = data.newPhoneNumber.username;
+      found.name = data.newPhoneNumber.name;
+      found.name = data.newPhoneNumber.name;
       found.id = data.newPhoneNumber.id;
       found.expired = data.newPhoneNumber.expired;
       found.isError = data.newPhoneNumber.isError;
       found.failCount = 0;
       found.newMessageCount = 0;
+
       //TODO need handle more action like reload list contact of new phone number
       this.selectPhoneNumber(found);
     }

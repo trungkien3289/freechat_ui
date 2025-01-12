@@ -104,18 +104,21 @@ export class ResourceService {
   ): ContactMessageGroup[] => {
     const grouped: any = {};
     communications.forEach((message) => {
-      if (!grouped[message.contact_value]) {
-        grouped[message.contact_value] = {
-          name: message.contact_name,
+      let groupKey = `${currentPhone.phoneNumber}|${message.contact_value}`;
+      if (!grouped[groupKey]) {
+        grouped[groupKey] = {
+          name: Utils.formatPhoneNumberName(
+            Utils.removeCountryCode(message.contact_name)
+          ),
           currentPhoneNumber: currentPhone,
           from: currentPhone.phoneNumber,
           to: message.contact_value,
-          id: `${currentPhone.phoneNumber}|${message.contact_value}`,
+          id: groupKey,
           messages: [],
         };
       }
 
-      grouped[message.contact_value].messages.push({
+      grouped[groupKey].messages.push({
         ...message,
         date: message.date,
         sendStatus: SendStatus.SENT,

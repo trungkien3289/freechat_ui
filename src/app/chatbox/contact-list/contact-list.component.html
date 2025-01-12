@@ -43,8 +43,7 @@
 
           <div class="d-flex flex-column flex-grow-1 overflow-hidden">
             <div class="d-flex flex-row align-items-center">
-              <span [class.fw-bold]="item.newMessageCount > 0" nz-tooltip [nzTooltipTitle]="item.name"
-                [nzTooltipColor]="'blue'" nzTooltipPlacement="topLeft" class="flex-grow-1 fs-6 text-truncate me-1">
+              <span [class.fw-bold]="item.newMessageCount > 0" class="flex-grow-1 fs-6 text-truncate me-1">
                 {{ item.name }}
               </span>
             </div>
