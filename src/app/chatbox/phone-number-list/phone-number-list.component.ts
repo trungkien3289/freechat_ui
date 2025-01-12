@@ -12,7 +12,7 @@ import { ResourceService } from '../../services/resource.service';
 import { NotificationService } from '../../services/notification.service';
 import _ from 'lodash';
 
-const COUNT_AVAILABLE_PHONE_INTERVAL = 10000;
+const COUNT_AVAILABLE_PHONE_INTERVAL = 20000;
 
 @Component({
   selector: 'app-phone-number-list',
@@ -62,16 +62,18 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
 
     this.startFetchSystemInfoInterval();
 
-    this._ResourceService.countAvailablePhoneNumbers().then((res) => {
-      this.availablePhoneCount = res;
-    });
+    this.updateAvailablePhoneCount();
   }
 
   startFetchSystemInfoInterval = () => {
     this.systemInfoInterval = setInterval(async () => {
-      this.availablePhoneCount =
-        await this._ResourceService.countAvailablePhoneNumbers();
+      this.updateAvailablePhoneCount();
     }, COUNT_AVAILABLE_PHONE_INTERVAL);
+  };
+
+  updateAvailablePhoneCount = async () => {
+    this.availablePhoneCount =
+      await this._ResourceService.countAvailablePhoneNumbers();
   };
 
   onFilterChange = (searchTerm: any) => {
@@ -101,6 +103,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       const newPhoneNumber = await this._ResourceService.replacePhoneNumber(
         phoneNumber
       );
+      this.updateAvailablePhoneCount();
       this.replacePhoneNumberSuccess.emit({
         oldPhoneId: phoneNumber.id,
         newPhoneNumber,
@@ -122,6 +125,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       const newPhoneNumber = await this._ResourceService.pickPhoneNumber(
         phoneNumber
       );
+      this.updateAvailablePhoneCount();
       this.pickPhoneNumberSuccess.emit({
         oldPhoneId: phoneNumber.id,
         newPhoneNumber,
