@@ -60,9 +60,9 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       this.searchControl.value
     );
 
-    this.startFetchSystemInfoInterval();
+    // this.startFetchSystemInfoInterval();
 
-    this.updateAvailablePhoneCount();
+    // this.updateAvailablePhoneCount();
   }
 
   startFetchSystemInfoInterval = () => {
@@ -103,7 +103,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       const newPhoneNumber = await this._ResourceService.replacePhoneNumber(
         phoneNumber
       );
-      this.updateAvailablePhoneCount();
+      // this.updateAvailablePhoneCount();
       this.replacePhoneNumberSuccess.emit({
         oldPhoneId: phoneNumber.id,
         newPhoneNumber,

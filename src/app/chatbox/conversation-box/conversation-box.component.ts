@@ -42,6 +42,7 @@ import {
 
 const INTERVAL_RELOAD_CHATBOX = 5000;
 const MAX_RECORDING_SECONDS = 60;
+const MAX_NUMBER_SEND_MESSAGE = 150;
 @Component({
   selector: 'app-conversation-box',
   templateUrl: './conversation-box.component.html',
@@ -345,6 +346,18 @@ export class ConversationBoxComponent
         `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
           this.contactGroup.currentPhoneNumber.phoneNumber
         )} second(s)`
+      );
+      return;
+    }
+
+    if (
+      this.contactGroup.messages.filter(
+        (m) => m.message_direction == MessageDirection.OUT
+      ).length >
+      MAX_NUMBER_SEND_MESSAGE - 1
+    ) {
+      this._NotificationService.warning(
+        `Cannot send over ${MAX_NUMBER_SEND_MESSAGE} messages from phone number ${this.contactGroup.currentPhoneNumber.phoneNumber}`
       );
       return;
     }
