@@ -178,7 +178,7 @@ export class GroupConversationBoxComponent
     this.reTryError = 10;
     this.myForm.reset();
     this.isValidPhoneNumber = true;
-    // this.inputPhoneNumber = '';
+    this.inputPhoneNumber = '';
     this.fileList = [];
     this.abortRecording();
   };
