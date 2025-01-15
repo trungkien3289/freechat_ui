@@ -60,9 +60,8 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       this.searchControl.value
     );
 
-    // this.startFetchSystemInfoInterval();
-
-    // this.updateAvailablePhoneCount();
+    this.startFetchSystemInfoInterval();
+    this.updateAvailablePhoneCount();
   }
 
   startFetchSystemInfoInterval = () => {
@@ -103,7 +102,11 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       const newPhoneNumber = await this._ResourceService.replacePhoneNumber(
         phoneNumber
       );
-      // this.updateAvailablePhoneCount();
+      this.availablePhoneCount =
+        await this._ResourceService.countAvailablePhoneNumbers();
+      this._NotificationService.success(
+        `Replace phone number successfully, available phone in stock ${this.availablePhoneCount}`
+      );
       this.replacePhoneNumberSuccess.emit({
         oldPhoneId: phoneNumber.id,
         newPhoneNumber,
@@ -125,7 +128,11 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       const newPhoneNumber = await this._ResourceService.pickPhoneNumber(
         phoneNumber
       );
-      this.updateAvailablePhoneCount();
+      this.availablePhoneCount =
+        await this._ResourceService.countAvailablePhoneNumbers();
+      this._NotificationService.success(
+        `Pick phone number successfully, available phone in stock ${this.availablePhoneCount}`
+      );
       this.pickPhoneNumberSuccess.emit({
         oldPhoneId: phoneNumber.id,
         newPhoneNumber,
