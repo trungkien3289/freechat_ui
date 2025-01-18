@@ -340,6 +340,18 @@ export class ResourceService {
     }
   };
 
+  countRemainReplaceTimes = async (): Promise<number> => {
+    try {
+      let res: number = (await firstValueFrom(
+        this.http.get(`${this.apiUrl}/api/chat/phone/remain-replace-times`)
+      )) as any;
+
+      return res;
+    } catch (ex) {
+      throw 'Count remain replace times failed.';
+    }
+  };
+
   callAPI = async (requestBody: any): Promise<any> => {
     let res: any = (await firstValueFrom(
       this.http.post(

@@ -44,6 +44,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
 
   systemInfoInterval: any;
   availablePhoneCount: number = 0;
+  remainReplaceNumberTimes: number = 40;
 
   constructor(
     private _ResourceService: ResourceService,
@@ -71,8 +72,12 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
   };
 
   updateAvailablePhoneCount = async () => {
-    this.availablePhoneCount =
-      await this._ResourceService.countAvailablePhoneNumbers();
+    const [availablePhoneCount, remainReplaceTimes] = await Promise.all([
+      this._ResourceService.countAvailablePhoneNumbers(),
+      this._ResourceService.countRemainReplaceTimes(),
+    ]);
+    this.availablePhoneCount = availablePhoneCount;
+    this.remainReplaceNumberTimes = remainReplaceTimes;
   };
 
   onFilterChange = (searchTerm: any) => {
@@ -102,8 +107,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       const newPhoneNumber = await this._ResourceService.replacePhoneNumber(
         phoneNumber
       );
-      this.availablePhoneCount =
-        await this._ResourceService.countAvailablePhoneNumbers();
+      await this.updateAvailablePhoneCount();
       this._NotificationService.success(
         `Replace phone number successfully, available phone in stock ${this.availablePhoneCount}`
       );
@@ -128,8 +132,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       const newPhoneNumber = await this._ResourceService.pickPhoneNumber(
         phoneNumber
       );
-      this.availablePhoneCount =
-        await this._ResourceService.countAvailablePhoneNumbers();
+      await this.updateAvailablePhoneCount();
       this._NotificationService.success(
         `Pick phone number successfully, available phone in stock ${this.availablePhoneCount}`
       );
