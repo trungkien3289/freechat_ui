@@ -61,11 +61,13 @@ export class ChatService {
 
       return res;
     } catch (ex: any) {
-      if (!_.isEmpty(ex.error)) {
-        throw ex.error;
-      } else {
-        throw `Send message from ${fromPhoneNumber} error`;
-      }
+      // if (!_.isEmpty(ex.error)) {
+      //   throw ex.error;
+      // } else {
+      throw new Error(
+        `Send message from ${fromPhoneNumber} failed: ${ex.message}`
+      );
+      // }
     }
   };
 

@@ -195,7 +195,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
     // create new group conversation
     const newConversation = {
-      id: NEW_GROUP_CONVERSATION_ID,
+      id: `${NEW_GROUP_CONVERSATION_ID}_${phoneNumber.phoneNumber}`,
       name: NEW_GROUP_CONVERSATION_NAME,
       conversationType: ConversationType.GROUP,
       currentPhoneNumber: phoneNumber,
@@ -354,15 +354,15 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     phoneNumberId: string;
     errorDescription: string;
   }) => {
-    let found = this.phoneNumbers.find((p) => p.id === data.phoneNumberId);
-    if (found) {
-      found.isError = true;
-      // call api to set phone number as unAuthorized
-      this._ResourceService.markPhoneNumberAsError(
-        found,
-        data.errorDescription
-      );
-    }
+    // let found = this.phoneNumbers.find((p) => p.id === data.phoneNumberId);
+    // if (found) {
+    //   found.isError = true;
+    //   // call api to set phone number as unAuthorized
+    //   this._ResourceService.markPhoneNumberAsError(
+    //     found,
+    //     data.errorDescription
+    //   );
+    // }
   };
 
   replacePhoneNumberSuccess = (data: {
