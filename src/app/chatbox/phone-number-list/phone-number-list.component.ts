@@ -94,7 +94,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
   selectPhoneNumber = (phoneNumberItem: PhoneNumber) => {
     if (
       !phoneNumberItem.expired &&
-      !phoneNumberItem.isError &&
+      // !phoneNumberItem.isError &&
       !phoneNumberItem.isEmpty
     ) {
       this.onSelectItem.emit(phoneNumberItem);

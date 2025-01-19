@@ -165,6 +165,7 @@ export class ChatService {
             clientId: fromPhone.clientId,
             username: fromPhone.username,
             userAgent: fromPhone.userAgent,
+            phoneNumber: fromPhone.phoneNumber,
           }
         )
       )) as any;
@@ -262,6 +263,7 @@ export class ChatService {
             clientId: fromPhone.clientId,
             username: fromPhone.username,
             userAgent: fromPhone.userAgent,
+            phoneNumber: fromPhone.phoneNumber,
           }
         )
       )) as any;

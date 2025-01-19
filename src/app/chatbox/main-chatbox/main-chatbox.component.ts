@@ -116,7 +116,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     let phones = phoneNumbers.filter((p) => !p.isEmpty);
     from(phones)
       .pipe(
-        mergeMap((phoneNumber) => this.fetchMessagesSilence(phoneNumber), 3) // Limit to 5 concurrent requests
+        mergeMap((phoneNumber) => this.fetchMessagesSilence(phoneNumber), 3)
       )
       .subscribe({
         next: (contactMessageGroups) => {
@@ -134,7 +134,11 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   };
 
   selectPhoneNumber = async (phoneNumber: PhoneNumber) => {
-    if (phoneNumber && !phoneNumber.isError && !phoneNumber.expired) {
+    if (
+      phoneNumber &&
+      // && !phoneNumber.isError
+      !phoneNumber.expired
+    ) {
       this.selectedPhoneNumberItem = phoneNumber;
       await this.reloadContactList(phoneNumber, true);
       this.selectContactItem(this.contactMessageGroups[0]);

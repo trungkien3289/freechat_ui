@@ -111,6 +111,7 @@ export class ResourceService {
           clientId: phoneNumber.clientId,
           username: phoneNumber.username,
           userAgent: phoneNumber.userAgent,
+          phoneNumber: phoneNumber.phoneNumber,
         }
       )
     )) as any;
@@ -296,12 +297,14 @@ export class ResourceService {
       clientId: string;
       username: string;
       userAgent: string;
+      phoneNumber: string;
     }[] = phones.map((phone) => {
       return {
         phoneId: phone.id,
         clientId: phone.clientId,
         username: phone.username,
         userAgent: phone.userAgent,
+        phoneNumber: phone.phoneNumber,
       };
     });
 
@@ -310,6 +313,7 @@ export class ResourceService {
       phoneId: string;
       pingerResult: any;
       message: string;
+      phoneNumber: string;
     }[] = await this.callAPI(requestPhoneBodys);
 
     let successResults = results.filter((item) => item.success);
