@@ -337,18 +337,18 @@ export class ConversationBoxComponent
   debouncedSubmit = async () => {
     if (this.isRecording) return;
 
-    if (
-      !this._ChatService.canSendMessage(
-        this.contactGroup.currentPhoneNumber.phoneNumber
-      )
-    ) {
-      this._NotificationService.warning(
-        `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
-          this.contactGroup.currentPhoneNumber.phoneNumber
-        )} second(s)`
-      );
-      return;
-    }
+    // if (
+    //   !this._ChatService.canSendMessage(
+    //     this.contactGroup.currentPhoneNumber.phoneNumber
+    //   )
+    // ) {
+    //   this._NotificationService.warning(
+    //     `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
+    //       this.contactGroup.currentPhoneNumber.phoneNumber
+    //     )} second(s)`
+    //   );
+    //   return;
+    // }
 
     if (
       this.contactGroup.messages.filter(
@@ -369,7 +369,10 @@ export class ConversationBoxComponent
       // If have images upload
       if (this.fileList.length > 0) {
         let uploadFilesRequests = this.fileList.map((file) => {
-          return this.sendImageMessage(file.response);
+          return this.sendImageMessage(
+            file.thumbUrl || '',
+            file.originFileObj as File
+          );
         });
 
         this.fileList = [];
@@ -443,9 +446,12 @@ export class ConversationBoxComponent
   };
 
   //#region Send text | image | audio message
-  sendImageMessage = async (imageUrl: string): Promise<ContactMessage> => {
+  sendImageMessage = async (
+    imageUrl: string,
+    file: File
+  ): Promise<ContactMessage> => {
     let newMessage: ContactMessage = this.addMessageToGroup(
-      '',
+      imageUrl,
       ConversationItemType.IMAGE,
       { image: imageUrl }
     );
@@ -455,9 +461,12 @@ export class ConversationBoxComponent
     try {
       await this._ChatService.sendImage(
         this.contactGroup.currentPhoneNumber.id,
+        this.contactGroup.currentPhoneNumber.clientId,
+        this.contactGroup.currentPhoneNumber.username,
+        this.contactGroup.currentPhoneNumber.userAgent,
         this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.to,
-        imageUrl
+        file
       );
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
@@ -472,17 +481,17 @@ export class ConversationBoxComponent
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-      if (
-        _.isString(error) &&
-        error == 'Missing sender assigned phone number'
-      ) {
-        this.triggerPhoneAsError.emit({
-          phoneNumberId: this.contactGroup.currentPhoneNumber.id,
-          errorDescription: 'Missing sender assigned phone number',
-        });
-      } else {
-        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
-      }
+      // if (
+      //   _.isString(error) &&
+      //   error == 'Missing sender assigned phone number'
+      // ) {
+      //   this.triggerPhoneAsError.emit({
+      //     phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+      //     errorDescription: 'Missing sender assigned phone number',
+      //   });
+      // } else {
+      //   // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
+      // }
     }
 
     this.resetUploadImage();
@@ -790,24 +799,31 @@ export class ConversationBoxComponent
   }
 
   customRequestUploadImage = (item: NzUploadXHRArgs): any => {
-    this._FileService
-      .upload(
-        item.file as any,
-        item.file.filename as string,
-        ConversationItemType.IMAGE
-      )
-      .then(
-        (fileUrl) => {
-          if (fileUrl) {
-            item.onError!(null, item.file);
-          }
+    Utils.getBase64(item.file as any).then((url) => {
+      item.onSuccess!(url, item.file, null);
+    });
 
-          item.onSuccess!(fileUrl, item.file, null);
-        },
-        (error) => {
-          item.onError!(null, item.file);
-        }
-      );
+    // this._FileService
+    //   .upload(
+    //     item.file as any,
+    //     item.file.filename as string,
+    //     ConversationItemType.IMAGE
+    //   )
+    //   .then(
+    //     (fileUrl) => {
+    //       if (fileUrl) {
+    //         item.onError!(null, item.file);
+    //       }
+
+    //       item.onSuccess!(fileUrl, item.file, null);
+    //     },
+    //     (error) => {
+    //       item.onError!(null, item.file);
+    //     }
+    //   );
+
+    // item.onSuccess!('', item.file, null);
+    // return Promise.resolve();
   };
 
   //#endregion

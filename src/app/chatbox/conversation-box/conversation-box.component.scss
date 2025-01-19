@@ -223,6 +223,12 @@
     colorShift 10000ms infinite ease-in;
 }
 
+.image-message {
+  max-width: 300px;
+  min-width: 100px;
+  width: auto;
+}
+
 /* Declate color shifting animation */
 @keyframes colorShift {
   0%,

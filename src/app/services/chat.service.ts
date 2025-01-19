@@ -73,18 +73,24 @@ export class ChatService {
 
   sendImage = async (
     fromPhoneNumberId: string,
+    clientId: string,
+    username: string,
+    userAgent: string,
     fromPhoneNumber: string,
     to: string,
-    imageUrl: string
+    file: File
   ) => {
     try {
+      const formData = new FormData();
+      formData.append('file', file as any, file.name);
+      formData.append('clientId', clientId);
+      formData.append('username', username);
+      formData.append('userAgent', userAgent);
+      formData.append('to', to);
       const res = await firstValueFrom(
         this.http.post(
-          `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/message`,
-          {
-            media: { image: imageUrl },
-            to,
-          }
+          `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/image-message`,
+          formData
         )
       );
 
@@ -171,9 +177,9 @@ export class ChatService {
       )) as any;
 
       let communications = res as PhoneComunication[];
-      communications = communications.filter(
-        (item) => item.message_type === PhoneComunicationType.MESSAGE
-      );
+      // communications = communications.filter(
+      //   (item) => item.message_type === PhoneComunicationType.MESSAGE
+      // );
 
       // update message read status base on last seen of group
       const lastSeen: Date =
@@ -272,9 +278,9 @@ export class ChatService {
       let communications = communicationsRes.result
         .newCommunications as PhoneComunication[];
 
-      communications = communications.filter(
-        (item) => item.message_type === PhoneComunicationType.MESSAGE
-      );
+      // communications = communications.filter(
+      //   (item) => item.message_type === PhoneComunicationType.MESSAGE
+      // );
 
       // update message read status base on last seen of group
       const lastSeen: Date =

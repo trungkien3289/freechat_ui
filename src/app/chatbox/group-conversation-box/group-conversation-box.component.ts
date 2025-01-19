@@ -213,24 +213,27 @@ export class GroupConversationBoxComponent
   debouncedSubmit = debounce(async () => {
     if (this.isRecording) return;
 
-    if (
-      !this._ChatService.canSendMessage(
-        this.contactGroup.currentPhoneNumber.phoneNumber
-      )
-    ) {
-      this._NotificationService.warning(
-        `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
-          this.contactGroup.currentPhoneNumber.phoneNumber
-        )} second(s)`
-      );
-      return;
-    }
+    // if (
+    //   !this._ChatService.canSendMessage(
+    //     this.contactGroup.currentPhoneNumber.phoneNumber
+    //   )
+    // ) {
+    //   this._NotificationService.warning(
+    //     `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
+    //       this.contactGroup.currentPhoneNumber.phoneNumber
+    //     )} second(s)`
+    //   );
+    //   return;
+    // }
 
     this.isLoading = true;
     // If have images upload
     if (this.fileList.length > 0) {
       let uploadFilesRequests = this.fileList.map((file) => {
-        return this.sendImageMessage(file.response);
+        return this.sendImageMessage(
+          file.thumbUrl || '',
+          file.originFileObj as File
+        );
       });
 
       this.fileList = [];
@@ -264,19 +267,22 @@ export class GroupConversationBoxComponent
   };
 
   //#region Send text | image | audio message
-  sendImageMessage = async (imageUrl: string) => {
+  sendImageMessage = async (imageUrl: string, file: File) => {
     let newMessage: ContactMessage = this.addMessageToGroup(
-      '',
+      imageUrl,
       ConversationItemType.IMAGE,
-      { image: imageUrl }
+      PhoneComunicationType.IMAGE
     );
 
     try {
       await this._ChatService.sendImage(
         this.contactGroup.currentPhoneNumber.id,
+        this.contactGroup.currentPhoneNumber.clientId,
+        this.contactGroup.currentPhoneNumber.username,
+        this.contactGroup.currentPhoneNumber.userAgent,
         this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.to,
-        imageUrl
+        file
       );
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
@@ -299,7 +305,8 @@ export class GroupConversationBoxComponent
   sendTextMessage = async (message: string) => {
     let newMessage: ContactMessage = this.addMessageToGroup(
       message,
-      ConversationItemType.MESSAGE
+      ConversationItemType.MESSAGE,
+      PhoneComunicationType.MESSAGE
     );
 
     this.myForm.reset();
@@ -342,7 +349,7 @@ export class GroupConversationBoxComponent
     let newMessage: ContactMessage = this.addMessageToGroup(
       '',
       ConversationItemType.AUDIO,
-      { audio: audioUrl as string }
+      PhoneComunicationType.AUDIO
     );
 
     try {
@@ -394,7 +401,7 @@ export class GroupConversationBoxComponent
   addMessageToGroup = (
     message: string,
     itemType: ConversationItemType,
-    media?: { image?: string; audio?: string }
+    messageType: PhoneComunicationType
   ): ContactMessage => {
     let newMessage = {
       id: uuidv4(),
@@ -404,14 +411,13 @@ export class GroupConversationBoxComponent
       message: message,
       isOutgoing: true,
       sendStatus: SendStatus.SENDING,
-      message_type: PhoneComunicationType.MESSAGE,
+      message_type: messageType,
       contact_value: this.contactGroup.to,
       e164_contact_value: `1${this.contactGroup.to}`,
       read: true,
       deleted: false,
       contact_name: this.contactGroup.to,
       itemType: itemType,
-      media: media,
     } as ContactMessage;
     this.contactGroup.messages.push(newMessage);
     if (this.isNewGroupConversation) {
@@ -488,24 +494,27 @@ export class GroupConversationBoxComponent
   }
 
   customRequestUploadImage = (item: NzUploadXHRArgs): any => {
-    this._FileService
-      .upload(
-        item.file as any,
-        item.file.filename as string,
-        ConversationItemType.IMAGE
-      )
-      .then(
-        (fileUrl) => {
-          if (fileUrl) {
-            item.onError!(null, item.file);
-          }
+    Utils.getBase64(item.file as any).then((url) => {
+      item.onSuccess!(url, item.file, null);
+    });
+    // this._FileService
+    //   .upload(
+    //     item.file as any,
+    //     item.file.filename as string,
+    //     ConversationItemType.IMAGE
+    //   )
+    //   .then(
+    //     (fileUrl) => {
+    //       if (fileUrl) {
+    //         item.onError!(null, item.file);
+    //       }
 
-          item.onSuccess!(fileUrl, item.file, null);
-        },
-        (error) => {
-          item.onError!(null, item.file);
-        }
-      );
+    //       item.onSuccess!(fileUrl, item.file, null);
+    //     },
+    //     (error) => {
+    //       item.onError!(null, item.file);
+    //     }
+    //   );
   };
 
   //#endregion

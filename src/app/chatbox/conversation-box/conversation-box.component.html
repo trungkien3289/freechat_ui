@@ -25,7 +25,7 @@
         'hide-element': fileList.length == 0
       }">
       <nz-upload #uploadComponent nzAccept=".jpg,.jpeg,.png,.gif" (keydown.enter)="$event.preventDefault()"
-        nzListType="picture-card" [(nzFileList)]="fileList" [nzShowButton]="fileList.length > 0 && fileList.length < 8"
+        nzListType="picture-card" [(nzFileList)]="fileList" [nzShowButton]="fileList.length > 0 && fileList.length < 1"
         [nzPreview]="handlePreview" [nzCustomRequest]="customRequestUploadImage">
         <div>
           <span nz-icon nzType="plus"></span>
@@ -55,7 +55,7 @@
         </button>
       </div>
 
-      <button [disabled]="true" nz-button class="me-1" nzType="primary" nzShape="circle"
+      <button [disabled]="false" nz-button class="me-1" nzType="primary" nzShape="circle"
         (click)="triggerUploadDialog()">
         <i class="fa fa-picture-o" aria-hidden="true"></i>
       </button>
@@ -138,7 +138,7 @@
         'message-sender-color': messageItem.isOutgoing
       }">
       <div class="d-flex flex-row">
-        <img nz-image width="200px" height="auto" nzSrc="{{ messageItem?.media?.image }}" alt="" class="me-1" [ngClass]="{
+        <img nz-image height="auto" nzSrc="{{ messageItem?.message }}" alt="" class="image-message me-1" [ngClass]="{
           'align-self-start': !messageItem.isOutgoing,
           'align-self-end': messageItem.isOutgoing,
         }" />

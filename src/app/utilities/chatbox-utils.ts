@@ -6,18 +6,16 @@ import {
 
 export class ChatBoxUtils {
   public static getMessageItemType(message: PhoneComunication) {
-    if (message.message_type == PhoneComunicationType.MESSAGE) {
-      if (message.media?.image) {
+    switch (message.message_type) {
+      case PhoneComunicationType.MESSAGE: {
+        return ConversationItemType.MESSAGE;
+      }
+      case PhoneComunicationType.IMAGE: {
         return ConversationItemType.IMAGE;
       }
-
-      if (message.media?.audio) {
-        return ConversationItemType.AUDIO;
+      default: {
+        return ConversationItemType.MESSAGE;
       }
-
-      return ConversationItemType.MESSAGE;
-    } else {
-      return ConversationItemType.MESSAGE;
     }
   }
 

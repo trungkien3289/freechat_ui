@@ -116,9 +116,9 @@ export class ResourceService {
       )
     )) as any;
 
-    communications = communications.filter(
-      (item) => item.message_type == PhoneComunicationType.MESSAGE
-    );
+    // communications = communications.filter(
+    //   (item) => item.message_type == PhoneComunicationType.MESSAGE
+    // );
 
     return this.groupCommunications(communications, phoneNumber);
   };
@@ -380,12 +380,12 @@ export class ResourceService {
       };
     };
   } => {
-    const communications = newCommunications.filter(
-      (item) => item.message_type == PhoneComunicationType.MESSAGE
-    );
+    // const communications = newCommunications.filter(
+    //   (item) => item.message_type == PhoneComunicationType.MESSAGE
+    // );
 
     let contactMessageGroups: ContactMessageGroup[] = this.groupCommunications(
-      communications,
+      newCommunications,
       phone
     );
 

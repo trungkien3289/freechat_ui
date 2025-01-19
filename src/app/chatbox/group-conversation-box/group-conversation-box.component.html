@@ -65,7 +65,7 @@
         'hide-element': fileList.length == 0
       }">
       <nz-upload #uploadComponent nzAccept=".jpg,.jpeg,.png,.gif" nzListType="picture-card" [(nzFileList)]="fileList"
-        [nzShowButton]="fileList.length > 0 && fileList.length < 8" [nzPreview]="handlePreview"
+        [nzShowButton]="fileList.length > 0 && fileList.length < 1" [nzPreview]="handlePreview"
         [nzCustomRequest]="customRequestUploadImage">
         <div>
           <span nz-icon nzType="plus"></span>
@@ -171,10 +171,11 @@
         'message-main-receiver': !messageItem.isOutgoing,
         'message-main-sender': messageItem.isOutgoing,
         receiver: !messageItem.isOutgoing,
-        sender: messageItem.isOutgoing
+        sender: messageItem.isOutgoing,
+        'message-sender-color': messageItem.isOutgoing
       }">
       <div class="d-flex flex-row">
-        <img nz-image width="200px" height="auto" nzSrc="{{ messageItem?.media?.image }}" alt="" class="me-1" [ngClass]="{
+        <img nz-image height="auto" nzSrc="{{ messageItem?.message }}" alt="" class="image-message me-1" [ngClass]="{
           'align-self-start': !messageItem.isOutgoing,
           'align-self-end': messageItem.isOutgoing,
         }" />
@@ -183,7 +184,7 @@
             context: { status: messageItem.sendStatus }
           "></ng-container>
       </div>
-      <span class="message-time pull-right">
+      <span class="message-time pull-right color-black">
         {{ messageItem.formattedTime }}
       </span>
     </div>

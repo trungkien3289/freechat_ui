@@ -27,8 +27,8 @@ export type PhoneComunication = {
 export enum PhoneComunicationType {
   CALL = 0,
   MESSAGE = 1,
-  AUDIO = 2,
-  IMAGE = 3,
+  AUDIO = 3,
+  IMAGE = 2,
 }
 
 export enum MessageDirection {
