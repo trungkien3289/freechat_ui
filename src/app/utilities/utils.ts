@@ -32,8 +32,9 @@ export class Utils {
 
   static formatPhoneNumberTN = (phoneNumber: string) => {
     const tn = phoneNumber.replace(/\D/g, '');
+    let phone = Utils.removeCountryCode(tn);
 
-    return '1' + tn;
+    return '1' + phone;
   };
 
   static formatPhoneNumberName = (phoneNumber: string) => {

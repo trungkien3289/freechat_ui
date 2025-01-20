@@ -17,23 +17,40 @@
 
 
     <div class="d-flex flex-row py-2 align-items-center flex-gap-1">
-      <i class="fa fa-users me-1 primary-color fs-5"></i>
-      <span class="fw-bold group-label">To: </span>
-      <div class="d-flex flex-row align-items-center flex-grow-1 flex-gap-2">
+      <i class="fa fa-users me-1 primary-color fs-5  align-self-start"></i>
+      <span class="fw-bold group-label align-self-start">To: </span>
+      <div class="d-flex flex-column align-items-start flex-grow-1 flex-gap-2">
         @if(isNewGroupConversation){
-        <div class="flex-grow-1 d-flex flex-row align-items-center flex-gap-2">
+        <!-- <div class="flex-grow-1 d-flex flex-row align-items-center flex-gap-2">
           <div class="d-flex flex-row align-items-center">
             <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber"
               [specialCharacters]="[' ', '(', ')', '-', '.']" mask="(000) 000-0000" (focusout)="onInputFocusOut()">
           </div>
           <span *ngIf="!isValidPhoneNumber" class="text-danger">Phone number invalid</span>
+        </div> -->
+
+        <div class="w-100 multiple-select-phone-number border-round">
+          <ng-container *ngFor="let phone of listOfTagOptions;">
+            <nz-tag class="phone-tag" [nzMode]="'closeable'" (nzOnClose)="removePhoneNumber(phone)">
+              {{ phone | phoneNumberFormatNoCode }}
+            </nz-tag>
+          </ng-container>
         </div>
 
-        <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"
-          (click)="resetNewGroupConversation()">
-          <i class="fa fa-repeat me-1" aria-hidden="true"></i>
-          Reset
-        </button>
+        <div class="my-2 d-flex flex-row align-items-center">
+          <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber" [specialCharacters]="[' ', '(', ')', '-', '.']"
+            prefix="(+1)" mask="000-000-0000">
+
+          <button class="btn-add-phone primary-bg-color me-1" nz-button nzType="primary" (click)="addPhoneNumer()"><i
+              class="fa fa-plus me-1" aria-hidden="true"></i>Add Phone</button>
+
+          <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"
+            (click)="resetNewGroupConversation()">
+            <i class="fa fa-repeat me-1" aria-hidden="true"></i>
+            Reset
+          </button>
+        </div>
+
 
         }@else {
         <span class="d-flex flex-row py-2 align-items-center fs-6">{{

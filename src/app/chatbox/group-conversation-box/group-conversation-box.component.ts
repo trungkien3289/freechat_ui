@@ -70,6 +70,8 @@ export class GroupConversationBoxComponent
   inputPhoneNumber: string = '';
   isValidPhoneNumber: boolean = true;
 
+  listOfTagOptions: string[] = [];
+
   @ViewChild('uploadComponent', { static: false }) uploadComponent!: any;
   fileInput: HTMLInputElement | null = null;
 
@@ -92,6 +94,10 @@ export class GroupConversationBoxComponent
           formattedTime: this.formatTime(item.date),
         } as ContactMessageViewItem;
       });
+
+      if (contactGroup.to && contactGroup.to.trim() !== '') {
+        this.listOfTagOptions = contactGroup.to.split(',');
+      }
     }
   }
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
@@ -145,32 +151,48 @@ export class GroupConversationBoxComponent
     this.resetChatBox();
   }
 
-  onInputFocusOut = () => {
-    this.isValidPhoneNumber = Utils.validatePhoneNumber(
-      this.inputPhoneNumber.toString()
+  addPhoneNumer = () => {
+    let inputPhoneNumber = Utils.formatPhoneNumberTN(
+      this.inputPhoneNumber.replace(/\D/g, '')
     );
+    if (
+      this.inputPhoneNumber &&
+      this.listOfTagOptions.includes(inputPhoneNumber) === false
+    ) {
+      this.listOfTagOptions = [...this.listOfTagOptions, inputPhoneNumber];
+      this.inputPhoneNumber = '';
 
-    if (this.isValidPhoneNumber) {
       this.updateContactGroup();
     }
   };
 
+  removePhoneNumber = (phoneNumber: string) => {
+    if (phoneNumber) {
+      // remove from list of tag options
+      this.listOfTagOptions = this.listOfTagOptions.filter(
+        (item) => item !== phoneNumber
+      );
+      this.updateContactGroup();
+    }
+  };
+
+  // onInputFocusOut = () => {
+  //   this.isValidPhoneNumber = Utils.validatePhoneNumber(
+  //     this.inputPhoneNumber.toString()
+  //   );
+
+  //   if (this.isValidPhoneNumber) {
+  //     this.updateContactGroup();
+  //   }
+  // };
+
   updateContactGroup = () => {
-    const numericString = this.inputPhoneNumber.toString().replace(/\D/g, '');
-    // const toPhone = {
-    //   TN: Utils.formatPhoneNumberTN(numericString),
-    //   name: Utils.formatPhoneNumberName(numericString),
-    // };
-
-    this.contactGroup.to = Utils.formatPhoneNumberTN(numericString);
-
-    // save to local storage
-    // if (this.isNewGroupConversation) {
-    //   this._LocalStorageService.setItem(
-    //     `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
-    //     this.contactGroup
-    //   );
-    // }
+    this.contactGroup.to = this.listOfTagOptions
+      .map((phoneNumber) => {
+        const numericString = phoneNumber.replace(/\D/g, '');
+        return Utils.formatPhoneNumberTN(numericString);
+      })
+      .join(',');
   };
 
   formatTime = (dateTime: string) => {
@@ -186,11 +208,12 @@ export class GroupConversationBoxComponent
     this.isValidPhoneNumber = true;
     this.inputPhoneNumber = '';
     this.fileList = [];
+    this.listOfTagOptions = [];
     this.abortRecording();
   };
 
   sendMessageBtnClick = () => {
-    if (this.inputPhoneNumber != '') {
+    if (this.listOfTagOptions.length > 0) {
       this.debouncedSubmit();
     }
   };
@@ -275,14 +298,20 @@ export class GroupConversationBoxComponent
     );
 
     try {
-      await this._ChatService.sendImage(
-        this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.currentPhoneNumber.clientId,
-        this.contactGroup.currentPhoneNumber.username,
-        this.contactGroup.currentPhoneNumber.userAgent,
-        this.contactGroup.currentPhoneNumber.phoneNumber,
-        this.contactGroup.to,
-        file
+      await Promise.allSettled(
+        this.listOfTagOptions.map((toPhoneNumber) => {
+          let numericString = toPhoneNumber.replace(/\D/g, '');
+          numericString = Utils.formatPhoneNumberTN(numericString);
+          this._ChatService.sendImage(
+            this.contactGroup.currentPhoneNumber.id,
+            this.contactGroup.currentPhoneNumber.clientId,
+            this.contactGroup.currentPhoneNumber.username,
+            this.contactGroup.currentPhoneNumber.userAgent,
+            this.contactGroup.currentPhoneNumber.phoneNumber,
+            numericString,
+            file
+          );
+        })
       );
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
@@ -312,14 +341,30 @@ export class GroupConversationBoxComponent
     this.myForm.reset();
 
     try {
-      await this._ChatService.sendMessage(
-        this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.currentPhoneNumber.clientId,
-        this.contactGroup.currentPhoneNumber.username,
-        this.contactGroup.currentPhoneNumber.userAgent,
-        this.contactGroup.currentPhoneNumber.phoneNumber,
-        this.contactGroup.to,
-        newMessage.message
+      // await this._ChatService.sendMessage(
+      //   this.contactGroup.currentPhoneNumber.id,
+      //   this.contactGroup.currentPhoneNumber.clientId,
+      //   this.contactGroup.currentPhoneNumber.username,
+      //   this.contactGroup.currentPhoneNumber.userAgent,
+      //   this.contactGroup.currentPhoneNumber.phoneNumber,
+      //   this.contactGroup.to,
+      //   newMessage.message
+      // );
+
+      await Promise.allSettled(
+        this.listOfTagOptions.map((toPhoneNumber) => {
+          let numericString = toPhoneNumber.replace(/\D/g, '');
+          numericString = Utils.formatPhoneNumberTN(numericString);
+          return this._ChatService.sendMessage(
+            this.contactGroup.currentPhoneNumber.id,
+            this.contactGroup.currentPhoneNumber.clientId,
+            this.contactGroup.currentPhoneNumber.username,
+            this.contactGroup.currentPhoneNumber.userAgent,
+            this.contactGroup.currentPhoneNumber.phoneNumber,
+            numericString,
+            newMessage.message
+          );
+        })
       );
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
@@ -463,6 +508,7 @@ export class GroupConversationBoxComponent
       this.contactGroup.messages = [];
       this.messageViewItems = [];
       this.inputPhoneNumber = '';
+      this.listOfTagOptions = [];
       this._LocalStorageService.setItem(
         `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
         this.contactGroup
