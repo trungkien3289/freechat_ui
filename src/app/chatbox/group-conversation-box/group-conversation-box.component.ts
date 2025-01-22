@@ -32,6 +32,7 @@ import {
   MessageDirection,
   PhoneComunicationType,
 } from '../../models/phone-comunication.model';
+import { ChatBoxUtils } from '../../utilities/chatbox-utils';
 
 const INTERVAL_RELOAD_CHATBOX = 10000;
 const MAX_RECORDING_SECONDS = 60;
@@ -265,9 +266,18 @@ export class GroupConversationBoxComponent
     }
 
     if (this.myForm.valid) {
-      const isSuccess = await this.sendTextMessage(this.myForm.value.textInput);
-      if (isSuccess) {
-        this.sendMessageGroupSuccess.emit();
+      if (ChatBoxUtils.isContainLink(this.myForm.value.textInput)) {
+        this._NotificationService.warning(
+          `Unable to send messages containing links. Please remove the link and try again.`
+        );
+        return;
+      } else {
+        const isSuccess = await this.sendTextMessage(
+          this.myForm.value.textInput
+        );
+        if (isSuccess) {
+          this.sendMessageGroupSuccess.emit();
+        }
       }
     }
 
