@@ -237,18 +237,18 @@ export class GroupConversationBoxComponent
   debouncedSubmit = debounce(async () => {
     if (this.isRecording) return;
 
-    if (
-      !this._ChatService.canSendMessage(
-        this.contactGroup.currentPhoneNumber.phoneNumber
-      )
-    ) {
-      this._NotificationService.warning(
-        `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
-          this.contactGroup.currentPhoneNumber.phoneNumber
-        )} second(s)`
-      );
-      return;
-    }
+    // if (
+    //   !this._ChatService.canSendMessage(
+    //     this.contactGroup.currentPhoneNumber.phoneNumber
+    //   )
+    // ) {
+    //   this._NotificationService.warning(
+    //     `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
+    //       this.contactGroup.currentPhoneNumber.phoneNumber
+    //     )} second(s)`
+    //   );
+    //   return;
+    // }
 
     this.isLoading = true;
     // If have images upload
