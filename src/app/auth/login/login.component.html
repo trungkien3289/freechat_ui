@@ -1,36 +1,55 @@
-<div class="full-screen-div accent-bg-color d-flex align-items-center justify-content-center">
-  <div class="container" id="container">
-    <div class="form-container sign-in-container">
-      <form [formGroup]="loginForm" (ngSubmit)="login()">
-        <div class="w-100">
-          <i class="fa fa-user-circle-o logo-signin" aria-hidden="true"></i>
-        </div>
+<div class="limiter">
+  <div class="container-login100">
+    <div class="wrap-login100">
 
-        <h3 class="fw-bold text-white">Welcome</h3>
-        <input type="username" placeholder="UserName" type="text" formControlName="username" name="username" required />
-        <div *ngIf="
+      <div class="d-flex flex-column justify-content-start left-panel">
+        <div class="fs-3 fw-bold">
+          Welcome Back!
+        </div>
+        <div class="fs-6 fw-bold text-black-50 pb-3">
+          Login to continue
+        </div>
+        <form [formGroup]="loginForm" (ngSubmit)="login()" class="login100-form">
+          <div class="input-wrapper">
+            <div class="input-group">
+              <i class="fa fa-user" aria-hidden="true"></i>
+              <input type="username" placeholder="UserName" type="text" formControlName="username" name="username"
+                required />
+            </div>
+            <div *ngIf="
             loginForm.get('username')?.invalid &&
             loginForm.get('username')?.touched
           " class="text-danger">
-          Username is required
-        </div>
-        <input type="password" formControlName="password" name="password" placeholder="Password" required
-          placeholder="Password" />
-        <div *ngIf="
+              Username is required
+            </div>
+          </div>
+
+          <div class="input-wrapper">
+            <div class="input-group">
+              <i class="fa fa-lock" aria-hidden="true"></i>
+              <input type="password" formControlName="password" name="password" placeholder="Password" required
+                placeholder="Password" />
+            </div>
+            <div *ngIf="
             loginForm.get('password')?.invalid &&
             loginForm.get('password')?.touched
           " class="text-danger">
-          Password is required
-        </div>
-        <!-- <a class="text-end" (click)="moveToSignUp()">Don't have an account?</a> -->
-        <button type="submit" class="d-flex flex-row align-items-center justify-content-center primary-button">
-          <div *ngIf="isLoading" class="spinner-border text-light me-1 loading-spinner" role="status"></div>
-          Sign In
-        </button>
-        <div *ngIf="errorMessages != ''" class="text-danger">
-          {{ errorMessages }}
-        </div>
-      </form>
+              Password is required
+            </div>
+          </div>
+
+          <button type="submit"
+            class="d-flex flex-row align-items-center justify-content-center btn btn-primary primary-bg-color login100-form-btn">
+            <div *ngIf="isLoading" class="spinner-border text-light me-2 loading-spinner" role="status"></div>
+            Sign In
+          </button>
+          <div *ngIf="errorMessages != ''" class="text-danger">
+            {{ errorMessages }}
+          </div>
+        </form>
+      </div>
+      <div class="flex-gap-1">
+      </div>
     </div>
   </div>
 </div>

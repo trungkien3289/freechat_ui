@@ -22,7 +22,7 @@
 
     </div>
 
-    <div class="flex-grow-1 bg-light d-flex flex-column h-100 chatbox-panel" id="chatbox-column">
+    <div class="flex-grow-1 d-flex flex-column h-100 chatbox-panel" id="chatbox-column">
       @if (selectedContact?.conversationType == 'Group') {
       <app-group-conversation-box style="height: 100%" [contact]="selectedContact"
         (sendMessageGroupSuccess)="sendMessageConversationSuccess()" (markPhoneAsDown)="markPhoneAsDownHandler($event)"

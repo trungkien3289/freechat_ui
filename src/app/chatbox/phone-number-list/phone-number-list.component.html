@@ -1,12 +1,15 @@
 <div class="h-100 d-flex flex-column">
   <div class="d-flex flex-column">
     <div class="d-flex flex-column px-2">
-      <div class="d-flex align-items-center justify-content-center" style="height: 45px">
-        <span class="title-text text-center">Phone Numbers</span>
-
+      <div class="d-flex align-items-center justify-content-start" style="height: 45px">
+        <span class="title-text primary-color">Phone List</span>
       </div>
-      <span class="text-center">Available phone in stock: {{availablePhoneCount}}</span>
-      <span class="text-center">Remain Replace phone times: {{remainReplaceNumberTimes}}</span>
+      <div class="d-flex flex-row  justify-content-between px-1">
+        <div class="text-center">In-stock: <span class="primary-color">{{availablePhoneCount}}</span></div>
+        <div class="text-center">Remain replace times: <span class="primary-color">{{remainReplaceNumberTimes}}</span>
+        </div>
+      </div>
+
 
       <nz-input-group [nzSuffix]="suffixIconSearch" nzSize="large" class="rounded-3 mt-2">
         <input type="number" nz-input placeholder="Search" [formControl]="searchControl"
@@ -48,7 +51,7 @@
                   backgroundColor: '#eb3535',
                   color: '#fff',
                 }">
-            <i class="fa fa-phone primary-color fs-4"></i>
+            <i class="fa fa-phone-square primary-color fs-4"></i>
           </nz-badge>
           }
 

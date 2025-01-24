@@ -1,14 +1,13 @@
 // dark-theme.scss
 $background-color: #121212;
 $text-color: #ffffff;
-$primary-color: #7371fc;
+$primary-color: #00b645;
 $accent-color: #cdc1ff;
 $third-color: #9449fb;
-$menu-color: #4846c9;
+$menu-color: #00b645;
 
 body.green-theme {
   .main-bg-color {
-    // background-color: $background-color;
     background: linear-gradient(180deg, $primary-color, #ffffff);
   }
 
@@ -25,8 +24,13 @@ body.green-theme {
   }
 
   .message-sender-color {
-    background-color: $third-color;
+    background-color: $primary-color;
     color: #fff;
+  }
+
+  .message-recieve-color {
+    background-color: #d9d9d9;
+    color: black !important;
   }
 
   .primary-text-color {
@@ -54,12 +58,19 @@ body.green-theme {
   }
 
   .icon-button:hover {
-    // transform: rotate(20deg); /* Rotate on hover */
     color: $primary-color !important;
   }
 
   .icon-button:active {
     transform: scale(1.1);
     color: $primary-color !important;
+  }
+
+  .bg-light-smoke {
+    background: #f2f2f5;
+  }
+
+  .gey-color {
+    color: #ccc;
   }
 }

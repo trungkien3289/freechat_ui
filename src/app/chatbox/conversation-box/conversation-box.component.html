@@ -1,7 +1,7 @@
 @if(!!contactGroup){
 <div class="conversation d-flex flex-column">
-  <div class="heading d-flex flex-row align-items-center p-3">
-    <i class="fa fa-user-circle-o me-3 primary-color fs-2"></i>
+  <div class="heading d-flex flex-row align-items-center p-3 border-bottom">
+    <i class="fa fa-phone me-1 red-color fs-5  align-self-start mt-2"></i>
     <span class="fs-5 fw-bold flex-grow-1">{{
       contactGroup.to | phoneNumberFormatNoCode
       }}</span>
@@ -21,53 +21,52 @@
     }
   </div>
   <form class="reply d-flex flex-column align-items-center" [formGroup]="myForm" (ngSubmit)="sendMessageBtnClick()">
-    <div class="d-flex flex-row w-100 overflow-hidden" [ngClass]="{
-        'hide-element': fileList.length == 0
-      }">
-      <nz-upload #uploadComponent nzAccept=".jpg,.jpeg,.png,.gif" (keydown.enter)="$event.preventDefault()"
-        nzListType="picture-card" [(nzFileList)]="fileList" [nzShowButton]="fileList.length > 0 && fileList.length < 1"
-        [nzPreview]="handlePreview" [nzCustomRequest]="customRequestUploadImage">
-        <div>
-          <span nz-icon nzType="plus"></span>
-          <div style="margin-top: 8px">Upload</div>
-        </div>
-      </nz-upload>
-    </div>
+
     <div class="reply-main d-flex flex-row w-100 align-items-center">
       @if(!isRecording){
-      <div class="d-flex flex-row flex-grow-1 align-items-center border-round me-1 bg-white p-1 position-relative">
-        <emoji-mart [style]="{ position: 'absolute', bottom: '50px', left: '0px' }" emoji="picker"
-          *ngIf="isEmojiPickerVisible" class="emoji-mart" (emojiSelect)="addEmoji($event)"
-          title="Choose your emoji"></emoji-mart>
-        <div class="emoji-picker-container">
-          <button nz-button class="me-1" nzType="text" nzShape="circle"
-            (click)="isEmojiPickerVisible = !isEmojiPickerVisible">
-            <i class="fa fa-smile-o fs-4 emoji-icon" aria-hidden="true"></i>
+      <button nz-button class="btn-attach-file gey-color me-1 p-0" nzType="link" (click)="triggerUploadDialog()">
+        <i class="icon-add fs-2"></i>
+      </button>
+      <div class="d-flex flex-column w-100 " [ngClass]="{
+        'bg-light-smoke': fileList.length != 0,
+        'border-round': fileList.length != 0
+      }">
+        <div class="d-flex flex-row w-100 overflow-hidden " [ngClass]="{
+          'hide-element': fileList.length == 0
+        }">
+          <nz-upload #uploadComponent nzAccept=".jpg,.jpeg,.png,.gif" nzListType="picture-card"
+            [(nzFileList)]="fileList" [nzShowButton]="fileList.length > 0 && fileList.length < 1"
+            [nzPreview]="handlePreview" [nzCustomRequest]="customRequestUploadImage"
+            class="p-2 m-0 upload-image-container">
+            <div>
+              <span nz-icon nzType="plus"></span>
+              <div style="margin-top: 8px">Upload</div>
+            </div>
+          </nz-upload>
+        </div>
+        <div
+          class="d-flex flex-row flex-grow-1 align-items-center border-round me-1 bg-light-smoke p-1 position-relative">
+          <textarea class="no-border flex-grow-1 text-muted bg-light-smoke" nz-input formControlName="textInput"
+            placeholder="Type a message" [nzAutosize]="{ maxRows: 6 }" (keydown)="onKeydown($event)"
+            [disabled]="isSendingMessage"></textarea>
+
+          <emoji-mart [style]="{ position: 'absolute', bottom: '50px', left: '0px' }" emoji="picker"
+            *ngIf="isEmojiPickerVisible" class="emoji-mart" (emojiSelect)="addEmoji($event)"
+            title="Choose your emoji"></emoji-mart>
+          <div class="emoji-picker-container">
+            <button nz-button class="me-1" nzType="text" nzShape="circle"
+              (click)="isEmojiPickerVisible = !isEmojiPickerVisible">
+              <i class="fa fa-smile-o fs-4 emoji-icon" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <button nz-button class="me-1 btn-send" nzType="text" nzShape="circle" (click)="sendMessageBtnClick()"
+            [class.disabled]="myForm.value.textInput== null || myForm.value.textInput == ''"
+            [disabled]="myForm.value.textInput== null || myForm.value.textInput == ''">
+            <i class="icon-arrow-up"></i>
           </button>
         </div>
-
-        <textarea class="no-border flex-grow-1 text-muted" nz-input formControlName="textInput"
-          placeholder="Type a message" [nzAutosize]="{ maxRows: 6 }" (keydown)="onKeydown($event)"
-          [disabled]="isSendingMessage"></textarea>
-
-        <button nz-button class="me-1" nzType="text" nzShape="circle" (click)="sendMessageBtnClick()">
-          <i class="fa fa-send text-primary" aria-hidden="true"></i>
-        </button>
       </div>
-
-      <button [disabled]="false" nz-button class="me-1" nzType="primary" nzShape="circle"
-        (click)="triggerUploadDialog()">
-        <i class="fa fa-picture-o" aria-hidden="true"></i>
-      </button>
-
-      <!-- <button
-        nz-button
-        nzType="primary"
-        nzShape="circle"
-        (click)="startRecording()"
-      >
-        <i class="fa fa-microphone" aria-hidden="true"></i>
-      </button> -->
       }@else {
       <div class="d-flex flex-row align-items-center w-100">
         <div class="d-flex flex-row align-items-center rounded-pill recording-panel flex-grow-1 me-1 px-1">
@@ -83,7 +82,6 @@
           <i class="fa fa-send" style="font-size: 12px" aria-hidden="true"></i>
         </button>
       </div>
-
       }
     </div>
   </form>
@@ -106,7 +104,8 @@
       <div [ngClass]="{
           receiver: !messageItem.isOutgoing,
           sender: messageItem.isOutgoing,
-          'message-sender-color': messageItem.isOutgoing
+          'message-sender-color': messageItem.isOutgoing,
+          'message-recieve-color': !messageItem.isOutgoing
 
         }">
         <div class="message-text d-flex flex-row align-items-center justify-content-between">

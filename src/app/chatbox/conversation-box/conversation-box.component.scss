@@ -2,19 +2,22 @@
   height: 100%;
 }
 
+.panel-header {
+  height: 71px;
+  flex: 0 0 71px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
 .conversation {
   padding: 0 !important;
   margin: 0 !important;
   height: 100%;
-  border-left: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.message {
-  background-size: cover;
-  overflow-y: auto;
-  border: 1px solid #f7f7f7;
-  background-color: #ccc;
+#conversation {
+  overflow: auto;
 }
+
 .message-previous {
   margin: 0 !important;
   padding: 0 !important;
@@ -51,6 +54,15 @@
   width: auto;
 }
 
+.message-main-receiver,
+.message-main-sender {
+  &:hover {
+    .message-time {
+      display: block !important;
+    }
+  }
+}
+
 .message-text {
   margin: 0 !important;
   padding: 5px !important;
@@ -61,10 +73,10 @@
 }
 
 .message-time {
-  margin: 0 !important;
-  margin-left: 50px !important;
+  margin: 0 10px !important;
   font-size: 12px;
   text-align: right;
+  // display: none;
 }
 
 .receiver {
@@ -81,7 +93,7 @@
 
 .receiver {
   width: auto !important;
-  padding: 7px 10px 7px !important;
+  padding: 5px 10px 5px !important;
   border-radius: 10px 10px 10px 0;
   background: #ffffff;
   font-size: 16px;
@@ -94,7 +106,7 @@
   width: auto !important;
   // background: #dcf8c6;
   border-radius: 10px 10px 0 10px;
-  padding: 7px 10px 7px !important;
+  padding: 5px 10px 5px !important;
   font-size: 16px;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
   display: inline-block;
@@ -104,9 +116,7 @@
 /*Reply*/
 
 .reply {
-  // height: 60px;
   width: 100%;
-  background-color: #f5f1ee;
   padding: 10px 5px 10px 5px !important;
   margin: 0 !important;
   z-index: 1000;
@@ -213,7 +223,7 @@
   bottom: 70px;
   right: 5px;
   margin: 10px;
-  background-color: #3498db;
+  background-color: #0b9238;
   color: white;
   border-radius: 50%;
   padding: 10px;
@@ -223,23 +233,17 @@
     colorShift 10000ms infinite ease-in;
 }
 
-.image-message {
-  max-width: 300px;
-  min-width: 100px;
-  width: auto;
-}
-
 /* Declate color shifting animation */
 @keyframes colorShift {
   0%,
   100% {
-    background: #3498db;
+    background: #0b9238;
   }
   33% {
-    background: #3498db;
+    background: #0b9238;
   }
   66% {
-    background: #3498db;
+    background: #0b9238;
   }
 }
 
@@ -253,4 +257,41 @@
     box-shadow: inset 0px 0px 0px 3px rgba(117, 117, 255, 0.2),
       0px 0px 0px 10px rgba(255, 255, 255, 0);
   }
+}
+
+.btn-send {
+  &.disabled {
+    cursor: not-allowed;
+    background-color: #ccc;
+  }
+
+  background-color: #00b645;
+  color: white;
+  border-radius: 5px;
+  padding: 2px;
+  cursor: pointer;
+
+  i {
+    font-size: 26px;
+  }
+}
+
+.btn-attach-file {
+  align-self: end;
+  margin-bottom: 6px;
+}
+
+.upload-image-container {
+  border-bottom: 1px solid #e3e3e3;
+}
+
+.to-number-label {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.message-separator-line {
+  color: #0000007a;
+  font-size: 14px;
+  border-color: #fff;
 }
