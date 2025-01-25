@@ -22,6 +22,7 @@ import { from, mergeMap } from 'rxjs';
 import { ContactListComponent } from '../contact-list/contact-list.component';
 import _ from 'lodash';
 import { UserService } from '../../services/user.service';
+import { SelectedPhoneService } from '../../services/selected-phone.service';
 
 const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 20000;
 const LIMIT_SEND_MESSAGE_FAIL = 3;
@@ -49,11 +50,13 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     private _LocalStorageService: LocalStorageService,
     private _GroupContactCacheService: GroupContactCacheService,
     private _UserService: UserService,
-    private _Router: Router
+    private _Router: Router,
+    private _SelectedPhoneService: SelectedPhoneService
   ) {}
   ngOnDestroy(): void {
     clearInterval(this.newCommingMessageInterval);
     clearInterval(this.systemInfoInterval);
+    this._SelectedPhoneService.reset();
   }
 
   @ViewChild(PhoneNumberListComponent)
@@ -140,6 +143,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       !phoneNumber.expired
     ) {
       this.selectedPhoneNumberItem = phoneNumber;
+      this._SelectedPhoneService.setUsingPhoneNumber(phoneNumber);
       await this.reloadContactList(phoneNumber, true);
       this.selectContactItem(this.contactMessageGroups[0]);
       this.checkNewMessageComming(phoneNumber);
@@ -163,6 +167,10 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
         )
       );
     }
+
+    this._SelectedPhoneService.updateContactMessageGroups(
+      this.contactMessageGroups
+    );
 
     this.isLoadingContactList = false;
   };
@@ -415,6 +423,10 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       //TODO need handle more action like reload list contact of new phone number
       this.selectPhoneNumber(found);
     }
+  };
+
+  pickAllPhonesSuccessHandler = () => {
+    this.loadData();
   };
 
   markPhoneAsDownHandler = (phoneNumberId: string) => {

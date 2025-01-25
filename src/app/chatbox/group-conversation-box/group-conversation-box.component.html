@@ -1,14 +1,6 @@
 @if(!!contactGroup){
 <div class="conversation d-flex flex-column">
   <div class="heading d-flex flex-column p-2 border-bottom">
-    <!-- <div class="d-flex flex-row align-items-center py-2 align-items-between">
-      <span class="title-text primary-color flex-grow-1">Compose</span>
-      <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"
-        (click)="resetNewGroupConversation()">
-        <i class="fa fa-repeat me-1" aria-hidden="true"></i>
-        Clear
-      </button>
-    </div> -->
     <div class="d-flex flex-row align-items-center justify-content-between">
       <div class="d-flex flex-row align-items-center">
         <div style="min-width: 80px;">
@@ -20,11 +12,7 @@
           contactGroup.currentPhoneNumber.name
           }}</span>
       </div>
-      <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"
-        (click)="resetNewGroupConversation()">
-        <i class="fa fa-repeat me-1" aria-hidden="true"></i>
-        Clear
-      </button>
+
     </div>
 
 
@@ -45,36 +33,19 @@
 
           <div class="flex-grow-1">
             <div class="d-flex flex-row align-items-center">
-              <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber" prefix="(+1)"
-                [specialCharacters]="[' ', '(', ')', '-', '.']" mask="(000) 000-0000">
+              <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber">
+              <!-- <input class="phone-input me-2" [ngModel]="inputPhoneNumber" (ngModel)="onInputPhoneChange($event)"
+                prefix="(+1)" [specialCharacters]="[' ', '(', ')', '-', '.']" mask="(000) 000-0000"> -->
               <button class="btn-add-phone primary-bg-color me-1 border-0" nz-button nzType="primary"
                 (click)="addPhoneNumer()"><i class="fa fa-plus me-1" aria-hidden="true"></i>Add</button>
+              <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"
+                (click)="resetNewGroupConversation()">
+                <i class="fa fa-repeat me-1" aria-hidden="true"></i>
+                Clear
+              </button>
             </div>
           </div>
         </div>
-        <!-- <div class="w-100 multiple-select-phone-number border-round">
-          <ng-container *ngFor="let phone of listOfTagOptions;">
-            <nz-tag class="phone-tag" [nzMode]="'closeable'" (nzOnClose)="removePhoneNumber(phone)">
-              {{ phone | phoneNumberFormatNoCode }}
-            </nz-tag>
-          </ng-container>
-        </div>
-
-        <div class="my-2 d-flex flex-row align-items-center">
-          <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber" [specialCharacters]="[' ', '(', ')', '-', '.']"
-            prefix="(+1)" mask="000-000-0000">
-
-          <button class="btn-add-phone primary-bg-color me-1" nz-button nzType="primary" (click)="addPhoneNumer()"><i
-              class="fa fa-plus me-1" aria-hidden="true"></i>Add Phone</button>
-
-          <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"
-            (click)="resetNewGroupConversation()">
-            <i class="fa fa-repeat me-1" aria-hidden="true"></i>
-            Reset
-          </button>
-        </div> -->
-
-
         }@else {
         <span class="d-flex flex-row py-2 align-items-center fs-6">{{
           contactGroup.name

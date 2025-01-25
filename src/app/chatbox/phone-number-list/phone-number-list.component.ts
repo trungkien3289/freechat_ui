@@ -42,6 +42,8 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
     newPhoneNumber: PhoneNumber;
   }>();
 
+  @Output() pickAllPhoneSuccess = new EventEmitter();
+
   systemInfoInterval: any;
   availablePhoneCount: number = 0;
   remainReplaceNumberTimes: number = 40;
@@ -126,9 +128,9 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
     this.isLoading = false;
   };
 
-  pickPhoneNumber = async (phoneNumber: PhoneNumber) => {
+  pickSinglePhoneNumber = async (phoneNumber: PhoneNumber) => {
+    this.isLoading = true;
     try {
-      this.isLoading = true;
       const newPhoneNumber = await this._ResourceService.pickPhoneNumber(
         phoneNumber
       );
@@ -148,6 +150,29 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       }
     }
 
+    this.isLoading = false;
+  };
+
+  pickPhoneNumber = async (phoneNumber: PhoneNumber) => {
+    try {
+      const newPhoneNumber = await this._ResourceService.pickPhoneNumber(
+        phoneNumber
+      );
+    } catch (ex) {}
+  };
+
+  pickAll = async () => {
+    this.isLoading = true;
+    try {
+      const emptyPhones = this._phoneNumbers.filter((p) => p.isEmpty);
+
+      for (const phone of emptyPhones) {
+        await this.pickPhoneNumber(phone);
+      }
+
+      await this.updateAvailablePhoneCount();
+      this.pickAllPhoneSuccess.emit();
+    } catch (ex) {}
     this.isLoading = false;
   };
 

@@ -21,7 +21,10 @@ import {
 } from '../../models/contact-message.model';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { v4 as uuidv4 } from 'uuid';
-import { NEW_GROUP_CONVERSATION_ID } from '../../utilities/chatbox.const';
+import {
+  MAXIMIZE_CONTACT_NUMBER,
+  NEW_GROUP_CONVERSATION_ID,
+} from '../../utilities/chatbox.const';
 import { Utils } from '../../utilities/utils';
 import { debounce, get, isString } from 'lodash';
 import { NzUploadFile, NzUploadXHRArgs } from 'ng-zorro-antd/upload';
@@ -33,6 +36,7 @@ import {
   PhoneComunicationType,
 } from '../../models/phone-comunication.model';
 import { ChatBoxUtils } from '../../utilities/chatbox-utils';
+import { SelectedPhoneService } from '../../services/selected-phone.service';
 
 const INTERVAL_RELOAD_CHATBOX = 10000;
 const MAX_RECORDING_SECONDS = 60;
@@ -116,7 +120,8 @@ export class GroupConversationBoxComponent
     private _LocalStorageService: LocalStorageService,
     private _FileService: FileService,
     private _AudioRecordingService: AudioRecordingService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private _SelectedPhoneService: SelectedPhoneService
   ) {
     this.myForm = this._FormBuilder.group({
       textInput: ['', Validators.required],
@@ -153,8 +158,19 @@ export class GroupConversationBoxComponent
   }
 
   addPhoneNumer = () => {
+    let totalContacts =
+      this.listOfTagOptions.length +
+      this._SelectedPhoneService.getNumberContact();
+
+    if (totalContacts > MAXIMIZE_CONTACT_NUMBER) {
+      this._NotificationService.warning(
+        `You can only add up to ${MAXIMIZE_CONTACT_NUMBER} contacts`
+      );
+
+      return;
+    }
     let inputPhoneNumber = Utils.formatPhoneNumberTN(
-      this.inputPhoneNumber.replace(/\D/g, '')
+      this.inputPhoneNumber.replace(/\D/g, '').replace(/^\+/, '')
     );
     if (
       this.inputPhoneNumber &&
@@ -176,16 +192,6 @@ export class GroupConversationBoxComponent
       this.updateContactGroup();
     }
   };
-
-  // onInputFocusOut = () => {
-  //   this.isValidPhoneNumber = Utils.validatePhoneNumber(
-  //     this.inputPhoneNumber.toString()
-  //   );
-
-  //   if (this.isValidPhoneNumber) {
-  //     this.updateContactGroup();
-  //   }
-  // };
 
   updateContactGroup = () => {
     this.contactGroup.to = this.listOfTagOptions

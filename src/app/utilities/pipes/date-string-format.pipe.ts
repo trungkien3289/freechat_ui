@@ -5,8 +5,11 @@ import { format } from 'date-fns';
   name: 'dateStringFormat',
 })
 export class DateStringFormatPipe implements PipeTransform {
-  transform(value: Date | string | number | undefined): string {
+  transform(
+    value: Date | string | number | undefined,
+    formatString: string = 'MMM, dd, yyyy'
+  ): string {
     if (!value) return '';
-    return format(new Date(value), 'MMM, dd, yyyy');
+    return format(new Date(value), formatString);
   }
 }

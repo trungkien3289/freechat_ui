@@ -12,4 +12,5 @@ export type PhoneNumber = {
   username: string;
   userAgent: string;
   isEmpty: boolean;
+  estimateExpireDate: Date;
 };

@@ -19,6 +19,7 @@ import { Utils } from '../utilities/utils';
 import _, { isEmpty } from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
 import { ChatBoxUtils } from '../utilities/chatbox-utils';
+import moment from 'moment';
 
 const TOTAL_PHONE_NUMBER = 10;
 
@@ -50,6 +51,7 @@ export class ResourceService {
         clientId: string;
         username: string;
         userAgent: string;
+        estimateExpireDate: number;
       }[] = (await firstValueFrom(
         this.http.get(`${this.apiUrl}/api/chat/user/phones`)
       )) as any;
@@ -71,6 +73,10 @@ export class ResourceService {
           username: item.username,
           userAgent: item.userAgent,
           isEmpty: false,
+          estimateExpireDate:
+            item.estimateExpireDate < new Date().getTime()
+              ? new Date(item.estimateExpireDate)
+              : moment().add(90, 'minute').toDate(),
         };
       });
 
@@ -91,6 +97,7 @@ export class ResourceService {
             username: '',
             userAgent: '',
             isEmpty: true,
+            estimateExpireDate: new Date(),
           });
         }
       }
@@ -215,6 +222,7 @@ export class ResourceService {
         assignDateTimestamp: res.newPhoneNumber.assignDateTimestamp,
         canReplacePhone: true,
         isEmpty: false,
+        estimateExpireDate: res.newPhoneNumber.estimateExpireDate,
       };
     } catch (ex: any) {
       if (ex.error && ex.error.message) {
@@ -247,6 +255,7 @@ export class ResourceService {
         assignDateTimestamp: res.newPhoneNumber.assignDateTimestamp,
         canReplacePhone: true,
         isEmpty: false,
+        estimateExpireDate: res.newPhoneNumber.estimateExpireDate,
       };
     } catch (ex: any) {
       if (ex.error && ex.error.message) {

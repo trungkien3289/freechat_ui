@@ -5,7 +5,8 @@
         <app-phone-number-list [isLoading]="isLoadingPhoneNumbers" [userId]="userId"
           [selectedPhoneNumberId]="selectedPhoneNumberItem?.id" [phoneNumbers]="phoneNumbers"
           (onSelectItem)="selectPhoneNumber($event)" (replacePhoneNumberSuccess)="replacePhoneNumberSuccess($event)"
-          (pickPhoneNumberSuccess)="pickPhoneNumberSuccess($event)"></app-phone-number-list>
+          (pickPhoneNumberSuccess)="pickPhoneNumberSuccess($event)"
+          (pickAllPhoneSuccess)="pickAllPhonesSuccessHandler()"></app-phone-number-list>
       </div>
     </div>
 

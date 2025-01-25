@@ -17,7 +17,7 @@ interface DecodedToken {
   providedIn: 'root',
 })
 export class UserService {
-  private apiUrl = ``; // Change to your Node.js API
+  private apiUrl = ``;
 
   constructor(
     private http: HttpClient,

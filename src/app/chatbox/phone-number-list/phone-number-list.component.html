@@ -1,8 +1,11 @@
 <div class="h-100 d-flex flex-column">
   <div class="d-flex flex-column">
     <div class="d-flex flex-column px-2">
-      <div class="d-flex align-items-center justify-content-start" style="height: 45px">
+      <div class="d-flex align-items-center justify-content-between" style="height: 45px">
         <span class="title-text primary-color">Phone List</span>
+        <button class="btn-add-phone me-1 border-0 primary-color" nzShape="round" nz-button nzType="link"
+          (click)="pickAll()"><i class="fa fa-hand-o-right white-color me-1" aria-hidden="true"></i>Pick
+          All</button>
       </div>
       <div class="d-flex flex-row  justify-content-between px-1">
         <div class="text-center">In-stock: <span class="primary-color">{{availablePhoneCount}}</span></div>
@@ -55,12 +58,17 @@
           </nz-badge>
           }
 
-          <span class="text-truncate flex-grow-1" [class.fw-bold]="phoneNumber.newMessageCount > 0">
+          <div class="text-truncate flex-grow-1 d-flex flex-column" [class.fw-bold]="phoneNumber.newMessageCount > 0">
 
-            {{ phoneNumber.name }}
-          </span>
+            <span>{{ phoneNumber.name }}</span>
+            @if(!phoneNumber.isError && !phoneNumber.expired && !phoneNumber.isEmpty) {
+            <div class=" fst-italic fw-lighter" style="font-size: 11px;">
+              Estimated expiration: {{phoneNumber.estimateExpireDate | dateStringFormat:'dd/MM/yyyy hh:mm'}}</div>
+            }
+          </div>
+
           }@else {
-          <span class="w-100 primary-color" (click)="pickPhoneNumber(phoneNumber)" nz-button nzSize="large">
+          <span class="w-100 primary-color" (click)="pickSinglePhoneNumber(phoneNumber)" nz-button nzSize="large">
             <i class="fa fa-hand-o-right white-color me-1" aria-hidden="true"></i>
             Pick Phone Number
           </span>
