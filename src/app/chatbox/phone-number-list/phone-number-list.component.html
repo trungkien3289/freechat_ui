@@ -3,8 +3,8 @@
     <div class="d-flex flex-column px-2">
       <div class="d-flex align-items-center justify-content-between" style="height: 45px">
         <span class="title-text primary-color">Phone List</span>
-        <button class="btn-add-phone me-1 border-0 primary-color" nzShape="round" nz-button nzType="link"
-          (click)="pickAll()"><i class="fa fa-hand-o-right white-color me-1" aria-hidden="true"></i>Pick
+        <button *ngIf="numberEmptyPhone!=0" class="btn-add-phone me-1 border-0 primary-color" nzShape="round" nz-button
+          nzType="link" (click)="pickAll()"><i class="fa fa-hand-o-right white-color me-1" aria-hidden="true"></i>Pick
           All</button>
       </div>
       <div class="d-flex flex-row  justify-content-between px-1">

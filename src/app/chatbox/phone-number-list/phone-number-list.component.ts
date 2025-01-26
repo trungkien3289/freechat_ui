@@ -25,6 +25,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
   @Input() set phoneNumbers(value: PhoneNumber[]) {
     this.filteredPhones = this.filterPhones(value, this.searchControl.value);
     this._phoneNumbers = value;
+    this.updateEmptyPhoneNumber();
   }
 
   @Input() isLoading: boolean = false;
@@ -47,6 +48,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
   systemInfoInterval: any;
   availablePhoneCount: number = 0;
   remainReplaceNumberTimes: number = 40;
+  numberEmptyPhone: number = 0;
 
   constructor(
     private _ResourceService: ResourceService,
@@ -150,6 +152,8 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       }
     }
 
+    this.updateEmptyPhoneNumber();
+
     this.isLoading = false;
   };
 
@@ -173,6 +177,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       await this.updateAvailablePhoneCount();
       this.pickAllPhoneSuccess.emit();
     } catch (ex) {}
+    this.updateEmptyPhoneNumber();
     this.isLoading = false;
   };
 
@@ -183,5 +188,9 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
     const phone = this._phoneNumbers.find((p) => p.id === phoneId);
     if (!phone) return;
     phone.newMessageCount = newMessageCount;
+  };
+
+  updateEmptyPhoneNumber = () => {
+    this.numberEmptyPhone = this._phoneNumbers.filter((p) => p.isEmpty).length;
   };
 }
