@@ -158,9 +158,38 @@ export class GroupConversationBoxComponent
   }
 
   addPhoneNumer = () => {
+    let listPhones = this.inputPhoneNumber.split(',') || [];
+
+    listPhones = listPhones.map((phoneNumber) => {
+      return Utils.formatPhoneNumberTN(
+        phoneNumber.replace(/\D/g, '').replace(/^\+/, '')
+      );
+    });
+
+    const isError = listPhones.some((inputPhoneNumber) => {
+      return (
+        !Utils.isValidString(inputPhoneNumber) || inputPhoneNumber.length != 11
+      );
+    });
+
+    if (isError) {
+      this._NotificationService.warning(`Input phone number is invalid`);
+      return;
+    }
+
+    let hasPhoneExisted = listPhones.some((inputPhoneNumber) => {
+      return this.listOfTagOptions.includes(inputPhoneNumber);
+    });
+
+    if (hasPhoneExisted) {
+      this._NotificationService.warning(`Has phone number is already added`);
+      return;
+    }
+
     let totalContacts =
       this.listOfTagOptions.length +
-      this._SelectedPhoneService.getNumberContact();
+      this._SelectedPhoneService.getNumberContact() +
+      listPhones.length;
 
     if (totalContacts > MAXIMIZE_CONTACT_NUMBER) {
       this._NotificationService.warning(
@@ -169,24 +198,11 @@ export class GroupConversationBoxComponent
 
       return;
     }
-    let inputPhoneNumber = Utils.formatPhoneNumberTN(
-      this.inputPhoneNumber.replace(/\D/g, '').replace(/^\+/, '')
-    );
 
-    if (inputPhoneNumber.length != 11) {
-      this._NotificationService.warning(`Input phone number is invalid`);
+    this.listOfTagOptions = [...this.listOfTagOptions, ...listPhones];
+    this.inputPhoneNumber = '';
 
-      return;
-    }
-    if (
-      this.inputPhoneNumber &&
-      this.listOfTagOptions.includes(inputPhoneNumber) === false
-    ) {
-      this.listOfTagOptions = [...this.listOfTagOptions, inputPhoneNumber];
-      this.inputPhoneNumber = '';
-
-      this.updateContactGroup();
-    }
+    this.updateContactGroup();
   };
 
   removePhoneNumber = (phoneNumber: string) => {
@@ -294,7 +310,7 @@ export class GroupConversationBoxComponent
     if (this.myForm.valid) {
       if (ChatBoxUtils.isContainLink(this.myForm.value.textInput)) {
         this._NotificationService.warning(
-          `Unable to send messages containing links. Please remove the link and try again.`
+          `Unable to send messages containing links. Please remove the link or change to format www.abc.com`
         );
         return;
       } else {
@@ -411,7 +427,7 @@ export class GroupConversationBoxComponent
           .map((item) => {
             return get(item, 'reason.message', '');
           })
-          .join('\\n');
+          .join(',');
         this._NotificationService.error(errorResponse);
         return false;
       } else {

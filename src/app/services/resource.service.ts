@@ -173,7 +173,11 @@ export class ResourceService {
           return {
             ...mess,
             myStatus:
-              lastSeen && new Date(mess.date) > lastSeen ? 'UNREAD' : 'READ',
+              lastSeen &&
+              new Date(mess.date) > lastSeen &&
+              mess.message_direction == MessageDirection.IN
+                ? 'UNREAD'
+                : 'READ',
           } as ContactMessage;
         })
         .sort((a: ContactMessage, b: ContactMessage) => {

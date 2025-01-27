@@ -12,7 +12,7 @@ export class SelectedPhoneService {
   constructor() {}
 
   getNumberContact = (): number => {
-    return this.contactMessageGroups.length;
+    return this.contactMessageGroups.length - 1;
   };
 
   setUsingPhoneNumber = (phoneNumber: PhoneNumber) => {

@@ -37,6 +37,11 @@ export class Utils {
     return '1' + phone;
   };
 
+  static isValidString = (input: string) => {
+    const validPattern = /^[0-9+,]*$/; // Regular expression to match only numbers, '+' and ','
+    return validPattern.test(input);
+  };
+
   static formatPhoneNumberName = (phoneNumber: string) => {
     if (phoneNumber.length > 1) {
       return `(${phoneNumber.substring(0, 3)}) ${phoneNumber.substring(
