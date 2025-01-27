@@ -11,6 +11,7 @@ import { FormControl } from '@angular/forms';
 import { ResourceService } from '../../services/resource.service';
 import { NotificationService } from '../../services/notification.service';
 import _ from 'lodash';
+import { Utils } from '../../utilities/utils';
 
 const COUNT_AVAILABLE_PHONE_INTERVAL = 20000;
 
@@ -49,6 +50,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
   availablePhoneCount: number = 0;
   remainReplaceNumberTimes: number = 40;
   numberEmptyPhone: number = 0;
+  currentTimeZone = Utils.getTimeZone();
 
   constructor(
     private _ResourceService: ResourceService,

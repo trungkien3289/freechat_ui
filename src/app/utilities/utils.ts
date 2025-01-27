@@ -123,4 +123,12 @@ export class Utils {
       }
     );
   }
+
+  static getTimeZone = () => {
+    const offset = new Date().getTimezoneOffset();
+    const timezoneOffsetHours = -(offset / 60);
+    return timezoneOffsetHours > 0
+      ? `+${timezoneOffsetHours}`
+      : timezoneOffsetHours;
+  };
 }

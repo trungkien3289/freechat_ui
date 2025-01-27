@@ -63,7 +63,8 @@
             <span>{{ phoneNumber.name }}</span>
             @if(!phoneNumber.isError && !phoneNumber.expired && !phoneNumber.isEmpty) {
             <div class=" fst-italic fw-lighter" style="font-size: 11px;">
-              Estimated expiration: {{phoneNumber.estimateExpireDate | dateStringFormat:'dd/MM/yyyy hh:mm'}}</div>
+              Estimated expiration: {{phoneNumber.estimateExpireDate | dateStringFormat:'dd/MM/yyyy HH:mm'}}
+              GMT{{currentTimeZone}}</div>
             }
           </div>
 
