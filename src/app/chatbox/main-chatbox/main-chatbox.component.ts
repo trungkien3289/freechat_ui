@@ -155,7 +155,12 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     showLoading: boolean = false
   ) => {
     this.isLoadingContactList = showLoading;
-    this.contactMessageGroups = await this.getPhoneDetails(phoneNumber);
+
+    const updatedContactMessageGroups = await this.getPhoneDetails(phoneNumber);
+    const newContactGroups = updatedContactMessageGroups.filter(
+      (item) => !this.contactMessageGroups.some((group) => group.id === item.id)
+    );
+    this.contactMessageGroups = updatedContactMessageGroups;
     if (this.contactMessageGroups.length < MAXIMIZE_CONTACT_NUMBER) {
       if (!this.checkIfGroupConversationExist(phoneNumber)) {
         this.newGroupConversation(phoneNumber);
@@ -171,6 +176,11 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     this._SelectedPhoneService.updateContactMessageGroups(
       this.contactMessageGroups
     );
+
+    // select new contact group
+    if (newContactGroups.length == 1) {
+      this.selectContactItem(newContactGroups[0]);
+    }
 
     this.isLoadingContactList = false;
   };
@@ -240,8 +250,12 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
   startCheckNewCommingMessageInterval = (phoneNumberList: PhoneNumber[]) => {
     this.newCommingMessageInterval = setInterval(async () => {
-      let phones = phoneNumberList.filter((p) => !p.isEmpty);
-      this.checkNewMessageForAllPhoneNumbers(phones);
+      let phones = phoneNumberList.filter(
+        (p) => !p.isEmpty && !p.expired && !p.isError
+      );
+      if (phones.length > 0) {
+        this.checkNewMessageForAllPhoneNumbers(phones);
+      }
     }, CHECK_NEW_COMMING_MESSAGE_INTERVAL);
   };
 

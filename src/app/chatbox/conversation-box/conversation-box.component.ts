@@ -182,6 +182,7 @@ export class ConversationBoxComponent
   ) => {
     this.fetchMessageInterval = setInterval(async () => {
       if (this.isPauseFetchMessage) return;
+      if (fromPhone.isError || fromPhone.isEmpty || fromPhone.expired) return;
       try {
         this.isLoading = true;
         const messages = await this.fetchAllMessages(
@@ -395,11 +396,17 @@ export class ConversationBoxComponent
 
       this.sendMessageSuccess.emit();
 
-      let allMessages = await this.fetchAllMessages(
-        this.contactGroup.currentPhoneNumber,
-        this.contactGroup.to,
-        this.contactGroup.id
-      );
+      if (
+        !this.contactGroup.currentPhoneNumber.isError &&
+        this.contactGroup.currentPhoneNumber.isEmpty &&
+        this.contactGroup.currentPhoneNumber.expired
+      ) {
+        let allMessages = await this.fetchAllMessages(
+          this.contactGroup.currentPhoneNumber,
+          this.contactGroup.to,
+          this.contactGroup.id
+        );
+      }
     } catch (error) {
       this._NotificationService.error('Send messages failed');
     }
@@ -542,7 +549,7 @@ export class ConversationBoxComponent
       // }
     } catch (error: any) {
       this._NotificationService.error(error);
-      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
       // this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
       // this.removeMessage(newMessage.id);
 

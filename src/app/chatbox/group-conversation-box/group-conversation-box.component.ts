@@ -172,6 +172,12 @@ export class GroupConversationBoxComponent
     let inputPhoneNumber = Utils.formatPhoneNumberTN(
       this.inputPhoneNumber.replace(/\D/g, '').replace(/^\+/, '')
     );
+
+    if (inputPhoneNumber.length != 11) {
+      this._NotificationService.warning(`Input phone number is invalid`);
+
+      return;
+    }
     if (
       this.inputPhoneNumber &&
       this.listOfTagOptions.includes(inputPhoneNumber) === false
@@ -219,9 +225,23 @@ export class GroupConversationBoxComponent
     this.abortRecording();
   };
 
+  clearMessagesBox = () => {
+    this.inputPhoneNumber = '';
+    this.fileList = [];
+    this.abortRecording();
+    this.messageViewItems = [];
+    this.contactGroup.messages = [];
+    this._LocalStorageService.setItem(
+      `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
+      this.contactGroup
+    );
+  };
+
   sendMessageBtnClick = () => {
     if (this.listOfTagOptions.length > 0) {
       this.debouncedSubmit();
+    } else {
+      this._NotificationService.warning('Please add phone number');
     }
   };
 
@@ -283,6 +303,7 @@ export class GroupConversationBoxComponent
         );
         if (isSuccess) {
           this.sendMessageGroupSuccess.emit();
+          this.clearMessagesBox();
         }
       }
     }
@@ -367,7 +388,7 @@ export class GroupConversationBoxComponent
       //   newMessage.message
       // );
 
-      await Promise.allSettled(
+      const response = await Promise.allSettled(
         this.listOfTagOptions.map((toPhoneNumber) => {
           let numericString = toPhoneNumber.replace(/\D/g, '');
           numericString = Utils.formatPhoneNumberTN(numericString);
@@ -383,9 +404,20 @@ export class GroupConversationBoxComponent
         })
       );
 
-      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
-
-      return true;
+      if (response.some((item) => item.status === 'rejected')) {
+        this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+        const errorResponse = response
+          .filter((item) => item.status === 'rejected')
+          .map((item) => {
+            return get(item, 'reason.message', '');
+          })
+          .join('\\n');
+        this._NotificationService.error(errorResponse);
+        return false;
+      } else {
+        this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+        return true;
+      }
     } catch (error: any) {
       this._NotificationService.error(error.message);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);

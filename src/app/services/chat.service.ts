@@ -65,7 +65,7 @@ export class ChatService {
       //   throw ex.error;
       // } else {
       throw new Error(
-        `Send message from ${fromPhoneNumber} failed: ${ex.message}`
+        `Send message from ${fromPhoneNumber} to ${to} failed: ${ex.error}`
       );
       // }
     }
