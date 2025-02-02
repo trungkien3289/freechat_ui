@@ -40,6 +40,7 @@ import {
   PhoneComunicationType,
 } from '../../models/phone-comunication.model';
 import { ChatBoxUtils } from '../../utilities/chatbox-utils';
+import { ERROR_CODE_ENUM } from '../../utilities/phone-error.enum';
 
 const INTERVAL_RELOAD_CHATBOX = 5000;
 const MAX_RECORDING_SECONDS = 60;
@@ -93,6 +94,7 @@ export class ConversationBoxComponent
   @Output() triggerPhoneAsError = new EventEmitter<{
     phoneNumberId: string;
     errorDescription: string;
+    errorCode: ERROR_CODE_ENUM;
   }>();
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
@@ -500,6 +502,7 @@ export class ConversationBoxComponent
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
           errorDescription: 'Unauthorized',
+          errorCode: ERROR_CODE_ENUM.BAD_CRIDENTIAL,
         });
       }
     }
@@ -543,16 +546,14 @@ export class ConversationBoxComponent
       //   // this.removeMessage(newMessage.id);
       // }
     } catch (error: any) {
-      this._NotificationService.error(error);
-      this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-      // this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-      // this.removeMessage(newMessage.id);
-
       if (_.isString(error.message) && error.message.includes('Unauthorized')) {
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
           errorDescription: 'Unauthorized',
+          errorCode: ERROR_CODE_ENUM.BAD_CRIDENTIAL,
         });
+
+        this._NotificationService.error(error.message);
       } else if (
         _.isString(error.message) &&
         error.message.includes('Forbidden')
@@ -560,8 +561,17 @@ export class ConversationBoxComponent
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
           errorDescription: 'Forbidden',
+          errorCode: ERROR_CODE_ENUM.LIMIT_OTHER,
         });
+
+        this._NotificationService.error(
+          'Invalid phone number detected. Replacing this number will not be counted as a phone number replacement'
+        );
+      } else {
+        this._NotificationService.error(error.message);
       }
+
+      this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
     }
 
     return newMessage;
@@ -613,6 +623,7 @@ export class ConversationBoxComponent
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
           errorDescription: 'Missing sender assigned phone number',
+          errorCode: ERROR_CODE_ENUM.BAD_CRIDENTIAL,
         });
       }
     }

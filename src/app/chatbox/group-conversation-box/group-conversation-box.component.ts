@@ -37,6 +37,7 @@ import {
 } from '../../models/phone-comunication.model';
 import { ChatBoxUtils } from '../../utilities/chatbox-utils';
 import { SelectedPhoneService } from '../../services/selected-phone.service';
+import { ERROR_CODE_ENUM } from '../../utilities/phone-error.enum';
 
 const INTERVAL_RELOAD_CHATBOX = 10000;
 const MAX_RECORDING_SECONDS = 60;
@@ -111,6 +112,7 @@ export class GroupConversationBoxComponent
   @Output() triggerPhoneAsError = new EventEmitter<{
     phoneNumberId: string;
     errorDescription: string;
+    errorCode: ERROR_CODE_ENUM;
   }>();
 
   constructor(
@@ -375,6 +377,7 @@ export class GroupConversationBoxComponent
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
           errorDescription: 'Unauthorized',
+          errorCode: ERROR_CODE_ENUM.BAD_CRIDENTIAL,
         });
       }
     }
@@ -426,12 +429,15 @@ export class GroupConversationBoxComponent
             return get(item, 'reason.message', '');
           })
           .join(',');
-        this._NotificationService.error(errorResponse);
+
         if (isString(errorResponse) && errorResponse.includes('Unauthorized')) {
           this.triggerPhoneAsError.emit({
             phoneNumberId: this.contactGroup.currentPhoneNumber.id,
             errorDescription: 'Unauthorized',
+            errorCode: ERROR_CODE_ENUM.BAD_CRIDENTIAL,
           });
+
+          this._NotificationService.error(errorResponse);
         } else if (
           isString(errorResponse) &&
           errorResponse.includes('Forbidden')
@@ -439,7 +445,14 @@ export class GroupConversationBoxComponent
           this.triggerPhoneAsError.emit({
             phoneNumberId: this.contactGroup.currentPhoneNumber.id,
             errorDescription: 'Forbidden',
+            errorCode: ERROR_CODE_ENUM.LIMIT_OTHER,
           });
+
+          this._NotificationService.error(
+            'Invalid phone number detected. Replacing this number will not be counted as a phone number replacement'
+          );
+        } else {
+          this._NotificationService.error(errorResponse);
         }
         return false;
       } else {
@@ -453,6 +466,7 @@ export class GroupConversationBoxComponent
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
           errorDescription: 'Unauthorized',
+          errorCode: ERROR_CODE_ENUM.BAD_CRIDENTIAL,
         });
       }
 
@@ -496,6 +510,7 @@ export class GroupConversationBoxComponent
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
           errorDescription: 'Unauthorized',
+          errorCode: ERROR_CODE_ENUM.BAD_CRIDENTIAL,
         });
       }
     }

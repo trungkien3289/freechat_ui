@@ -23,6 +23,7 @@ import { ContactListComponent } from '../contact-list/contact-list.component';
 import _ from 'lodash';
 import { UserService } from '../../services/user.service';
 import { SelectedPhoneService } from '../../services/selected-phone.service';
+import { ERROR_CODE_ENUM } from '../../utilities/phone-error.enum';
 
 const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 20000;
 const LIMIT_SEND_MESSAGE_FAIL = 3;
@@ -367,18 +368,19 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     return [];
   };
 
-  markPhoneAsError = (phoneNumber: PhoneNumber, errorDescription: string) => {
-    let found = this.phoneNumbers.find((p) => p.id === phoneNumber.id);
-    if (found) {
-      found.isError = true;
-      // call api to set phone number as unAuthorized
-      this._ResourceService.markPhoneNumberAsError(found, errorDescription);
-    }
-  };
+  // markPhoneAsError = (phoneNumber: PhoneNumber, errorDescription: string) => {
+  //   let found = this.phoneNumbers.find((p) => p.id === phoneNumber.id);
+  //   if (found) {
+  //     found.isError = true;
+  //     // call api to set phone number as unAuthorized
+  //     this._ResourceService.markPhoneNumberAsError(found, errorDescription);
+  //   }
+  // };
 
   triggerPhoneAsError = (data: {
     phoneNumberId: string;
     errorDescription: string;
+    errorCode: ERROR_CODE_ENUM;
   }) => {
     let found = this.phoneNumbers.find((p) => p.id === data.phoneNumberId);
     if (found) {
@@ -387,7 +389,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       if (data.errorDescription == 'Forbidden') {
         this._ResourceService.markPhoneNumberAsError(
           found,
-          data.errorDescription
+          data.errorDescription,
+          data.errorCode
         );
       }
     }
@@ -454,7 +457,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
         // call api to set phone number as unAuthorized
         this._ResourceService.markPhoneNumberAsError(
           found,
-          'Exceed limit send message fail'
+          'Exceed limit send message fail',
+          ERROR_CODE_ENUM.LIMIT_H
         );
       }
     }

@@ -20,6 +20,7 @@ import _, { isEmpty } from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
 import { ChatBoxUtils } from '../utilities/chatbox-utils';
 import moment from 'moment';
+import { ERROR_CODE_ENUM } from '../utilities/phone-error.enum';
 
 const TOTAL_PHONE_NUMBER = 10;
 
@@ -274,13 +275,15 @@ export class ResourceService {
 
   markPhoneNumberAsError = async (
     phoneNumber: PhoneNumber,
-    errorDescription: string
+    errorDescription: string,
+    errorCode: ERROR_CODE_ENUM
   ): Promise<PhoneNumber> => {
     try {
       let res: any = (await firstValueFrom(
         this.http.post(`${this.apiUrl}/api/chat/phone/mark-as-error`, {
           phoneId: phoneNumber.id,
           errorDescription: errorDescription,
+          errorCode: errorCode,
         })
       )) as any;
 
