@@ -380,15 +380,17 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     phoneNumberId: string;
     errorDescription: string;
   }) => {
-    // let found = this.phoneNumbers.find((p) => p.id === data.phoneNumberId);
-    // if (found) {
-    //   found.isError = true;
-    //   // call api to set phone number as unAuthorized
-    //   this._ResourceService.markPhoneNumberAsError(
-    //     found,
-    //     data.errorDescription
-    //   );
-    // }
+    let found = this.phoneNumbers.find((p) => p.id === data.phoneNumberId);
+    if (found) {
+      found.isError = true;
+      // call api to set phone number as unAuthorized
+      if (data.errorDescription == 'Forbidden') {
+        this._ResourceService.markPhoneNumberAsError(
+          found,
+          data.errorDescription
+        );
+      }
+    }
   };
 
   replacePhoneNumberSuccess = (data: {

@@ -201,12 +201,14 @@ export class ResourceService {
   };
 
   replacePhoneNumber = async (
-    phoneNumber: PhoneNumber
+    phoneNumber: PhoneNumber,
+    keepHistory: boolean
   ): Promise<PhoneNumber> => {
     try {
       let res: any = (await firstValueFrom(
         this.http.post(`${this.apiUrl}/api/chat/phone/replace`, {
           phoneId: phoneNumber.id,
+          keepHistory: keepHistory,
         })
       )) as any;
 

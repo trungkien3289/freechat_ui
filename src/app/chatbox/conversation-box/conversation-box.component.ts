@@ -496,17 +496,12 @@ export class ConversationBoxComponent
     } catch (error: any) {
       this._NotificationService.error(error);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-      // if (
-      //   _.isString(error) &&
-      //   error == 'Missing sender assigned phone number'
-      // ) {
-      //   this.triggerPhoneAsError.emit({
-      //     phoneNumberId: this.contactGroup.currentPhoneNumber.id,
-      //     errorDescription: 'Missing sender assigned phone number',
-      //   });
-      // } else {
-      //   // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
-      // }
+      if (_.isString(error.message) && error.message.includes('Unauthorized')) {
+        this.triggerPhoneAsError.emit({
+          phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+          errorDescription: 'Unauthorized',
+        });
+      }
     }
 
     this.resetUploadImage();
@@ -553,16 +548,19 @@ export class ConversationBoxComponent
       // this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
       // this.removeMessage(newMessage.id);
 
-      if (
-        _.isString(error) &&
-        error == 'Missing sender assigned phone number'
+      if (_.isString(error.message) && error.message.includes('Unauthorized')) {
+        this.triggerPhoneAsError.emit({
+          phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+          errorDescription: 'Unauthorized',
+        });
+      } else if (
+        _.isString(error.message) &&
+        error.message.includes('Forbidden')
       ) {
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
-          errorDescription: 'Missing sender assigned phone number',
+          errorDescription: 'Forbidden',
         });
-      } else {
-        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     }
 
@@ -609,18 +607,13 @@ export class ConversationBoxComponent
       //   // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       // }
     } catch (error: any) {
-      this._NotificationService.error(error);
+      this._NotificationService.error(error.message);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-      if (
-        _.isString(error) &&
-        error == 'Missing sender assigned phone number'
-      ) {
+      if (_.isString(error.message) && error.message.includes('Unauthorized')) {
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
           errorDescription: 'Missing sender assigned phone number',
         });
-      } else {
-        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     }
 

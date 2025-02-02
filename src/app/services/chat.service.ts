@@ -53,6 +53,7 @@ export class ChatService {
             userAgent,
             text: ChatBoxUtils.replaceSpecialCharactersInMessage(text),
             to,
+            fromPhoneNumber: fromPhoneNumber,
           }
         )
       );
@@ -87,6 +88,7 @@ export class ChatService {
       formData.append('username', username);
       formData.append('userAgent', userAgent);
       formData.append('to', to);
+      formData.append('fromPhoneNumber', fromPhoneNumber);
       const res = await firstValueFrom(
         this.http.post(
           `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/image-message`,

@@ -369,16 +369,14 @@ export class GroupConversationBoxComponent
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
     } catch (error: any) {
-      this._NotificationService.error(error);
+      this._NotificationService.error(error.message);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-      // if (isString(error) && error == 'Missing sender assigned phone number') {
-      //   this.triggerPhoneAsError.emit({
-      //     phoneNumberId: this.contactGroup.currentPhoneNumber.id,
-      //     errorDescription: 'Missing sender assigned phone number',
-      //   });
-      // } else {
-      //   // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
-      // }
+      if (isString(error.message) && error.message.includes('Unauthorized')) {
+        this.triggerPhoneAsError.emit({
+          phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+          errorDescription: 'Unauthorized',
+        });
+      }
     }
 
     this.resetUploadImage();
@@ -429,6 +427,20 @@ export class GroupConversationBoxComponent
           })
           .join(',');
         this._NotificationService.error(errorResponse);
+        if (isString(errorResponse) && errorResponse.includes('Unauthorized')) {
+          this.triggerPhoneAsError.emit({
+            phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+            errorDescription: 'Unauthorized',
+          });
+        } else if (
+          isString(errorResponse) &&
+          errorResponse.includes('Forbidden')
+        ) {
+          this.triggerPhoneAsError.emit({
+            phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+            errorDescription: 'Forbidden',
+          });
+        }
         return false;
       } else {
         this.updateMessageStatus(newMessage.id, SendStatus.SENT);
@@ -437,14 +449,12 @@ export class GroupConversationBoxComponent
     } catch (error: any) {
       this._NotificationService.error(error.message);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-      // if (isString(error) && error == 'Missing sender assigned phone number') {
-      //   this.triggerPhoneAsError.emit({
-      //     phoneNumberId: this.contactGroup.currentPhoneNumber.id,
-      //     errorDescription: 'Missing sender assigned phone number',
-      //   });
-      // } else {
-      //   // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
-      // }
+      if (isString(error.message) && error.message.includes('Unauthorized')) {
+        this.triggerPhoneAsError.emit({
+          phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+          errorDescription: 'Unauthorized',
+        });
+      }
 
       return false;
     }
@@ -480,15 +490,13 @@ export class GroupConversationBoxComponent
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
     } catch (error: any) {
-      this._NotificationService.error(error);
+      this._NotificationService.error(error.message);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-      if (isString(error) && error == 'Missing sender assigned phone number') {
+      if (isString(error.message) && error.message.includes('Unauthorized')) {
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
-          errorDescription: 'Missing sender assigned phone number',
+          errorDescription: 'Unauthorized',
         });
-      } else {
-        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     }
   };
