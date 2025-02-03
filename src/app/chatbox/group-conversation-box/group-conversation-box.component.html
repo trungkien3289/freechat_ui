@@ -36,8 +36,6 @@
           <div class="flex-grow-1">
             <div class="d-flex flex-row align-items-center">
               <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber">
-              <!-- <input class="phone-input me-2" [ngModel]="inputPhoneNumber" (ngModel)="onInputPhoneChange($event)"
-                prefix="(+1)" [specialCharacters]="[' ', '(', ')', '-', '.']" mask="(000) 000-0000"> -->
               <button class="btn-add-phone primary-bg-color me-1 border-0" nz-button nzType="primary"
                 (click)="addPhoneNumer()"><i class="fa fa-plus me-1" aria-hidden="true"></i>Add</button>
               <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"

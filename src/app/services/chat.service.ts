@@ -58,7 +58,7 @@ export class ChatService {
         )
       );
 
-      this.updateLastSendMessageTime(fromPhoneNumber);
+      // this.updateLastSendMessageTime(fromPhoneNumber);
 
       return res;
     } catch (ex: any) {
@@ -96,7 +96,7 @@ export class ChatService {
         )
       );
 
-      this.updateLastSendMessageTime(fromPhoneNumber);
+      // this.updateLastSendMessageTime(fromPhoneNumber);
 
       return res;
     } catch (ex: any) {
@@ -125,7 +125,7 @@ export class ChatService {
         )
       );
 
-      this.updateLastSendMessageTime(fromPhoneNumber);
+      // this.updateLastSendMessageTime(fromPhoneNumber);
 
       return res;
     } catch (ex: any) {
@@ -335,17 +335,20 @@ export class ChatService {
       return true;
     }
     const now = new Date().getTime();
-    return now - this.lastSendMessageTime[fromPhoneNumber] > 60 * 1000;
+    return now - this.lastSendMessageTime[fromPhoneNumber] > 60 * 60 * 1000;
   };
 
-  getWaitToSendSeconds = (fromPhoneNumber: string) => {
+  getWaitToSendMins = (fromPhoneNumber: string) => {
     if (this.lastSendMessageTime[fromPhoneNumber] == null) {
       this.lastSendMessageTime[fromPhoneNumber] =
-        new Date().getTime() - 60 * 1000 - 1;
+        new Date().getTime() - 60 * 60 * 1000 - 1;
     }
     const now = new Date().getTime();
     return (
-      60 - Math.round((now - this.lastSendMessageTime[fromPhoneNumber]) / 1000)
+      60 -
+      Math.round(
+        (now - this.lastSendMessageTime[fromPhoneNumber]) / (1000 * 60)
+      )
     );
   };
 }

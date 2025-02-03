@@ -23,6 +23,7 @@ import { LocalStorageService } from '../../services/local-storage.service';
 import { v4 as uuidv4 } from 'uuid';
 import {
   MAXIMIZE_CONTACT_NUMBER,
+  MAXIMIZE_CONTACT_NUMBER_ONE_TIME,
   NEW_GROUP_CONVERSATION_ID,
 } from '../../utilities/chatbox.const';
 import { Utils } from '../../utilities/utils';
@@ -188,6 +189,16 @@ export class GroupConversationBoxComponent
       return;
     }
 
+    if (
+      this.listOfTagOptions.length + listPhones.length >
+      MAXIMIZE_CONTACT_NUMBER_ONE_TIME
+    ) {
+      this._NotificationService.warning(
+        `You can only send up to ${MAXIMIZE_CONTACT_NUMBER_ONE_TIME} contacts one time`
+      );
+      return;
+    }
+
     let totalContacts =
       this.listOfTagOptions.length +
       this._SelectedPhoneService.getNumberContact() +
@@ -195,7 +206,7 @@ export class GroupConversationBoxComponent
 
     if (totalContacts > MAXIMIZE_CONTACT_NUMBER) {
       this._NotificationService.warning(
-        `You can only add up to ${MAXIMIZE_CONTACT_NUMBER} contacts`
+        `You can only send up to ${MAXIMIZE_CONTACT_NUMBER} contacts`
       );
 
       return;
@@ -281,18 +292,18 @@ export class GroupConversationBoxComponent
   debouncedSubmit = debounce(async () => {
     if (this.isRecording) return;
 
-    // if (
-    //   !this._ChatService.canSendMessage(
-    //     this.contactGroup.currentPhoneNumber.phoneNumber
-    //   )
-    // ) {
-    //   this._NotificationService.warning(
-    //     `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
-    //       this.contactGroup.currentPhoneNumber.phoneNumber
-    //     )} second(s)`
-    //   );
-    //   return;
-    // }
+    if (
+      !this._ChatService.canSendMessage(
+        this.contactGroup.currentPhoneNumber.phoneNumber
+      )
+    ) {
+      this._NotificationService.warning(
+        `Cannot send messages in next ${this._ChatService.getWaitToSendMins(
+          this.contactGroup.currentPhoneNumber.phoneNumber
+        )} min(s)`
+      );
+      return;
+    }
 
     this.isLoading = true;
     // If have images upload
@@ -320,6 +331,14 @@ export class GroupConversationBoxComponent
           this.myForm.value.textInput
         );
         if (isSuccess) {
+          if (
+            this.listOfTagOptions.length == MAXIMIZE_CONTACT_NUMBER_ONE_TIME
+          ) {
+            this._ChatService.updateLastSendMessageTime(
+              this.contactGroup.currentPhoneNumber.phoneNumber
+            );
+          }
+
           this.sendMessageGroupSuccess.emit();
           this.clearMessagesBox();
         }
