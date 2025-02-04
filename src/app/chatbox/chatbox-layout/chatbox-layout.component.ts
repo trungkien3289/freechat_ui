@@ -15,6 +15,7 @@ import { ThemeService } from '../../services/theme.service';
 })
 export class ChatboxLayoutComponent {
   username: string = '';
+  expiredDate: Date;
   faSignOutAlt = faSignOutAlt;
   faClipboardQuestion = faClipboardQuestion;
   faChartLine = faChartLine;
@@ -41,6 +42,9 @@ export class ChatboxLayoutComponent {
     private _ThemeService: ThemeService
   ) {
     this.username = this._UserService.getUsername() || '';
+    this.expiredDate = new Date(
+      this._UserService.getExpiredDate() || new Date().getTime()
+    );
     this.toogleConfig.value =
       this._ThemeService.getActiveTheme() === 'pink-theme';
   }

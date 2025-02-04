@@ -29,7 +29,11 @@
         <button class="text-white fs-6 p-0" nz-button nzType="link" (click)="openPolicy()"><i
             class="fa fa-file-text-o me-1" aria-hidden="true"></i>Account Policies</button>
         <span class="mx-3">|</span>
-        <span class="logged-in-user me-2 fs-6">Welcome, <strong>{{ username }}</strong></span>
+        <div class="d-flex flex-column">
+          <span class="logged-in-user me-2 fs-5">Welcome, <strong>{{ username }}</strong></span>
+          <span style="font-size: 10px;" class="fst-italic">Expired Date: {{expiredDate | dateStringFormat:'dd/MM/yyyy
+            HH:mm'}}</span>
+        </div>
         <fa-icon [icon]="faSignOutAlt" role="button" (click)="logout()" />
       </div>
     </div>
@@ -43,7 +47,7 @@
   (nzOnClose)="closePolicy()">
   <ng-container *nzDrawerContent>
     <p><i class="fa fa-check-square-o" aria-hidden="true"></i> You can replace the phone up to 40 times</p>
-    <p><i class="fa fa-check-square-o" aria-hidden="true"></i> The account will expire in 2 days</p>
+    <p><i class="fa fa-check-square-o" aria-hidden="true"></i> The account will expire in 3 days</p>
     <p><i class="fa fa-check-square-o" aria-hidden="true"></i> Allows sending messages to a group of people</p>
     <p><i class="fa fa-check-square-o" aria-hidden="true"></i> Provides the ability to send unlimited messages</p>
     <p><i class="fa fa-check-square-o" aria-hidden="true"></i> Each phone can message to 30 different numbers</p>
