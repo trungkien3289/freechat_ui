@@ -331,7 +331,8 @@ export class ChatService {
 
   canSendMessage = (fromPhoneNumber: string) => {
     if (this.lastSendMessageTime[fromPhoneNumber] == null) {
-      this.lastSendMessageTime[fromPhoneNumber] = new Date().getTime();
+      this.lastSendMessageTime[fromPhoneNumber] =
+        new Date().getTime() - 60 * 60 * 1000 - 1;
       return true;
     }
     const now = new Date().getTime();
