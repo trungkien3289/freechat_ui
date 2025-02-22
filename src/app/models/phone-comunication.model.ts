@@ -15,6 +15,11 @@ export enum PhoneComunicationType {
   MESSAGE = 'message',
 }
 
+export enum MessageDirection {
+  IN = 1,
+  OUT = 2,
+}
+
 export type PhoneShortSummary = {
   TN: string;
   name: string;

@@ -21,13 +21,25 @@ import {
 } from '../../models/contact-message.model';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { v4 as uuidv4 } from 'uuid';
-import { NEW_GROUP_CONVERSATION_ID } from '../../utilities/chatbox.const';
+import {
+  MAXIMIZE_CONTACT_NUMBER,
+  MAXIMIZE_CONTACT_NUMBER_ONE_TIME,
+  NEW_GROUP_CONVERSATION_ID,
+} from '../../utilities/chatbox.const';
 import { Utils } from '../../utilities/utils';
 import { debounce, get, isString } from 'lodash';
 import { NzUploadFile, NzUploadXHRArgs } from 'ng-zorro-antd/upload';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { FileService } from '../../services/file.service';
 import { AudioRecordingService } from '../../services/audio-recording.service';
+import {
+  MessageDirection,
+  PhoneComunicationType,
+  PhoneShortSummary,
+} from '../../models/phone-comunication.model';
+import { ChatBoxUtils } from '../../utilities/chatbox-utils';
+import { SelectedPhoneService } from '../../services/selected-phone.service';
+import { ERROR_CODE_ENUM } from '../../utilities/phone-error.enum';
 
 const INTERVAL_RELOAD_CHATBOX = 10000;
 const MAX_RECORDING_SECONDS = 60;
@@ -66,15 +78,23 @@ export class GroupConversationBoxComponent
   inputPhoneNumber: string = '';
   isValidPhoneNumber: boolean = true;
 
+  listOfTagOptions: string[] = [];
+
   @ViewChild('uploadComponent', { static: false }) uploadComponent!: any;
   fileInput: HTMLInputElement | null = null;
 
   @Input() set contact(contactGroup: ContactMessageGroup | undefined) {
     if (!!contactGroup) {
-      this.resetChatBox();
+      if (
+        this.contactGroup == null ||
+        this.contactGroup.id != contactGroup.id
+      ) {
+        this.resetChatBox();
+      }
       this.contactGroup = contactGroup;
-      this.isNewGroupConversation =
-        contactGroup.id == NEW_GROUP_CONVERSATION_ID;
+      this.isNewGroupConversation = contactGroup.id.includes(
+        NEW_GROUP_CONVERSATION_ID
+      );
       this.messageViewItems = contactGroup.messages.map((item) => {
         return {
           ...item,
@@ -82,6 +102,10 @@ export class GroupConversationBoxComponent
           formattedTime: this.formatTime(item.timeCreated),
         } as ContactMessageViewItem;
       });
+
+      if (contactGroup.to && contactGroup.to.length > 0) {
+        this.listOfTagOptions = contactGroup.to.map((item) => item.TN);
+      }
     }
   }
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
@@ -90,6 +114,7 @@ export class GroupConversationBoxComponent
   @Output() triggerPhoneAsError = new EventEmitter<{
     phoneNumberId: string;
     errorDescription: string;
+    errorCode: ERROR_CODE_ENUM;
   }>();
 
   constructor(
@@ -99,7 +124,8 @@ export class GroupConversationBoxComponent
     private _LocalStorageService: LocalStorageService,
     private _FileService: FileService,
     private _AudioRecordingService: AudioRecordingService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private _SelectedPhoneService: SelectedPhoneService
   ) {
     this.myForm = this._FormBuilder.group({
       textInput: ['', Validators.required],
@@ -135,32 +161,83 @@ export class GroupConversationBoxComponent
     this.resetChatBox();
   }
 
-  onInputFocusOut = () => {
-    this.isValidPhoneNumber = Utils.validatePhoneNumber(
-      this.inputPhoneNumber.toString()
-    );
+  addPhoneNumer = () => {
+    let listPhones = this.inputPhoneNumber.split(',') || [];
 
-    if (this.isValidPhoneNumber) {
+    listPhones = listPhones.map((phoneNumber) => {
+      return Utils.formatPhoneNumberTN(
+        phoneNumber.replace(/\D/g, '').replace(/^\+/, '')
+      );
+    });
+
+    const isError = listPhones.some((inputPhoneNumber) => {
+      return (
+        !Utils.isValidString(inputPhoneNumber) || inputPhoneNumber.length != 11
+      );
+    });
+
+    if (isError) {
+      this._NotificationService.warning(`Input phone number is invalid`);
+      return;
+    }
+
+    let hasPhoneExisted = listPhones.some((inputPhoneNumber) => {
+      return this.listOfTagOptions.includes(inputPhoneNumber);
+    });
+
+    if (hasPhoneExisted) {
+      this._NotificationService.warning(`Has phone number is already added`);
+      return;
+    }
+
+    if (
+      this.listOfTagOptions.length + listPhones.length >
+      MAXIMIZE_CONTACT_NUMBER_ONE_TIME
+    ) {
+      this._NotificationService.warning(
+        `You can only send up to ${MAXIMIZE_CONTACT_NUMBER_ONE_TIME} contacts one time`
+      );
+      return;
+    }
+
+    let totalContacts =
+      this.listOfTagOptions.length +
+      this._SelectedPhoneService.getNumberContact() +
+      listPhones.length;
+
+    if (totalContacts > MAXIMIZE_CONTACT_NUMBER) {
+      this._NotificationService.warning(
+        `You can only send up to ${MAXIMIZE_CONTACT_NUMBER} contacts`
+      );
+
+      return;
+    }
+
+    this.listOfTagOptions = [...this.listOfTagOptions, ...listPhones];
+    this.inputPhoneNumber = '';
+
+    this.updateContactGroup();
+  };
+
+  removePhoneNumber = (phoneNumber: string) => {
+    if (phoneNumber) {
+      // remove from list of tag options
+      this.listOfTagOptions = this.listOfTagOptions.filter(
+        (item) => item !== phoneNumber
+      );
       this.updateContactGroup();
     }
   };
 
   updateContactGroup = () => {
-    const numericString = this.inputPhoneNumber.toString().replace(/\D/g, '');
-    const toPhone = {
-      TN: Utils.formatPhoneNumberTN(numericString),
-      name: Utils.formatPhoneNumberName(numericString),
-    };
-
-    this.contactGroup.to = [toPhone];
-
-    // save to local storage
-    // if (this.isNewGroupConversation) {
-    //   this._LocalStorageService.setItem(
-    //     `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
-    //     this.contactGroup
-    //   );
-    // }
+    this.contactGroup.to = this.listOfTagOptions.map((phoneNumber) => {
+      const numericString = phoneNumber.toString().replace(/\D/g, '');
+      const toPhone = {
+        TN: Utils.formatPhoneNumberTN(numericString),
+        name: Utils.formatPhoneNumberName(numericString),
+      } as PhoneShortSummary;
+      return toPhone;
+    });
   };
 
   formatTime = (dateTime: string) => {
@@ -176,12 +253,27 @@ export class GroupConversationBoxComponent
     this.isValidPhoneNumber = true;
     this.inputPhoneNumber = '';
     this.fileList = [];
+    this.listOfTagOptions = [];
     this.abortRecording();
   };
 
+  clearMessagesBox = () => {
+    this.inputPhoneNumber = '';
+    this.fileList = [];
+    this.abortRecording();
+    this.messageViewItems = [];
+    this.contactGroup.messages = [];
+    this._LocalStorageService.setItem(
+      `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
+      this.contactGroup
+    );
+  };
+
   sendMessageBtnClick = () => {
-    if (this.inputPhoneNumber != '') {
+    if (this.listOfTagOptions.length > 0) {
       this.debouncedSubmit();
+    } else {
+      this._NotificationService.warning('Please add phone number');
     }
   };
 
@@ -209,9 +301,9 @@ export class GroupConversationBoxComponent
       )
     ) {
       this._NotificationService.warning(
-        `Cannot send messages in next ${this._ChatService.getWaitToSendSeconds(
-          'NewGroup'
-        )} second(s)`
+        `Cannot send messages in next ${this._ChatService.getWaitToSendMins(
+          this.contactGroup.currentPhoneNumber.phoneNumber
+        )} min(s)`
       );
       return;
     }
@@ -220,7 +312,7 @@ export class GroupConversationBoxComponent
     // If have images upload
     if (this.fileList.length > 0) {
       let uploadFilesRequests = this.fileList.map((file) => {
-        return this.sendImageMessage(file.response);
+        return this.sendImageMessage(file.thumbUrl || '');
       });
 
       this.fileList = [];
@@ -229,10 +321,29 @@ export class GroupConversationBoxComponent
     }
 
     if (this.myForm.valid) {
-      await this.sendTextMessage(this.myForm.value.textInput);
-    }
+      if (ChatBoxUtils.isContainLink(this.myForm.value.textInput)) {
+        this._NotificationService.warning(
+          `Unable to send messages containing links. Please remove the link or change to format www.abc.com`
+        );
+        return;
+      } else {
+        const isSuccess = await this.sendTextMessage(
+          this.myForm.value.textInput
+        );
+        if (isSuccess) {
+          if (
+            this.listOfTagOptions.length == MAXIMIZE_CONTACT_NUMBER_ONE_TIME
+          ) {
+            this._ChatService.updateLastSendMessageTime(
+              this.contactGroup.currentPhoneNumber.phoneNumber
+            );
+          }
 
-    this.sendMessageGroupSuccess.emit();
+          this.sendMessageGroupSuccess.emit();
+          this.clearMessagesBox();
+        }
+      }
+    }
 
     this.isLoading = false;
     this.scrollToBottom();
@@ -255,30 +366,35 @@ export class GroupConversationBoxComponent
   //#region Send text | image | audio message
   sendImageMessage = async (imageUrl: string) => {
     let newMessage: ContactMessage = this.addMessageToGroup(
-      '',
+      imageUrl,
       ConversationItemType.IMAGE,
       { image: imageUrl }
     );
 
     try {
-      await this._ChatService.sendImage(
-        this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.from.TN,
-        this.contactGroup.to,
-        imageUrl
+      await Promise.allSettled(
+        this.listOfTagOptions.map((toPhoneNumber) => {
+          let numericString = toPhoneNumber.replace(/\D/g, '');
+          numericString = Utils.formatPhoneNumberTN(numericString);
+          this._ChatService.sendImage(
+            this.contactGroup.currentPhoneNumber.id,
+            this.contactGroup.from.TN,
+            this.contactGroup.to,
+            imageUrl
+          );
+        })
       );
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
     } catch (error: any) {
-      this._NotificationService.error(error);
+      this._NotificationService.error(error.message);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-      if (isString(error) && error == 'Missing sender assigned phone number') {
+      if (isString(error.message) && error.message.includes('Unauthorized')) {
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
-          errorDescription: 'Missing sender assigned phone number',
+          errorDescription: 'Unauthorized',
+          errorCode: ERROR_CODE_ENUM.BAD_CRIDENTIAL,
         });
-      } else {
-        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     }
 
@@ -294,25 +410,69 @@ export class GroupConversationBoxComponent
     this.myForm.reset();
 
     try {
-      await this._ChatService.sendMessage(
-        this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.from.TN,
-        this.contactGroup.to,
-        newMessage.text
+      const response = await Promise.allSettled(
+        this.listOfTagOptions.map((toPhoneNumber) => {
+          let numericString = toPhoneNumber.replace(/\D/g, '');
+          numericString = Utils.formatPhoneNumberTN(numericString);
+          return this._ChatService.sendMessage(
+            this.contactGroup.currentPhoneNumber.id,
+            this.contactGroup.from.TN,
+            this.contactGroup.to,
+            newMessage.text
+          );
+        })
       );
 
-      this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+      if (response.some((item) => item.status === 'rejected')) {
+        this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
+        const errorResponse = response
+          .filter((item) => item.status === 'rejected')
+          .map((item) => {
+            return get(item, 'reason.message', '');
+          })
+          .join(',');
+
+        if (isString(errorResponse) && errorResponse.includes('Unauthorized')) {
+          this.triggerPhoneAsError.emit({
+            phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+            errorDescription: 'Unauthorized',
+            errorCode: ERROR_CODE_ENUM.BAD_CRIDENTIAL,
+          });
+
+          this._NotificationService.error(errorResponse);
+        } else if (
+          isString(errorResponse) &&
+          errorResponse.includes('Forbidden')
+        ) {
+          this.triggerPhoneAsError.emit({
+            phoneNumberId: this.contactGroup.currentPhoneNumber.id,
+            errorDescription: 'Forbidden',
+            errorCode: ERROR_CODE_ENUM.LIMIT_OTHER,
+          });
+
+          this._NotificationService.error(
+            'Invalid phone number detected. Replacing this number will not be counted as a phone number replacement'
+          );
+        } else {
+          this._NotificationService.error(errorResponse);
+        }
+        return false;
+      } else {
+        this.updateMessageStatus(newMessage.id, SendStatus.SENT);
+        return true;
+      }
     } catch (error: any) {
-      this._NotificationService.error(error);
+      this._NotificationService.error(error.message);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-      if (isString(error) && error == 'Missing sender assigned phone number') {
+      if (isString(error.message) && error.message.includes('Unauthorized')) {
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
-          errorDescription: 'Missing sender assigned phone number',
+          errorDescription: 'Unauthorized',
+          errorCode: ERROR_CODE_ENUM.BAD_CRIDENTIAL,
         });
-      } else {
-        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
+
+      return false;
     }
   };
 
@@ -339,22 +499,21 @@ export class GroupConversationBoxComponent
 
       await this._ChatService.sendAudio(
         this.contactGroup.currentPhoneNumber.id,
-        this.contactGroup.from.TN,
+        this.contactGroup.currentPhoneNumber.phoneNumber,
         this.contactGroup.to,
         fileUrl
       );
 
       this.updateMessageStatus(newMessage.id, SendStatus.SENT);
     } catch (error: any) {
-      this._NotificationService.error(error);
+      this._NotificationService.error(error.message);
       this.updateMessageStatus(newMessage.id, SendStatus.FAILED);
-      if (isString(error) && error == 'Missing sender assigned phone number') {
+      if (isString(error.message) && error.message.includes('Unauthorized')) {
         this.triggerPhoneAsError.emit({
           phoneNumberId: this.contactGroup.currentPhoneNumber.id,
-          errorDescription: 'Missing sender assigned phone number',
+          errorDescription: 'Unauthorized',
+          errorCode: ERROR_CODE_ENUM.BAD_CRIDENTIAL,
         });
-      } else {
-        // this.markPhoneAsDown.emit(this.contactGroup.currentPhoneNumber.id);
       }
     }
   };
@@ -433,6 +592,7 @@ export class GroupConversationBoxComponent
       this.contactGroup.messages = [];
       this.messageViewItems = [];
       this.inputPhoneNumber = '';
+      this.listOfTagOptions = [];
       this._LocalStorageService.setItem(
         `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
         this.contactGroup
@@ -464,24 +624,27 @@ export class GroupConversationBoxComponent
   }
 
   customRequestUploadImage = (item: NzUploadXHRArgs): any => {
-    this._FileService
-      .upload(
-        item.file as any,
-        item.file.filename as string,
-        ConversationItemType.IMAGE
-      )
-      .then(
-        (fileUrl) => {
-          if (fileUrl) {
-            item.onError!(null, item.file);
-          }
+    Utils.getBase64(item.file as any).then((url) => {
+      item.onSuccess!(url, item.file, null);
+    });
+    // this._FileService
+    //   .upload(
+    //     item.file as any,
+    //     item.file.filename as string,
+    //     ConversationItemType.IMAGE
+    //   )
+    //   .then(
+    //     (fileUrl) => {
+    //       if (fileUrl) {
+    //         item.onError!(null, item.file);
+    //       }
 
-          item.onSuccess!(fileUrl, item.file, null);
-        },
-        (error) => {
-          item.onError!(null, item.file);
-        }
-      );
+    //       item.onSuccess!(fileUrl, item.file, null);
+    //     },
+    //     (error) => {
+    //       item.onError!(null, item.file);
+    //     }
+    //   );
   };
 
   //#endregion

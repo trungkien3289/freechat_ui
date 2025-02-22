@@ -8,4 +8,6 @@ export type PhoneNumber = {
   failCount: number;
   assignDateTimestamp: number;
   canReplacePhone: boolean;
+  isEmpty: boolean;
+  estimateExpireDate: Date;
 };

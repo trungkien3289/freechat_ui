@@ -4,20 +4,26 @@
       <div class="h-100">
         <app-phone-number-list [isLoading]="isLoadingPhoneNumbers" [userId]="userId"
           [selectedPhoneNumberId]="selectedPhoneNumberItem?.id" [phoneNumbers]="phoneNumbers"
-          (onSelectItem)="selectPhoneNumber($event)"
-          (replacePhoneNumberSuccess)="replacePhoneNumberSuccess($event)"></app-phone-number-list>
+          (onSelectItem)="selectPhoneNumber($event)" (replacePhoneNumberSuccess)="replacePhoneNumberSuccess($event)"
+          (pickPhoneNumberSuccess)="pickPhoneNumberSuccess($event)"
+          (pickAllPhoneSuccess)="pickAllPhonesSuccessHandler()"></app-phone-number-list>
       </div>
     </div>
 
     <div class="bg-white border-end h-100 contact-panel">
-      <div class="h-100" *ngIf="selectedContact != null">
+      @if(selectedContact != null){
+      <div class="h-100">
         <app-contact-list [isLoading]="isLoadingContactList" [selectedContactId]="selectedContact.id"
           [phoneNumber]="selectedPhoneNumberItem" [contactMessageGroups]="contactMessageGroups"
           (onSelectItem)="selectContactItem($event)"></app-contact-list>
       </div>
+      }@else {
+      <nz-list-empty />
+      }
+
     </div>
 
-    <div class="flex-grow-1 bg-light d-flex flex-column h-100 chatbox-panel" id="chatbox-column">
+    <div class="flex-grow-1 d-flex flex-column h-100 chatbox-panel" id="chatbox-column">
       @if (selectedContact?.conversationType == 'Group') {
       <app-group-conversation-box style="height: 100%" [contact]="selectedContact"
         (sendMessageGroupSuccess)="sendMessageConversationSuccess()" (markPhoneAsDown)="markPhoneAsDownHandler($event)"

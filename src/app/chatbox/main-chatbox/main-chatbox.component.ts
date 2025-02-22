@@ -386,6 +386,31 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     }
   };
 
+  pickPhoneNumberSuccess = (data: {
+    oldPhoneId: string;
+    newPhoneNumber: PhoneNumber;
+  }) => {
+    const found = this.phoneNumbers.find((p) => p.id === data.oldPhoneId);
+    if (found) {
+      found.phoneNumber = data.newPhoneNumber.phoneNumber;
+      found.name = data.newPhoneNumber.name;
+      found.id = data.newPhoneNumber.id;
+      found.expired = data.newPhoneNumber.expired;
+      found.isError = data.newPhoneNumber.isError;
+      found.failCount = 0;
+      found.newMessageCount = 0;
+      found.isEmpty = false;
+      found.canReplacePhone = true;
+
+      //TODO need handle more action like reload list contact of new phone number
+      this.selectPhoneNumber(found);
+    }
+  };
+
+  pickAllPhonesSuccessHandler = () => {
+    this.loadData();
+  };
+
   markPhoneAsDownHandler = (phoneNumberId: string) => {
     let found = this.phoneNumbers.find((p) => p.id === phoneNumberId);
     if (found) {

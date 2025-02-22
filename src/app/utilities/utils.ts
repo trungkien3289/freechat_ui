@@ -36,6 +36,11 @@ export class Utils {
     return '1' + tn;
   };
 
+  static isValidString = (input: string) => {
+    const validPattern = /^[0-9+,]*$/; // Regular expression to match only numbers, '+' and ','
+    return validPattern.test(input);
+  };
+
   static formatPhoneNumberName = (phoneNumber: string) => {
     if (phoneNumber.length > 1) {
       return `(${phoneNumber.substring(0, 3)}) ${phoneNumber.substring(
@@ -105,5 +110,24 @@ export class Utils {
   static validatePhoneNumber = (phoneNumber: string) => {
     const phoneRegex = /^\(?([0-9]{3})\)?[-.●]?([0-9]{3})[-.●]?([0-9]{4})$/;
     return phoneRegex.test(phoneNumber);
+  };
+
+  static newGuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+      /[xy]/g,
+      function (c) {
+        var r = (Math.random() * 16) | 0,
+          v = c == 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
+  }
+
+  static getTimeZone = () => {
+    const offset = new Date().getTimezoneOffset();
+    const timezoneOffsetHours = -(offset / 60);
+    return timezoneOffsetHours > 0
+      ? `+${timezoneOffsetHours}`
+      : timezoneOffsetHours;
   };
 }

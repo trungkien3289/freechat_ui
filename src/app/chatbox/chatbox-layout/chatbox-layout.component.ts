@@ -15,6 +15,7 @@ import { ThemeService } from '../../services/theme.service';
 })
 export class ChatboxLayoutComponent {
   username: string = '';
+  expiredDate: Date;
   faSignOutAlt = faSignOutAlt;
   faClipboardQuestion = faClipboardQuestion;
   faChartLine = faChartLine;
@@ -33,12 +34,17 @@ export class ChatboxLayoutComponent {
     },
     value: false,
   };
+
+  visiblePolicyDialog = false;
   constructor(
     private _Router: Router,
     private _UserService: UserService,
     private _ThemeService: ThemeService
   ) {
     this.username = this._UserService.getUsername() || '';
+    this.expiredDate = new Date(
+      this._UserService.getExpiredDate() || new Date().getTime()
+    );
     this.toogleConfig.value =
       this._ThemeService.getActiveTheme() === 'pink-theme';
   }
@@ -48,7 +54,11 @@ export class ChatboxLayoutComponent {
     this._Router.navigate(['/auth/login']);
   };
 
-  // changeTheme = () => {
-  //   this._ThemeService.toggleTheme();
-  // };
+  openPolicy(): void {
+    this.visiblePolicyDialog = true;
+  }
+
+  closePolicy(): void {
+    this.visiblePolicyDialog = false;
+  }
 }

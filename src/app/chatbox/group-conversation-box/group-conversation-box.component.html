@@ -1,40 +1,51 @@
 @if(!!contactGroup){
 <div class="conversation d-flex flex-column">
-  <div class="heading d-flex flex-column px-2">
-    <div class="d-flex flex-row align-items-center py-2 align-items-center">
-      <i class="fa fa-info-circle me-2 primary-color fs-5"></i>
-      <span class="fw-bold group-label">Group: </span>
-      <span class="fs-6 flex-grow-1">{{ contactGroup.name }}</span>
+  <div class="heading d-flex flex-column p-2 border-bottom">
+    <div class="d-flex flex-row align-items-center justify-content-between">
+      <div class="d-flex flex-row align-items-center">
+        <div style="min-width: 80px;">
+          <i class="fa fa-phone me-2 primary-color fs-5"></i>
+          <span class="fw-bold group-label">From: </span>
+        </div>
 
-    </div>
-    <div class="d-flex flex-row py-2 align-items-center">
-      <i class="fa fa-user-circle-o me-2 primary-color fs-5"></i>
-      <span class="fw-bold group-label">From: </span>
-      <span class="fs-6 flex-grow-1">{{
-        contactGroup.currentPhoneNumber.name
-        }}</span>
+        <span class="fs-6 flex-grow-1 ms-2">{{
+          contactGroup.currentPhoneNumber.name
+          }}</span>
+      </div>
+
     </div>
 
 
     <div class="d-flex flex-row py-2 align-items-center flex-gap-1">
-      <i class="fa fa-users me-1 primary-color fs-5"></i>
-      <span class="fw-bold group-label">To: </span>
-      <div class="d-flex flex-row align-items-center flex-grow-1 flex-gap-2">
+      <div style="min-width: 80px;">
+        <i class="fa fa-phone me-1 red-color fs-5  align-self-start"></i>
+        <span class="fw-bold group-label align-self-start">To: <i class="fa fa-info-circle" aria-hidden="true"
+            nz-tooltip
+            nzTooltipTitle="You can input multiple phone numbers in the textbox. Separate each phone number with a comma"></i></span>
+      </div>
+
+      <div class="d-flex flex-column align-items-start flex-grow-1 flex-gap-2">
         @if(isNewGroupConversation){
-        <div class="flex-grow-1 d-flex flex-row align-items-center flex-gap-2">
-          <div class="d-flex flex-row align-items-center">
-            <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber"
-              [specialCharacters]="[' ', '(', ')', '-', '.']" mask="(000) 000-0000" (focusout)="onInputFocusOut()">
+        <div class="w-100 multiple-select-phone-number border-round d-flex flex-row flex-wrap align-items-center">
+          <ng-container *ngFor="let phone of listOfTagOptions;">
+            <nz-tag class="phone-tag" [nzMode]="'closeable'" (nzOnClose)="removePhoneNumber(phone)">
+              {{ phone | phoneNumberFormatNoCode }}
+            </nz-tag>
+          </ng-container>
+
+          <div class="flex-grow-1">
+            <div class="d-flex flex-row align-items-center">
+              <input class="phone-input me-2" [(ngModel)]="inputPhoneNumber">
+              <button class="btn-add-phone primary-bg-color me-1 border-0" nz-button nzType="primary"
+                (click)="addPhoneNumer()"><i class="fa fa-plus me-1" aria-hidden="true"></i>Add</button>
+              <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"
+                (click)="resetNewGroupConversation()">
+                <i class="fa fa-repeat me-1" aria-hidden="true"></i>
+                Clear
+              </button>
+            </div>
           </div>
-          <span *ngIf="!isValidPhoneNumber" class="text-danger">Phone number invalid</span>
         </div>
-
-        <button class="btn-reset-phone" *ngIf="isNewGroupConversation" nz-button nzType="default"
-          (click)="resetNewGroupConversation()">
-          <i class="fa fa-repeat me-1" aria-hidden="true"></i>
-          Reset
-        </button>
-
         }@else {
         <span class="d-flex flex-row py-2 align-items-center fs-6">{{
           contactGroup.name
@@ -61,56 +72,55 @@
   </div>
 
   <form class="reply d-flex flex-column align-items-center" [formGroup]="myForm" (ngSubmit)="sendMessageBtnClick()">
-    <div class="d-flex flex-row w-100 overflow-hidden" [ngClass]="{
-        'hide-element': fileList.length == 0
-      }">
-      <nz-upload #uploadComponent nzAccept=".jpg,.jpeg,.png,.gif" nzListType="picture-card" [(nzFileList)]="fileList"
-        [nzShowButton]="fileList.length > 0 && fileList.length < 8" [nzPreview]="handlePreview"
-        [nzCustomRequest]="customRequestUploadImage">
-        <div>
-          <span nz-icon nzType="plus"></span>
-          <div style="margin-top: 8px">Upload</div>
-        </div>
-      </nz-upload>
-    </div>
     <div class="reply-main d-flex flex-row w-100 align-items-center">
       @if(!isRecording){
-      <div class="d-flex flex-row flex-grow-1 align-items-center border-round me-1 bg-white p-1 position-relative">
-        <emoji-mart [style]="{ position: 'absolute', bottom: '50px', left: '0px' }" emoji="picker"
-          *ngIf="isEmojiPickerVisible" class="emoji-mart" (emojiSelect)="addEmoji($event)"
-          title="Choose your emoji"></emoji-mart>
-        <div class="emoji-picker-container">
-          <button nz-button class="me-1" nzType="text" nzShape="circle"
-            (click)="isEmojiPickerVisible = !isEmojiPickerVisible" [disabled]="!isValidPhoneNumber">
-            <i class="fa fa-smile-o fs-4 emoji-icon" aria-hidden="true"></i>
+      <button nz-button class="btn-attach-file gey-color me-1 p-0" nzType="link" (click)="triggerUploadDialog()">
+        <i class="icon-image fs-2 primary-color"></i>
+      </button>
+      <div class="d-flex flex-column w-100 " [ngClass]="{
+          'bg-light-smoke': fileList.length != 0,
+          'border-round': fileList.length != 0
+        }">
+        <div class="d-flex flex-row w-100 overflow-hidden " [ngClass]="{
+            'hide-element': fileList.length == 0
+          }">
+          <nz-upload #uploadComponent nzAccept=".jpg,.jpeg,.png,.gif" nzListType="picture-card"
+            [(nzFileList)]="fileList" [nzShowButton]="fileList.length > 0 && fileList.length < 1"
+            [nzPreview]="handlePreview" [nzCustomRequest]="customRequestUploadImage"
+            class="p-2 m-0 upload-image-container">
+            <div>
+              <span nz-icon nzType="plus"></span>
+              <div style="margin-top: 8px">Upload</div>
+            </div>
+          </nz-upload>
+        </div>
+        <div
+          class="d-flex flex-row flex-grow-1 align-items-center border-round me-1 bg-light-smoke p-1 position-relative">
+          <emoji-mart [style]="{ position: 'absolute', bottom: '50px', left: '0px' }" emoji="picker"
+            *ngIf="isEmojiPickerVisible" class="emoji-mart" (emojiSelect)="addEmoji($event)"
+            title="Choose your emoji"></emoji-mart>
+
+
+          <textarea class="no-border flex-grow-1 text-muted bg-light-smoke" nz-input formControlName="textInput"
+            placeholder="Type a message" [nzAutosize]="{ maxRows: 6 }" (keydown)="onKeydown($event)"></textarea>
+
+          <div class="emoji-picker-container">
+            <button nz-button class="me-1" nzType="text" nzShape="circle"
+              (click)="isEmojiPickerVisible = !isEmojiPickerVisible" [disabled]="listOfTagOptions.length == 0">
+              <i class="fa fa-smile-o fs-4 emoji-icon" aria-hidden="true"></i>
+            </button>
+          </div>
+          <button nz-button class="me-1 btn-send" nzType="text" (click)="sendMessageBtnClick()"
+            [class.disabled]="listOfTagOptions.length ==0" [disabled]="listOfTagOptions.length ==0">
+            <i class="icon-arrow-up"></i>
           </button>
         </div>
-
-        <textarea class="no-border flex-grow-1 text-muted" nz-input formControlName="textInput"
-          placeholder="Type a message" [nzAutosize]="{ maxRows: 6 }" (keydown)="onKeydown($event)"></textarea>
-
-        <button nz-button class="me-1" nzType="text" nzShape="circle" (click)="sendMessageBtnClick()"
-          [disabled]="!isValidPhoneNumber">
-          <i class="fa fa-send text-primary" aria-hidden="true"></i>
-        </button>
       </div>
-      <button nz-button class="me-1" nzType="primary" nzShape="circle" (click)="triggerUploadDialog()"
-        [disabled]="!isValidPhoneNumber">
-        <i class="fa fa-picture-o" aria-hidden="true"></i>
-      </button>
-      <!-- <button
-        nz-button
-        nzType="primary"
-        nzShape="circle"
-        (click)="startRecording()"
-      >
-        <i class="fa fa-microphone" aria-hidden="true"></i>
-      </button> -->
       }@else {
       <div class="d-flex flex-row align-items-center w-100">
         <div class="d-flex flex-row align-items-center rounded-pill recording-panel flex-grow-1 me-1 px-1">
           <button nz-button class="me-1" nzType="text" nzShape="circle" (click)="abortRecording()"
-            [disabled]="!isValidPhoneNumber">
+            [disabled]="listOfTagOptions.length ==0">
             <i class="fa fa-times" aria-hidden="true"></i>
           </button>
           <nz-progress class="flex-grow-1 me-1" nzStrokeLinecap="round" [nzShowInfo]="false"
@@ -119,7 +129,7 @@
         </div>
 
         <button nz-button nzType="primary" [nzSize]="'default'" nzShape="round" (click)="sendAudioMessageClick()"
-          [disabled]="!isValidPhoneNumber">
+          [disabled]="listOfTagOptions.length ==0">
           <i class="fa fa-send" style="font-size: 12px" aria-hidden="true"></i>
         </button>
       </div>
@@ -135,24 +145,24 @@
 <ng-template #messageTemplate let-messageItem="messageItem">
   @switch (messageItem.itemType) { @case ('message') {
   <div class="d-flex py-2" [ngClass]="{
-    'flex-row': !messageItem.isOutgoing,
-    'flex-row-reverse': messageItem.isOutgoing,
-  }">
+      'flex-row': !messageItem.isOutgoing,
+      'flex-row-reverse': messageItem.isOutgoing,
+    }">
     <div [ngClass]="{
-        'message-main-receiver': !messageItem.isOutgoing,
-        'message-main-sender': messageItem.isOutgoing,
-      }">
-      <div [ngClass]="{
-          receiver: !messageItem.isOutgoing,
-          sender: messageItem.isOutgoing,
-          'message-sender-color': messageItem.isOutgoing
+          'message-main-receiver': !messageItem.isOutgoing,
+          'message-main-sender': messageItem.isOutgoing,
         }">
+      <div [ngClass]="{
+            receiver: !messageItem.isOutgoing,
+            sender: messageItem.isOutgoing,
+            'message-sender-color': messageItem.isOutgoing
+          }">
         <div class="message-text d-flex flex-row align-items-center justify-content-between">
-          <span class="mx-3 text-wrap">{{ messageItem.text }}</span>
+          <span class="mx-3 text-wrap">{{ messageItem.message }}</span>
           <ng-container *ngTemplateOutlet="
-              messageStatusTemplate;
-              context: { status: messageItem.sendStatus }
-            "></ng-container>
+                messageStatusTemplate;
+                context: { status: messageItem.sendStatus }
+              "></ng-container>
         </div>
         <span class="message-time pull-right">
           {{ messageItem.formattedTime }}
@@ -164,49 +174,50 @@
   <nz-divider nzPlain nzText="{{ messageItem.formattedTime }}"></nz-divider>
   } @case ('image') {
   <div class="d-flex w-100 py-2" [ngClass]="{
-    'flex-row': !messageItem.isOutgoing,
-    'flex-row-reverse': messageItem.isOutgoing,
-  }">
+      'flex-row': !messageItem.isOutgoing,
+      'flex-row-reverse': messageItem.isOutgoing,
+    }">
     <div class="d-flex flex-column" [ngClass]="{
-        'message-main-receiver': !messageItem.isOutgoing,
-        'message-main-sender': messageItem.isOutgoing,
-        receiver: !messageItem.isOutgoing,
-        sender: messageItem.isOutgoing
-      }">
+          'message-main-receiver': !messageItem.isOutgoing,
+          'message-main-sender': messageItem.isOutgoing,
+          receiver: !messageItem.isOutgoing,
+          sender: messageItem.isOutgoing,
+          'message-sender-color': messageItem.isOutgoing
+        }">
       <div class="d-flex flex-row">
-        <img nz-image width="200px" height="auto" nzSrc="{{ messageItem?.media?.image }}" alt="" class="me-1" [ngClass]="{
-          'align-self-start': !messageItem.isOutgoing,
-          'align-self-end': messageItem.isOutgoing,
-        }" />
+        <img nz-image height="auto" nzSrc="{{ messageItem?.message }}" alt="" class="image-message me-1" [ngClass]="{
+            'align-self-start': !messageItem.isOutgoing,
+            'align-self-end': messageItem.isOutgoing,
+          }" />
         <ng-container *ngTemplateOutlet="
-            messageStatusTemplate;
-            context: { status: messageItem.sendStatus }
-          "></ng-container>
+              messageStatusTemplate;
+              context: { status: messageItem.sendStatus }
+            "></ng-container>
       </div>
-      <span class="message-time pull-right">
+      <span class="message-time pull-right color-black">
         {{ messageItem.formattedTime }}
       </span>
     </div>
   </div>
   } @case ('audio') {
   <div class="d-flex py-2" [ngClass]="{
-    'flex-row': !messageItem.isOutgoing,
-    'flex-row-reverse': messageItem.isOutgoing,
-  }">
+      'flex-row': !messageItem.isOutgoing,
+      'flex-row-reverse': messageItem.isOutgoing,
+    }">
     <div class="d-flex flex-column" [ngClass]="{
-        'message-main-receiver': !messageItem.isOutgoing,
-        'message-main-sender': messageItem.isOutgoing,
-        receiver: !messageItem.isOutgoing,
-        sender: messageItem.isOutgoing
-      }">
+          'message-main-receiver': !messageItem.isOutgoing,
+          'message-main-sender': messageItem.isOutgoing,
+          receiver: !messageItem.isOutgoing,
+          sender: messageItem.isOutgoing
+        }">
       <div class="d-flex flex-row">
         <audio *ngIf="messageItem?.media?.audio" controls>
           <source [src]="messageItem.media.audio" type="audio/webm" />
         </audio>
         <ng-container *ngTemplateOutlet="
-            messageStatusTemplate;
-            context: { status: messageItem.sendStatus }
-          "></ng-container>
+              messageStatusTemplate;
+              context: { status: messageItem.sendStatus }
+            "></ng-container>
       </div>
       <span class="message-time pull-right">
         {{ messageItem.formattedTime }}

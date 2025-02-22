@@ -5,19 +5,17 @@
   padding: 0 !important;
   margin: 0 !important;
   height: 100%;
-  /*width: 100%;*/
-  border-left: 1px solid rgba(0, 0, 0, 0.08);
-  /*overflow-y: auto;*/
+  // max-height: calc(100vh - 130px);
+}
+
+.panel-header {
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .message {
-  // background: url("w.jpg") no-repeat fixed center;
-  background-size: cover;
   overflow-y: auto;
-  border: 1px solid #f7f7f7;
-  background-color: #ccc;
-  // height: calc(100% - 120px);
 }
+
 .message-previous {
   margin: 0 !important;
   padding: 0 !important;
@@ -95,9 +93,7 @@
 /*Reply*/
 
 .reply {
-  // height: 60px;
   width: 100%;
-  background-color: #f5f1ee;
   padding: 10px 5px 10px 5px !important;
   margin: 0 !important;
   z-index: 1000;
@@ -124,17 +120,6 @@
   color: #93918f;
   cursor: pointer;
 }
-
-// .reply-send {
-//   padding: 5px !important;
-// }
-
-// .reply-send i {
-//   text-align: center;
-//   padding: 5px !important;
-//   color: #93918f;
-//   cursor: pointer;
-// }
 
 .reply-main {
   padding: 2px 5px !important;
@@ -194,7 +179,6 @@
 .emoji-picker-container {
   position: relative;
   height: 30px;
-  // overflow: hidden;
   button {
     background-color: transparent;
     border: none;
@@ -220,7 +204,7 @@
   bottom: 70px;
   right: 5px;
   margin: 10px;
-  background-color: #3498db;
+  background-color: #0b9238;
   color: white;
   border-radius: 50%;
   padding: 10px;
@@ -234,13 +218,13 @@
 @keyframes colorShift {
   0%,
   100% {
-    background: #3498db;
+    background: #0b9238;
   }
   33% {
-    background: #3498db;
+    background: #0b9238;
   }
   66% {
-    background: #3498db;
+    background: #0b9238;
   }
 }
 
@@ -262,45 +246,66 @@ input:focus {
 }
 
 .phone-input {
-  width: 250px;
+  width: 150px;
   height: 35px;
-  border: 1px solid #ccc !important;
-  border-radius: 10px;
+  // border: 1px solid #ccc !important;
+  // border-radius: 10px;
   padding: 10px;
   outline: none;
+  border: 0 !important;
+  border-bottom: 1px solid #ccc !important;
 
-  &:hover {
-    border: 1px solid #3498db !important;
-  }
+  // &:hover {
+  //   border: 1px solid #3498db !important;
+  // }
 
-  &:hover {
-    border: 1px solid #3498db !important;
-  }
+  // &:hover {
+  //   border: 1px solid #3498db !important;
+  // }
 }
 
 .btn-add-phone,
 .btn-reset-phone {
   height: 35px;
-  border-radius: 10px;
+  border-radius: 5px;
 }
-
-// ::ng-deep nz-select.multiple-select-phone-number {
-//   nz-select-top-control {
-//     border-radius: 10px !important;
-//     padding: 5px !important;
-//   }
-// }
 
 .multiple-select-phone-number {
   border-radius: 5px !important;
-  border: 1px solid #ccc;
-  background-color: #dddddd;
-  height: 40px;
 }
 
 .phone-tag {
-  border-radius: 10px !important;
+  border-radius: 5px !important;
   padding: 3px !important;
   border: 1px solid #ccc;
   margin: 5px;
+}
+
+.btn-send {
+  &.disabled {
+    cursor: not-allowed;
+    background-color: #ccc;
+  }
+
+  background-color: #00b645;
+  color: white;
+  border-radius: 5px;
+  padding: 2px;
+  cursor: pointer;
+
+  i {
+    font-size: 26px;
+  }
+}
+
+.message-separator-line {
+  color: #0000007a;
+  font-size: 14px;
+  border-color: #fff;
+}
+
+input.phone-input:focus {
+  outline: none; /* Removes the focus outline */
+  border: none; /* Removes the border */
+  box-shadow: none !important; /* Removes the shadow */
 }

@@ -12,9 +12,12 @@
   max-height: 50px;
   min-height: 50px;
   height: 50px;
+  border-radius: 5px;
 }
 
-.hover-list-item:not(.expired-item-bg):not(.error-item-bg):hover {
+.hover-list-item:not(.expired-item-bg):not(.error-item-bg):not(
+    .emplty-item-bg
+  ):hover {
   background-color: #f0f5ff;
 }
 
@@ -31,4 +34,8 @@
 
 .error-item-bg {
   background: #ff575791;
+}
+
+.emplty-item-bg {
+  background: #fff;
 }

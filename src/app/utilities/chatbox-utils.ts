@@ -27,4 +27,8 @@ export class ChatBoxUtils {
 
     return updatedText;
   }
+
+  public static isContainLink(text: string) {
+    return text.match(/(https?:\/\/)(\S+)/g);
+  }
 }

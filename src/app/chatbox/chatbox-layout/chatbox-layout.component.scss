@@ -4,10 +4,16 @@
 }
 
 .body-panel {
-  margin-top: 50px;
-  height: calc(100vh - 50px);
+  margin-top: 63px;
+  height: calc(100vh - 63px);
 }
 
 .fixed-top {
   z-index: 3;
+}
+
+::ng-deep .ant-drawer {
+  .ant-drawer-content {
+    background-color: #fff8dc !important;
+  }
 }

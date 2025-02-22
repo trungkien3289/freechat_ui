@@ -40,12 +40,6 @@ export class ChatService {
     text: string
   ): Promise<any> => {
     try {
-      //TODO: for testing
-
-      // if (Math.random() > 0.5) {
-      //   Utils.delay(2000);
-      //   throw 'Send message error bt network';
-      // }
       const res = await firstValueFrom(
         this.http.post(
           `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/message`,
@@ -317,6 +311,20 @@ export class ChatService {
     const now = new Date().getTime();
     return (
       60 - Math.round((now - this.lastSendMessageTime[fromPhoneNumber]) / 1000)
+    );
+  };
+
+  getWaitToSendMins = (fromPhoneNumber: string) => {
+    if (this.lastSendMessageTime[fromPhoneNumber] == null) {
+      this.lastSendMessageTime[fromPhoneNumber] =
+        new Date().getTime() - 60 * 60 * 1000 - 1;
+    }
+    const now = new Date().getTime();
+    return (
+      60 -
+      Math.round(
+        (now - this.lastSendMessageTime[fromPhoneNumber]) / (1000 * 60)
+      )
     );
   };
 }

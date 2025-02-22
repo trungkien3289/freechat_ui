@@ -11,6 +11,7 @@ interface DecodedToken {
   exp: number;
   iat: number;
   isExpired: boolean;
+  expiredDate: number;
 }
 
 @Injectable({
@@ -80,5 +81,10 @@ export class UserService {
   isUserExpired(): boolean {
     const decodedToken = this.getDecodedToken();
     return decodedToken ? decodedToken.isExpired : false;
+  }
+
+  getExpiredDate(): number {
+    const decodedToken = this.getDecodedToken();
+    return decodedToken ? decodedToken.expiredDate : new Date().getTime();
   }
 }

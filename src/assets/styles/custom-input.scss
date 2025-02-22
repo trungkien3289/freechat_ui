@@ -1,0 +1,32 @@
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  margin: 10px 0;
+
+  .input-group {
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    width: 100%;
+    border: 1px solid #e6e6e6;
+    border-radius: 10px;
+    align-items: center;
+    background-color: #fff;
+
+    input {
+      padding: 8px;
+      background-color: transparent !important;
+      outline: none;
+      box-shadow: none !important;
+      border: none !important;
+      flex-grow: 1;
+      margin-right: 10px;
+      height: 100%;
+    }
+
+    i {
+      padding: 0 10px;
+      color: #e6e6e6;
+    }
+  }
+}

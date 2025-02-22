@@ -47,6 +47,7 @@ export class ResourceService {
         isError: boolean;
         assignDateTimestamp: number;
         canReplacePhone: boolean;
+        estimateExpireDate: number;
       }[] = (await firstValueFrom(
         this.http.get(`${this.apiUrl}/api/chat/user/phones`)
       )) as any;
@@ -64,6 +65,11 @@ export class ResourceService {
           failCount: 0,
           assignDateTimestamp: item.assignDateTimestamp,
           canReplacePhone: item.canReplacePhone,
+          isEmpty: false,
+          estimateExpireDate:
+            item.estimateExpireDate < new Date().getTime()
+              ? new Date(item.estimateExpireDate)
+              : moment().add(90, 'minute').toDate(),
         };
       });
 
@@ -301,12 +307,44 @@ export class ResourceService {
         failCount: 0,
         assignDateTimestamp: res.newPhoneNumber.assignDateTimestamp,
         canReplacePhone: true,
+        isEmpty: false,
+        estimateExpireDate: res.newPhoneNumber.estimateExpireDate,
       };
     } catch (ex: any) {
       if (ex.error && ex.error.message) {
         throw ex.error.message;
       } else {
         throw 'Replace phone number error';
+      }
+    }
+  };
+
+  pickPhoneNumber = async (phoneNumber: PhoneNumber): Promise<PhoneNumber> => {
+    try {
+      let res: any = (await firstValueFrom(
+        this.http.post(`${this.apiUrl}/api/chat/phone/pick-phone`, {})
+      )) as any;
+
+      return {
+        id: res.newPhoneNumber._id,
+        phoneNumber: res.newPhoneNumber.phoneNumber,
+        name: Utils.formatPhoneNumberName(
+          Utils.removeCountryCode(res.newPhoneNumber.phoneNumber)
+        ),
+        newMessageCount: 0,
+        expired: res.newPhoneNumber.isExpired,
+        isError: res.newPhoneNumber.isError,
+        failCount: 0,
+        assignDateTimestamp: res.newPhoneNumber.assignDateTimestamp,
+        canReplacePhone: true,
+        isEmpty: false,
+        estimateExpireDate: res.newPhoneNumber.estimateExpireDate,
+      };
+    } catch (ex: any) {
+      if (ex.error && ex.error.message) {
+        throw ex.error.message;
+      } else {
+        throw 'Pick phone number error';
       }
     }
   };
@@ -376,6 +414,30 @@ export class ResourceService {
     });
 
     return inforItems;
+  };
+
+  countAvailablePhoneNumbers = async (): Promise<number> => {
+    try {
+      let res: number = (await firstValueFrom(
+        this.http.get(`${this.apiUrl}/api/chat/phone/count-available`)
+      )) as any;
+
+      return res;
+    } catch (ex) {
+      throw 'Count available phone numbers failed.';
+    }
+  };
+
+  countRemainReplaceTimes = async (): Promise<number> => {
+    try {
+      let res: number = (await firstValueFrom(
+        this.http.get(`${this.apiUrl}/api/chat/phone/remain-replace-times`)
+      )) as any;
+
+      return res;
+    } catch (ex) {
+      throw 'Count remain replace times failed.';
+    }
   };
 
   callAPI = async (requestBody: any): Promise<any> => {

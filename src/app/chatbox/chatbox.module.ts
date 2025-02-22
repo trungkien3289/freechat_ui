@@ -33,6 +33,7 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 
 @NgModule({
   declarations: [
@@ -72,6 +73,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
     NgxMaskDirective,
     NgxMaskPipe,
     NzTagModule,
+    NzDrawerModule,
   ],
   providers: [
     AudioRecordingService,
