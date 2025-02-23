@@ -295,18 +295,18 @@ export class GroupConversationBoxComponent
   debouncedSubmit = debounce(async () => {
     if (this.isRecording) return;
 
-    if (
-      !this._ChatService.canSendMessage(
-        this.contactGroup.currentPhoneNumber.phoneNumber
-      )
-    ) {
-      this._NotificationService.warning(
-        `Cannot send messages in next ${this._ChatService.getWaitToSendMins(
-          this.contactGroup.currentPhoneNumber.phoneNumber
-        )} min(s)`
-      );
-      return;
-    }
+    // if (
+    //   !this._ChatService.canSendMessage(
+    //     this.contactGroup.currentPhoneNumber.phoneNumber
+    //   )
+    // ) {
+    //   this._NotificationService.warning(
+    //     `Cannot send messages in next ${this._ChatService.getWaitToSendMins(
+    //       this.contactGroup.currentPhoneNumber.phoneNumber
+    //     )} min(s)`
+    //   );
+    //   return;
+    // }
 
     this.isLoading = true;
     // If have images upload
@@ -428,7 +428,7 @@ export class GroupConversationBoxComponent
         const errorResponse = response
           .filter((item) => item.status === 'rejected')
           .map((item) => {
-            return get(item, 'reason.message', '');
+            return get(item, 'reason', '');
           })
           .join(',');
 

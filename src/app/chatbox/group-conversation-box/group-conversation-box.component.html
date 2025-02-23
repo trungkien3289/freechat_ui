@@ -158,7 +158,7 @@
             'message-sender-color': messageItem.isOutgoing
           }">
         <div class="message-text d-flex flex-row align-items-center justify-content-between">
-          <span class="mx-3 text-wrap">{{ messageItem.message }}</span>
+          <span class="mx-3 text-wrap">{{ messageItem.text }}</span>
           <ng-container *ngTemplateOutlet="
                 messageStatusTemplate;
                 context: { status: messageItem.sendStatus }
@@ -185,7 +185,7 @@
           'message-sender-color': messageItem.isOutgoing
         }">
       <div class="d-flex flex-row">
-        <img nz-image height="auto" nzSrc="{{ messageItem?.message }}" alt="" class="image-message me-1" [ngClass]="{
+        <img nz-image height="auto" nzSrc="{{ messageItem?.text }}" alt="" class="image-message me-1" [ngClass]="{
             'align-self-start': !messageItem.isOutgoing,
             'align-self-end': messageItem.isOutgoing,
           }" />

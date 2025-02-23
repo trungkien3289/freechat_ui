@@ -54,12 +54,19 @@ body.green-theme {
   }
 
   .icon-button:hover {
-    // transform: rotate(20deg); /* Rotate on hover */
     color: $primary-color !important;
   }
 
   .icon-button:active {
     transform: scale(1.1);
     color: $primary-color !important;
+  }
+
+  .bg-light-smoke {
+    background: #f2f2f5;
+  }
+
+  .gey-color {
+    color: #ccc;
   }
 }

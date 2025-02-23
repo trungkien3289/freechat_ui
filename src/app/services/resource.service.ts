@@ -21,6 +21,7 @@ import _ from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
 import { ChatBoxUtils } from '../utilities/chatbox-utils';
 import moment from 'moment';
+const TOTAL_PHONE_NUMBER = 10;
 
 @Injectable({
   providedIn: 'root',
@@ -72,6 +73,25 @@ export class ResourceService {
               : moment().add(90, 'minute').toDate(),
         };
       });
+
+      let remainPhoneNumber = TOTAL_PHONE_NUMBER - phoneNumbers.length;
+      if (remainPhoneNumber > 0) {
+        for (let i = 0; i < remainPhoneNumber; i++) {
+          phoneNumbers.push({
+            id: Utils.newGuid(),
+            phoneNumber: '',
+            name: '',
+            newMessageCount: 0,
+            expired: false,
+            isError: false,
+            failCount: 0,
+            assignDateTimestamp: 0,
+            canReplacePhone: false,
+            isEmpty: true,
+            estimateExpireDate: new Date(),
+          });
+        }
+      }
 
       return phoneNumbers;
     } catch (ex) {
