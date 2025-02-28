@@ -95,7 +95,7 @@
   width: auto !important;
   padding: 5px 10px 5px !important;
   border-radius: 10px 10px 10px 0;
-  background: #ffffff;
+  background: #d5d5d5;
   font-size: 16px;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
   word-wrap: break-word;
@@ -237,13 +237,13 @@
 @keyframes colorShift {
   0%,
   100% {
-    background: #0b9238;
+    background: #9449fb;
   }
   33% {
-    background: #0b9238;
+    background: #9449fb;
   }
   66% {
-    background: #0b9238;
+    background: #9449fb;
   }
 }
 
@@ -265,7 +265,7 @@
     background-color: #ccc;
   }
 
-  background-color: #00b645;
+  background-color: #7371fc;
   color: white;
   border-radius: 5px;
   padding: 2px;

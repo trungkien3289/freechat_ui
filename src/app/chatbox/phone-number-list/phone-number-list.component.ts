@@ -103,11 +103,15 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
     }
   };
 
-  repacePhoneNumber = async (phoneNumber: PhoneNumber) => {
+  repacePhoneNumber = async (
+    phoneNumber: PhoneNumber,
+    keepHistory: boolean
+  ) => {
     try {
       this.isLoading = true;
       const newPhoneNumber = await this._ResourceService.replacePhoneNumber(
-        phoneNumber
+        phoneNumber,
+        keepHistory
       );
       await this.updateAvailablePhoneCount();
       this._NotificationService.success(

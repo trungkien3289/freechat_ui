@@ -157,9 +157,11 @@ export class ChatService {
         )
       )) as any;
 
-      const communicationsRes = JSON.parse(res.result[0].body);
-      let communications = communicationsRes.result
-        .newCommunications as PhoneComunication[];
+      // const communicationsRes = JSON.parse(res.result[0].body);
+      // let communications = communicationsRes.result
+      //   .newCommunications as PhoneComunication[];
+
+      let communications = res as PhoneComunication[];
 
       communications = communications.filter(
         (item) => item.type === PhoneComunicationType.MESSAGE
@@ -246,9 +248,11 @@ export class ChatService {
         )
       )) as any;
 
-      const communicationsRes = JSON.parse(res.result[0].body);
-      let communications = communicationsRes.result
-        .newCommunications as PhoneComunication[];
+      // const communicationsRes = JSON.parse(res.result[0].body);
+      // let communications = communicationsRes.result
+      //   .newCommunications as PhoneComunication[];
+
+      let communications = res as PhoneComunication[];
 
       communications = communications.filter(
         (item) => item.type === PhoneComunicationType.MESSAGE

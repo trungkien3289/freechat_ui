@@ -133,9 +133,11 @@ export class ResourceService {
       )
     )) as any;
 
-    const communicationsRes = JSON.parse(res.result[0].body);
-    let communications = communicationsRes.result
-      .newCommunications as PhoneComunication[];
+    // const communicationsRes = JSON.parse(res.result[0].body);
+    // let communications = communicationsRes.result
+    //   .newCommunications as PhoneComunication[];
+
+    let communications = res as PhoneComunication[];
 
     //TODO: Now just filter only messages
     communications = communications.filter(
@@ -306,12 +308,14 @@ export class ResourceService {
   };
 
   replacePhoneNumber = async (
-    phoneNumber: PhoneNumber
+    phoneNumber: PhoneNumber,
+    keepHistory: boolean
   ): Promise<PhoneNumber> => {
     try {
       let res: any = (await firstValueFrom(
         this.http.post(`${this.apiUrl}/api/chat/phone/replace`, {
           phoneId: phoneNumber.id,
+          keepHistory: keepHistory,
         })
       )) as any;
 
@@ -422,9 +426,11 @@ export class ResourceService {
 
     const inforItems: any[] = [];
     successResults.forEach((result: { phoneId: string; pingerResult: any }) => {
-      const communicationsRes = JSON.parse(result.pingerResult.result[0].body);
-      let communications = communicationsRes.result
-        .newCommunications as PhoneComunication[];
+      // const communicationsRes = JSON.parse(result.pingerResult.result[0].body);
+      // let communications = communicationsRes.result
+      //   .newCommunications as PhoneComunication[];
+      let communications = result.pingerResult as PhoneComunication[];
+
       const phone = phoneItems.find((item) => {
         return item.id == result.phoneId;
       });

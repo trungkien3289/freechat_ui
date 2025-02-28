@@ -13,6 +13,8 @@ export class GroupContactCacheService {
     };
   } = {};
 
+  startDate: Date = new Date();
+
   constructor() {}
 
   cacheGroupUnsentMessage = (groupId: string, messages: ContactMessage[]) => {
@@ -34,7 +36,7 @@ export class GroupContactCacheService {
   };
 
   getGroupLastSeen = (groupId: string): Date => {
-    return this.groupDic[groupId]?.lastSeen || new Date();
+    return this.groupDic[groupId]?.lastSeen || this.startDate;
   };
 
   getAllGroupCache = () => {

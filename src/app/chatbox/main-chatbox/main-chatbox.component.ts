@@ -92,9 +92,12 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       this.phoneNumbers = items;
 
       // set the first item as selected
-      if (items.length > 0 && items.some((p) => !p.expired && !p.isError)) {
+      if (
+        items.length > 0 &&
+        items.some((p) => !p.expired && !p.isError && !p.isEmpty)
+      ) {
         let availablePhoneNumbers = items.filter(
-          (p) => !p.expired && !p.isError
+          (p) => !p.expired && !p.isError && !p.isEmpty
         );
         this.selectPhoneNumber(availablePhoneNumbers[0]);
       }
@@ -108,9 +111,10 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   };
 
   initAllGroupContactCache = async (phoneNumbers: PhoneNumber[]) => {
-    from(phoneNumbers)
+    let phones = phoneNumbers.filter((p) => !p.isEmpty);
+    from(phones)
       .pipe(
-        mergeMap((phoneNumber) => this.fetchMessagesSilence(phoneNumber), 3) // Limit to 5 concurrent requests
+        mergeMap((phoneNumber) => this.fetchMessagesSilence(phoneNumber), 3)
       )
       .subscribe({
         next: (contactMessageGroups) => {
@@ -228,7 +232,10 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
   startCheckNewCommingMessageInterval = (phoneNumberList: PhoneNumber[]) => {
     this.newCommingMessageInterval = setInterval(async () => {
-      this.checkNewMessageForAllPhoneNumbers(phoneNumberList);
+      let phones = phoneNumberList.filter(
+        (p) => !p.isEmpty && !p.expired && !p.isError
+      );
+      this.checkNewMessageForAllPhoneNumbers(phones);
     }, CHECK_NEW_COMMING_MESSAGE_INTERVAL);
   };
 
