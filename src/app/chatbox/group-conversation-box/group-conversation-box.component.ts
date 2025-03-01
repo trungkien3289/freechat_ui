@@ -263,9 +263,9 @@ export class GroupConversationBoxComponent
     this.abortRecording();
     this.messageViewItems = [];
     this.contactGroup.messages = [];
-    this._LocalStorageService.setItem(
-      `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`,
-      this.contactGroup
+    this.listOfTagOptions = [];
+    this._LocalStorageService.removeItem(
+      `GroupConversation_${this.contactGroup.currentPhoneNumber.phoneNumber}`
     );
   };
 
@@ -417,7 +417,12 @@ export class GroupConversationBoxComponent
           return this._ChatService.sendMessage(
             this.contactGroup.currentPhoneNumber.id,
             this.contactGroup.from.TN,
-            this.contactGroup.to,
+            [
+              {
+                TN: Utils.formatPhoneNumberTN(toPhoneNumber),
+                name: Utils.formatPhoneNumberName(toPhoneNumber),
+              },
+            ],
             newMessage.text
           );
         })

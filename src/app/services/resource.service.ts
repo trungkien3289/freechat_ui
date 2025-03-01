@@ -503,8 +503,10 @@ export class ResourceService {
       (countNewMessage, group) => {
         return (
           countNewMessage +
-          group.messages.filter((message) => message.myStatus === 'UNREAD')
-            .length
+          group.messages.filter(
+            (message) =>
+              message.myStatus === 'UNREAD' && message.isOutgoing == false
+          ).length
         );
       },
       0
@@ -519,7 +521,8 @@ export class ResourceService {
 
     contactMessageGroups.forEach((group) => {
       let newMessages = group.messages.filter(
-        (message) => message.myStatus === 'UNREAD'
+        (message) =>
+          message.myStatus === 'UNREAD' && message.isOutgoing == false
       );
       contactGroupsInfoDic[group.id] = {
         newMessageCount: newMessages.length,

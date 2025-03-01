@@ -22,6 +22,7 @@ import { from, mergeMap } from 'rxjs';
 import { ContactListComponent } from '../contact-list/contact-list.component';
 import _ from 'lodash';
 import { UserService } from '../../services/user.service';
+import { SelectedPhoneService } from '../../services/selected-phone.service';
 
 const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 20000;
 const LIMIT_SEND_MESSAGE_FAIL = 3;
@@ -48,10 +49,12 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     private _LocalStorageService: LocalStorageService,
     private _GroupContactCacheService: GroupContactCacheService,
     private _UserService: UserService,
-    private _Router: Router
+    private _Router: Router,
+    private _SelectedPhoneService: SelectedPhoneService
   ) {}
   ngOnDestroy(): void {
     this.stopCheckNewMessageInterval();
+    this._SelectedPhoneService.reset();
   }
 
   @ViewChild(PhoneNumberListComponent)
@@ -134,6 +137,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   selectPhoneNumber = async (phoneNumber: PhoneNumber) => {
     // if (!phoneNumber.isError && !phoneNumber.expired) {
     this.selectedPhoneNumberItem = phoneNumber;
+    this._SelectedPhoneService.setUsingPhoneNumber(phoneNumber);
     await this.reloadContactList(phoneNumber, true);
     this.selectContactItem(this.contactMessageGroups[0]);
     this.checkNewMessageComming(phoneNumber);
@@ -145,7 +149,11 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     showLoading: boolean = false
   ) => {
     this.isLoadingContactList = showLoading;
-    this.contactMessageGroups = await this.getPhoneDetails(phoneNumber);
+    const updatedContactMessageGroups = await this.getPhoneDetails(phoneNumber);
+    const newContactGroups = updatedContactMessageGroups.filter(
+      (item) => !this.contactMessageGroups.some((group) => group.id === item.id)
+    );
+    this.contactMessageGroups = updatedContactMessageGroups;
     if (this.contactMessageGroups.length < MAXIMIZE_CONTACT_NUMBER) {
       if (!this.checkIfGroupConversationExist(phoneNumber)) {
         this.newGroupConversation(phoneNumber);
@@ -156,6 +164,15 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
           `GroupConversation_${phoneNumber.phoneNumber}`
         )
       );
+    }
+
+    this._SelectedPhoneService.updateContactMessageGroups(
+      this.contactMessageGroups
+    );
+
+    // select new contact group
+    if (newContactGroups.length > 0) {
+      this.selectContactItem(newContactGroups[0]);
     }
 
     this.isLoadingContactList = false;

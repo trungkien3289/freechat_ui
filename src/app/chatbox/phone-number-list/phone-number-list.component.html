@@ -61,11 +61,11 @@
           <div class="text-truncate flex-grow-1 d-flex flex-column" [class.fw-bold]="phoneNumber.newMessageCount > 0">
 
             <span>{{ phoneNumber.name }}</span>
-            @if(!phoneNumber.isError && !phoneNumber.expired && !phoneNumber.isEmpty) {
+            <!-- @if(!phoneNumber.isError && !phoneNumber.expired && !phoneNumber.isEmpty) {
             <div class=" fst-italic fw-lighter" style="font-size: 11px;">
               Estimated expiration: {{phoneNumber.estimateExpireDate | dateStringFormat:'dd/MM/yyyy HH:mm'}}
               GMT{{currentTimeZone}}</div>
-            }
+            } -->
           </div>
 
           }@else {
