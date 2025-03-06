@@ -329,15 +329,13 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       } = {};
       contactMessageGroups.forEach((group) => {
         let newMessages = group.messages.filter(
-          (message) => message.myStatus === 'UNREAD'
+          (message) =>
+            message.myStatus === 'UNREAD' && message.isOutgoing == false
         );
         updateDic[group.id] = {
           newMessageCount: newMessages.length,
           newMessages,
         };
-        // updateDic[group.id] = group.messages.filter(
-        //   (message) => message.myStatus === 'UNREAD'
-        // ).length;
       });
       this.contactListComponent.updateNewMessageComming(updateDic);
     }
