@@ -25,7 +25,7 @@ import { UserService } from '../../services/user.service';
 import { SelectedPhoneService } from '../../services/selected-phone.service';
 import { ERROR_CODE_ENUM } from '../../utilities/phone-error.enum';
 
-const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 20000;
+const CHECK_NEW_COMMING_MESSAGE_INTERVAL = 30000;
 const LIMIT_SEND_MESSAGE_FAIL = 3;
 
 @Component({

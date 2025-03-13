@@ -42,7 +42,7 @@ import {
 import { ChatBoxUtils } from '../../utilities/chatbox-utils';
 import { ERROR_CODE_ENUM } from '../../utilities/phone-error.enum';
 
-const INTERVAL_RELOAD_CHATBOX = 5000;
+const INTERVAL_RELOAD_CHATBOX = 20000;
 const MAX_RECORDING_SECONDS = 60;
 const MAX_NUMBER_SEND_MESSAGE = 150;
 @Component({
