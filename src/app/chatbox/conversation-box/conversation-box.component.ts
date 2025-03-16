@@ -35,6 +35,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import { DELAY_FOR_CHECK_NEW_COMMING_MESSAGE } from '../chat-settings.const';
 import { PhoneNumber } from '../../models/phone-number.model';
+import { ResourceService } from '../../services/resource.service';
 
 const INTERVAL_RELOAD_CHATBOX = 5000;
 const MAX_RECORDING_SECONDS = 60;
@@ -121,6 +122,7 @@ export class ConversationBoxComponent
 
   @ViewChild('uploadComponent', { static: false }) uploadComponent!: any;
   fileInput: HTMLInputElement | null = null;
+  badKeywords: string[] = [];
 
   constructor(
     private _ChatService: ChatService,
@@ -129,7 +131,8 @@ export class ConversationBoxComponent
     private _GroupContactCacheService: GroupContactCacheService,
     private _FileService: FileService,
     private _AudioRecordingService: AudioRecordingService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private _ResourceService: ResourceService
   ) {
     this.myForm = this._FormBuilder.group({
       textInput: ['', Validators.required],
@@ -150,6 +153,7 @@ export class ConversationBoxComponent
         URL.createObjectURL(data.blob)
       );
     });
+    this.badKeywords = this._ResourceService.getBadKeywordsList();
   }
   ngOnInit(): void {}
   ngAfterViewInit(): void {
@@ -252,6 +256,10 @@ export class ConversationBoxComponent
         lastMessage?.timeCreated || defaultLastUpdateDate
       );
 
+      messages.forEach((item) => {
+        item.text = this._ResourceService.revertModifiedKeywords(item.text);
+      });
+
       return messages;
     } catch (error: any) {}
 
@@ -273,6 +281,10 @@ export class ConversationBoxComponent
         toPhoneNumber,
         groupId
       );
+
+      allMessages.forEach((item) => {
+        item.text = this._ResourceService.revertModifiedKeywords(item.text);
+      });
 
       if (allMessages.length > 0) {
         //has new message - send message success
@@ -479,6 +491,14 @@ export class ConversationBoxComponent
       ConversationItemType.MESSAGE
     );
 
+    let badKeywords = this._ResourceService.isContainerBadKeywords(message);
+    let convertedNewMessage = message;
+    if (badKeywords.length > 0) {
+      convertedNewMessage = this._ResourceService.replaceKeywordsWithDot(
+        this.myForm.value.textInput
+      );
+    }
+
     this.scrollToBottom();
 
     this.myForm.reset();
@@ -488,7 +508,7 @@ export class ConversationBoxComponent
         this.contactGroup.currentPhoneNumber.id,
         this.contactGroup.from.TN,
         this.contactGroup.to,
-        newMessage.text
+        convertedNewMessage
       );
 
       let hasNewMessage = await this.verifyHasNewMessage();

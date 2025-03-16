@@ -17,7 +17,7 @@ import {
   SendStatus,
 } from '../models/contact-message.model';
 import { Utils } from '../utilities/utils';
-import _ from 'lodash';
+import _, { forEach } from 'lodash';
 import { GroupContactCacheService } from './group-contact-cache.service';
 import { ChatBoxUtils } from '../utilities/chatbox-utils';
 import moment from 'moment';
@@ -28,6 +28,8 @@ const TOTAL_PHONE_NUMBER = 10;
 })
 export class ResourceService {
   private apiUrl = ``; // Change to your Node.js API
+  private badKeywords: string[] = [];
+  private convertedBadKeywords: string[] = [];
 
   constructor(
     private http: HttpClient,
@@ -571,5 +573,66 @@ export class ResourceService {
       phoneId: phone.id,
       requestBody: requestBody,
     };
+  };
+
+  loadBadKeywords = async (): Promise<void> => {
+    try {
+      const res: any = await firstValueFrom(
+        this.http.get(`${this.apiUrl}/api/chat/bad-keywords`)
+      );
+
+      this.badKeywords = res;
+      // this.convertedBadKeywords = this.badKeywords.map((keyword) => {
+      //   return this.insertDotAtSecondPosition(keyword);
+      // });
+    } catch (ex: any) {
+      // throw `Get list bad keywords error`;
+      this.badKeywords = [];
+    }
+  };
+
+  insertDotAtSecondPosition = (input: string) => {
+    if (input.length < 2) return input; // If length is less than 2, return as is
+    return input.slice(0, 2) + '.' + input.slice(2);
+  };
+
+  replaceKeywordsWithDot = (text: string) => {
+    for (let keyword of this.badKeywords) {
+      let regex = new RegExp(keyword, 'gi'); // 'g' for global, 'i' for case-insensitive
+      text = text.replace(regex, (match) => {
+        // Preserve the original case
+        return this.insertDotAtSecondPosition(match);
+      });
+    }
+    return text;
+  };
+
+  revertModifiedKeywords = (text: string) => {
+    for (let keyword of this.badKeywords) {
+      let modifiedKeyword = this.insertDotAtSecondPosition(keyword);
+
+      // Escape the dot for regex and use case-insensitive match
+      let regex = new RegExp(modifiedKeyword.replace('.', '\\.'), 'gi');
+      text = text.replace(regex, (match) => {
+        // Preserve the original case
+        return match[0] + match.slice(1).replace('.', '');
+      });
+    }
+    return text;
+  };
+
+  getBadKeywordsList = (): string[] => {
+    return this.badKeywords;
+  };
+
+  isContainerBadKeywords = (message: string): string[] => {
+    let badwords: string[] = [];
+    this.badKeywords.forEach((keyword) => {
+      if (message.toLowerCase().includes(keyword.toLowerCase())) {
+        badwords.push(keyword);
+      }
+    });
+
+    return badwords;
   };
 }

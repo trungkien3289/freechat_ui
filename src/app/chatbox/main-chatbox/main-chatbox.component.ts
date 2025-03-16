@@ -81,7 +81,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   loadData = async () => {
     this.isLoadingPhoneNumbers = true;
     try {
-      await this.loadPhoneNumbers();
+      await Promise.all([this.loadPhoneNumbers(), this.loadBadKeywords()]);
       await this.initAllGroupContactCache(this.phoneNumbers);
       this.startCheckNewCommingMessageInterval(this.phoneNumbers);
     } catch (error: any) {}
@@ -106,6 +106,16 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       }
 
       return items;
+    } catch (error: any) {
+      this._NotificationService.error(error);
+    }
+
+    return [];
+  };
+
+  loadBadKeywords = async () => {
+    try {
+      await this._ResourceService.loadBadKeywords();
     } catch (error: any) {
       this._NotificationService.error(error);
     }
@@ -150,6 +160,13 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
   ) => {
     this.isLoadingContactList = showLoading;
     const updatedContactMessageGroups = await this.getPhoneDetails(phoneNumber);
+    updatedContactMessageGroups.forEach((group) => {
+      group.messages.forEach((messageItem) => {
+        messageItem.text = this._ResourceService.revertModifiedKeywords(
+          messageItem.text
+        );
+      });
+    });
     const newContactGroups = updatedContactMessageGroups.filter(
       (item) => !this.contactMessageGroups.some((group) => group.id === item.id)
     );
@@ -294,13 +311,24 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     //   contactMessageGroups
     // );
     // update new message comming in phone number list
+
+    contactMessageGroups.forEach((group) => {
+      group.messages.forEach((messageItem) => {
+        messageItem.text = this._ResourceService.revertModifiedKeywords(
+          messageItem.text
+        );
+      });
+    });
+
     if (this.phoneNumberListComponent) {
       let newMessageCount = contactMessageGroups.reduce(
         (countNewMessage, group) => {
           return (
             countNewMessage +
-            group.messages.filter((message) => message.myStatus === 'UNREAD')
-              .length
+            group.messages.filter(
+              (message) =>
+                message.myStatus === 'UNREAD' && message.isOutgoing == false
+            ).length
           );
         },
         0
@@ -399,8 +427,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       found.phoneNumber = data.newPhoneNumber.phoneNumber;
       found.name = data.newPhoneNumber.name;
       found.id = data.newPhoneNumber.id;
-      found.expired = false;
-      found.isError = false;
+      found.expired = data.newPhoneNumber.expired;
+      found.isError = data.newPhoneNumber.isError;
       found.failCount = 0;
       found.newMessageCount = 0;
       //TODO need handle more action like reload list contact of new phone number

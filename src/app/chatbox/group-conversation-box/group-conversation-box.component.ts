@@ -40,6 +40,7 @@ import {
 import { ChatBoxUtils } from '../../utilities/chatbox-utils';
 import { SelectedPhoneService } from '../../services/selected-phone.service';
 import { ERROR_CODE_ENUM } from '../../utilities/phone-error.enum';
+import { ResourceService } from '../../services/resource.service';
 
 const INTERVAL_RELOAD_CHATBOX = 10000;
 const MAX_RECORDING_SECONDS = 60;
@@ -125,7 +126,8 @@ export class GroupConversationBoxComponent
     private _FileService: FileService,
     private _AudioRecordingService: AudioRecordingService,
     private sanitizer: DomSanitizer,
-    private _SelectedPhoneService: SelectedPhoneService
+    private _SelectedPhoneService: SelectedPhoneService,
+    private _ResourceService: ResourceService
   ) {
     this.myForm = this._FormBuilder.group({
       textInput: ['', Validators.required],
@@ -321,29 +323,25 @@ export class GroupConversationBoxComponent
     }
 
     if (this.myForm.valid) {
-      if (ChatBoxUtils.isContainLink(this.myForm.value.textInput)) {
-        this._NotificationService.warning(
-          `Unable to send messages containing links. Please remove the link or change to format www.abc.com`
-        );
-        return;
-      } else {
-        const isSuccess = await this.sendTextMessage(
-          this.myForm.value.textInput
-        );
-        if (isSuccess) {
-          if (
-            this.listOfTagOptions.length == MAXIMIZE_CONTACT_NUMBER_ONE_TIME
-          ) {
-            this._ChatService.updateLastSendMessageTime(
-              this.contactGroup.currentPhoneNumber.phoneNumber
-            );
-          }
-
-          this.sendMessageGroupSuccess.emit();
-          this.clearMessagesBox();
+      // if (ChatBoxUtils.isContainLink(this.myForm.value.textInput)) {
+      //   this._NotificationService.warning(
+      //     `Unable to send messages containing links. Please remove the link or change to format www.abc.com`
+      //   );
+      //   return;
+      // } else {
+      const isSuccess = await this.sendTextMessage(this.myForm.value.textInput);
+      if (isSuccess) {
+        if (this.listOfTagOptions.length == MAXIMIZE_CONTACT_NUMBER_ONE_TIME) {
+          this._ChatService.updateLastSendMessageTime(
+            this.contactGroup.currentPhoneNumber.phoneNumber
+          );
         }
+
+        this.sendMessageGroupSuccess.emit();
+        this.clearMessagesBox();
       }
     }
+    // }
 
     this.isLoading = false;
     this.scrollToBottom();
@@ -407,6 +405,15 @@ export class GroupConversationBoxComponent
       ConversationItemType.MESSAGE
     );
 
+    let badKeywords = this._ResourceService.isContainerBadKeywords(
+      this.myForm.value.textInput
+    );
+    let convertedNewMessage = message;
+    if (badKeywords.length > 0) {
+      convertedNewMessage =
+        this._ResourceService.replaceKeywordsWithDot(message);
+    }
+
     this.myForm.reset();
 
     try {
@@ -423,7 +430,7 @@ export class GroupConversationBoxComponent
                 name: Utils.formatPhoneNumberName(toPhoneNumber),
               },
             ],
-            newMessage.text
+            convertedNewMessage
           );
         })
       );
