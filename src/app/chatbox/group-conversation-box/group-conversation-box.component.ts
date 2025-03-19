@@ -292,18 +292,18 @@ export class GroupConversationBoxComponent
   debouncedSubmit = debounce(async () => {
     if (this.isRecording) return;
 
-    if (
-      !this._ChatService.canSendMessage(
-        this.contactGroup.currentPhoneNumber.phoneNumber
-      )
-    ) {
-      this._NotificationService.warning(
-        `Cannot send messages in next ${this._ChatService.getWaitToSendMins(
-          this.contactGroup.currentPhoneNumber.phoneNumber
-        )} min(s)`
-      );
-      return;
-    }
+    // if (
+    //   !this._ChatService.canSendMessage(
+    //     this.contactGroup.currentPhoneNumber.phoneNumber
+    //   )
+    // ) {
+    //   this._NotificationService.warning(
+    //     `Cannot send messages in next ${this._ChatService.getWaitToSendMins(
+    //       this.contactGroup.currentPhoneNumber.phoneNumber
+    //     )} min(s)`
+    //   );
+    //   return;
+    // }
 
     this.isLoading = true;
     // If have images upload
@@ -431,6 +431,7 @@ export class GroupConversationBoxComponent
           return this._ChatService.sendMessage(
             this.contactGroup.currentPhoneNumber.id,
             this.contactGroup.currentPhoneNumber.clientId,
+            this.contactGroup.currentPhoneNumber.pushToken,
             this.contactGroup.currentPhoneNumber.username,
             this.contactGroup.currentPhoneNumber.userAgent,
             this.contactGroup.currentPhoneNumber.phoneNumber,

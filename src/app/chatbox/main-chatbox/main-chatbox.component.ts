@@ -85,8 +85,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     this.isLoadingPhoneNumbers = true;
     try {
       await this.loadPhoneNumbers();
-      await this.initAllGroupContactCache(this.phoneNumbers);
-      this.startCheckNewCommingMessageInterval(this.phoneNumbers);
+      // await this.initAllGroupContactCache(this.phoneNumbers);
+      // this.startCheckNewCommingMessageInterval(this.phoneNumbers);
     } catch (error: any) {}
 
     this.isLoadingPhoneNumbers = false;
@@ -147,7 +147,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       this._SelectedPhoneService.setUsingPhoneNumber(phoneNumber);
       await this.reloadContactList(phoneNumber, true);
       this.selectContactItem(this.contactMessageGroups[0]);
-      this.checkNewMessageComming(phoneNumber);
+      // this.checkNewMessageComming(phoneNumber);
     }
   };
 
@@ -405,6 +405,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       found.phoneNumber = data.newPhoneNumber.phoneNumber;
       found.name = data.newPhoneNumber.name;
       found.clientId = data.newPhoneNumber.clientId;
+      found.pushToken = data.newPhoneNumber.pushToken;
       found.username = data.newPhoneNumber.username;
       found.name = data.newPhoneNumber.name;
       found.userAgent = data.newPhoneNumber.userAgent;
@@ -428,6 +429,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       found.phoneNumber = data.newPhoneNumber.phoneNumber;
       found.name = data.newPhoneNumber.name;
       found.clientId = data.newPhoneNumber.clientId;
+      found.pushToken = data.newPhoneNumber.pushToken;
       found.username = data.newPhoneNumber.username;
       found.userAgent = data.newPhoneNumber.userAgent;
       found.name = data.newPhoneNumber.name;

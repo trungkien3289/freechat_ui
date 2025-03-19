@@ -82,11 +82,11 @@ export class ConversationBoxComponent
       this.isLoading = false;
 
       this.stopFetchMessageInterval();
-      this.startFetchMessageInterval(
-        this.contactGroup.currentPhoneNumber,
-        this.contactGroup.to || '',
-        this.contactGroup.id
-      );
+      // this.startFetchMessageInterval(
+      //   this.contactGroup.currentPhoneNumber,
+      //   this.contactGroup.to || '',
+      //   this.contactGroup.id
+      // );
     }
   }
   @Output() sendMessageSuccess = new EventEmitter<void>();
@@ -526,6 +526,7 @@ export class ConversationBoxComponent
       await this._ChatService.sendMessage(
         this.contactGroup.currentPhoneNumber.id,
         this.contactGroup.currentPhoneNumber.clientId,
+        this.contactGroup.currentPhoneNumber.pushToken,
         this.contactGroup.currentPhoneNumber.username,
         this.contactGroup.currentPhoneNumber.userAgent,
         this.contactGroup.currentPhoneNumber.phoneNumber,

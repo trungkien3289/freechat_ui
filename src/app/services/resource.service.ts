@@ -52,6 +52,7 @@ export class ResourceService {
         clientId: string;
         username: string;
         userAgent: string;
+        pushToken: string;
         estimateExpireDate: number;
       }[] = (await firstValueFrom(
         this.http.get(`${this.apiUrl}/api/chat/user/phones`)
@@ -73,6 +74,7 @@ export class ResourceService {
           clientId: item.clientId,
           username: item.username,
           userAgent: item.userAgent,
+          pushToken: item.pushToken,
           isEmpty: false,
           estimateExpireDate:
             item.estimateExpireDate < new Date().getTime()
@@ -95,6 +97,7 @@ export class ResourceService {
             assignDateTimestamp: 0,
             canReplacePhone: false,
             clientId: '',
+            pushToken: '',
             username: '',
             userAgent: '',
             isEmpty: true,
@@ -220,6 +223,7 @@ export class ResourceService {
           Utils.removeCountryCode(res.newPhoneNumber.phoneNumber)
         ),
         clientId: res.newPhoneNumber.clientId,
+        pushToken: res.newPhoneNumber.pushToken,
         username: res.newPhoneNumber.username,
         userAgent: res.newPhoneNumber.userAgent,
         newMessageCount: 0,
@@ -253,6 +257,7 @@ export class ResourceService {
           Utils.removeCountryCode(res.newPhoneNumber.phoneNumber)
         ),
         clientId: res.newPhoneNumber.clientId,
+        pushToken: res.newPhoneNumber.pushToken,
         username: res.newPhoneNumber.username,
         userAgent: res.newPhoneNumber.userAgent,
         newMessageCount: 0,

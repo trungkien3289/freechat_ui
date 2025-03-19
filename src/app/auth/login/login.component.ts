@@ -3,6 +3,7 @@ import { UserService } from '../../services/user.service';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
+import { LocalStorageService } from '../../services/local-storage.service';
 
 @Component({
   selector: 'app-login',
@@ -32,6 +33,7 @@ export class LoginComponent {
         let response = await firstValueFrom(
           this.userService.login(this.loginForm.value)
         );
+        localStorage.clear();
         localStorage.setItem('token', response.token);
         if (response.isExpired != null && response.isExpired == true) {
           this.router.navigate(['/auth/user-expired']);

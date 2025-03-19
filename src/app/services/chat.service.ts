@@ -37,6 +37,7 @@ export class ChatService {
   sendMessage = async (
     fromPhoneNumberId: string,
     clientId: string,
+    pushToken: string,
     username: string,
     userAgent: string,
     fromPhoneNumber: string,
@@ -49,6 +50,7 @@ export class ChatService {
           `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/message`,
           {
             clientId,
+            pushToken,
             username,
             userAgent,
             text: ChatBoxUtils.replaceSpecialCharactersInMessage(text),

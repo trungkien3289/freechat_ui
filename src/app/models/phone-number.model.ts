@@ -9,6 +9,7 @@ export type PhoneNumber = {
   assignDateTimestamp: number;
   canReplacePhone: boolean;
   clientId: string;
+  pushToken: string;
   username: string;
   userAgent: string;
   isEmpty: boolean;
