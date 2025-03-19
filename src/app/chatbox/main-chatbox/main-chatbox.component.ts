@@ -85,8 +85,8 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     this.isLoadingPhoneNumbers = true;
     try {
       await this.loadPhoneNumbers();
-      // await this.initAllGroupContactCache(this.phoneNumbers);
-      // this.startCheckNewCommingMessageInterval(this.phoneNumbers);
+      await this.initAllGroupContactCache(this.phoneNumbers);
+      this.startCheckNewCommingMessageInterval(this.phoneNumbers);
     } catch (error: any) {}
 
     this.isLoadingPhoneNumbers = false;
@@ -147,7 +147,7 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
       this._SelectedPhoneService.setUsingPhoneNumber(phoneNumber);
       await this.reloadContactList(phoneNumber, true);
       this.selectContactItem(this.contactMessageGroups[0]);
-      // this.checkNewMessageComming(phoneNumber);
+      this.checkNewMessageComming(phoneNumber);
     }
   };
 
