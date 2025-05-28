@@ -48,7 +48,7 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
 
   systemInfoInterval: any;
   availablePhoneCount: number = 0;
-  remainReplaceNumberTimes: number = 40;
+  remainReplaceNumberTimes: number = 20;
   numberEmptyPhone: number = 0;
   currentTimeZone = Utils.getTimeZone();
 
@@ -83,7 +83,8 @@ export class PhoneNumberListComponent implements OnInit, OnDestroy {
       this._ResourceService.countRemainReplaceTimes(),
     ]);
     this.availablePhoneCount = availablePhoneCount;
-    this.remainReplaceNumberTimes = remainReplaceTimes;
+    this.remainReplaceNumberTimes =
+      remainReplaceTimes >= 0 ? remainReplaceTimes : 0;
   };
 
   onFilterChange = (searchTerm: any) => {

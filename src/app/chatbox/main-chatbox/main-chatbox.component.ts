@@ -7,6 +7,7 @@ import moment from 'moment';
 import {
   ContactMessage,
   ContactMessageGroup,
+  ConversationItemType,
   ConversationType,
 } from '../../models/contact-message.model';
 import { LocalStorageService } from '../../services/local-storage.service';
@@ -162,9 +163,14 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
     const updatedContactMessageGroups = await this.getPhoneDetails(phoneNumber);
     updatedContactMessageGroups.forEach((group) => {
       group.messages.forEach((messageItem) => {
-        messageItem.text = this._ResourceService.revertModifiedKeywords(
-          messageItem.text
-        );
+        if (
+          messageItem.itemType == ConversationItemType.MESSAGE &&
+          messageItem.text != null
+        ) {
+          messageItem.text = this._ResourceService.revertModifiedKeywords(
+            messageItem.text
+          );
+        }
       });
     });
     const newContactGroups = updatedContactMessageGroups.filter(
@@ -314,9 +320,14 @@ export class MainChatboxComponent implements OnInit, OnDestroy {
 
     contactMessageGroups.forEach((group) => {
       group.messages.forEach((messageItem) => {
-        messageItem.text = this._ResourceService.revertModifiedKeywords(
-          messageItem.text
-        );
+        if (
+          messageItem.itemType == ConversationItemType.MESSAGE &&
+          messageItem.text != null
+        ) {
+          messageItem.text = this._ResourceService.revertModifiedKeywords(
+            messageItem.text
+          );
+        }
       });
     });
 

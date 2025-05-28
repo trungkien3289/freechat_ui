@@ -24,9 +24,9 @@
 
     <div class="reply-main d-flex flex-row w-100 align-items-center">
       @if(!isRecording){
-      <!-- <button nz-button class="btn-attach-file gey-color me-1 p-0" nzType="link" (click)="triggerUploadDialog()">
+      <button nz-button class="btn-attach-file gey-color me-1 p-0" nzType="link" (click)="triggerUploadDialog()">
         <i class="icon-image fs-2 primary-color"></i>
-      </button> -->
+      </button>
       <div class="d-flex flex-column w-100 " [ngClass]="{
           'bg-light-smoke': fileList.length != 0,
           'border-round': fileList.length != 0
@@ -137,7 +137,7 @@
           'message-sender-color': messageItem.isOutgoing
         }">
       <div class="d-flex flex-row">
-        <img nz-image height="auto" nzSrc="{{ messageItem?.text }}" alt="" class="image-message me-1" [ngClass]="{
+        <img nz-image height="auto" nzSrc="{{ messageItem?.media?.image }}" alt="" class="image-message me-1" [ngClass]="{
             'align-self-start': !messageItem.isOutgoing,
             'align-self-end': messageItem.isOutgoing,
           }" />

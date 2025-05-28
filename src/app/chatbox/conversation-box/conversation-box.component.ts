@@ -257,7 +257,9 @@ export class ConversationBoxComponent
       );
 
       messages.forEach((item) => {
-        item.text = this._ResourceService.revertModifiedKeywords(item.text);
+        item.text = this._ResourceService.revertModifiedKeywords(
+          item.text || ''
+        );
       });
 
       return messages;
@@ -283,7 +285,9 @@ export class ConversationBoxComponent
       );
 
       allMessages.forEach((item) => {
-        item.text = this._ResourceService.revertModifiedKeywords(item.text);
+        item.text = this._ResourceService.revertModifiedKeywords(
+          item.text || ''
+        );
       });
 
       if (allMessages.length > 0) {

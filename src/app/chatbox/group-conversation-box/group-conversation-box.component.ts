@@ -314,7 +314,7 @@ export class GroupConversationBoxComponent
     // If have images upload
     if (this.fileList.length > 0) {
       let uploadFilesRequests = this.fileList.map((file) => {
-        return this.sendImageMessage(file.thumbUrl || '');
+        return this.sendImageMessage(file.response || '');
       });
 
       this.fileList = [];
@@ -636,27 +636,27 @@ export class GroupConversationBoxComponent
   }
 
   customRequestUploadImage = (item: NzUploadXHRArgs): any => {
-    Utils.getBase64(item.file as any).then((url) => {
-      item.onSuccess!(url, item.file, null);
-    });
-    // this._FileService
-    //   .upload(
-    //     item.file as any,
-    //     item.file.filename as string,
-    //     ConversationItemType.IMAGE
-    //   )
-    //   .then(
-    //     (fileUrl) => {
-    //       if (fileUrl) {
-    //         item.onError!(null, item.file);
-    //       }
+    // Utils.getBase64(item.file as any).then((url) => {
+    //   item.onSuccess!(url, item.file, null);
+    // });
+    this._FileService
+      .upload(
+        item.file as any,
+        item.file.filename as string,
+        ConversationItemType.IMAGE
+      )
+      .then(
+        (fileUrl) => {
+          if (fileUrl) {
+            item.onError!(null, item.file);
+          }
 
-    //       item.onSuccess!(fileUrl, item.file, null);
-    //     },
-    //     (error) => {
-    //       item.onError!(null, item.file);
-    //     }
-    //   );
+          item.onSuccess!(fileUrl, item.file, null);
+        },
+        (error) => {
+          item.onError!(null, item.file);
+        }
+      );
   };
 
   //#endregion

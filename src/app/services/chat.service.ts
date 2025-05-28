@@ -44,7 +44,7 @@ export class ChatService {
         this.http.post(
           `${this.apiUrl}/api/chat/phone/${fromPhoneNumberId}/message`,
           {
-            text: ChatBoxUtils.replaceSpecialCharactersInMessage(text),
+            text: text,
             to,
           }
         )
